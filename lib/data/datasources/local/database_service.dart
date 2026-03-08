@@ -21,6 +21,7 @@
 //   - migrate() is called inside onUpgrade for future versions
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -38,6 +39,7 @@ class DatabaseService {
   // ── Public API ────────────────────────────────────────────────────────────────
 
   /// Returns the open database. Opens it on first call (lazy init).
+  /// On web the database is backed by IndexedDB via [databaseFactoryFfiWeb].
   Future<Database> getDatabase() async {
     _database ??= await _open();
     return _database!;
@@ -57,8 +59,15 @@ class DatabaseService {
   // ── Private – open & schema ───────────────────────────────────────────────────
 
   Future<Database> _open() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final path = join(dir.path, AppConstants.dbName);
+    // On web, sqflite_common_ffi_web uses IndexedDB; a bare filename is the
+    // database key. On native platforms, use the documents directory.
+    final String path;
+    if (kIsWeb) {
+      path = AppConstants.dbName;
+    } else {
+      final dir = await getApplicationDocumentsDirectory();
+      path = join(dir.path, AppConstants.dbName);
+    }
 
     return openDatabase(
       path,

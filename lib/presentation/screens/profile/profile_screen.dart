@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/presentation/providers/user_provider.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/widgets/common/placeholder_tab_body.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -17,8 +17,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
-    final user = userProvider.currentUser;
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
             icon: const Icon(Icons.logout_rounded),
             tooltip: 'Log Out',
             onPressed: () async {
-              await context.read<UserProvider>().logout();
+              await context.read<AuthProvider>().logout();
               if (context.mounted) context.go('/login');
             },
           ),

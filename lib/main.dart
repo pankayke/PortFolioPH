@@ -9,24 +9,33 @@
 //   • MaterialApp.router (Material 3, light + dark themes from AppTheme)
 //
 // Sprint 1 flow: main() → App → SplashScreen → DB open → /login | /dashboard
+// Sprint 2 flow: /register → /profile-setup → /dashboard; /login → /dashboard
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/core/theme/app_theme.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/navigation_provider.dart';
 import 'package:portfolioph/presentation/providers/portfolio_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
-import 'package:portfolioph/presentation/providers/user_provider.dart';
 
 void main() async {
   // Ensure binding is initialised before any plugin calls.
   WidgetsFlutterBinding.ensureInitialized();
+
+  // On web, redirect sqflite through the IndexedDB-backed FFI factory.
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+  }
 
   // Lock orientation to portrait for mobile-first UX.
   await SystemChrome.setPreferredOrientations([
@@ -52,7 +61,7 @@ class App extends StatelessWidget {
       providers: [
         // ── Core providers ────────────────────────────────────────────────────
         ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
-        ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<NavigationProvider>(
           create: (_) => NavigationProvider(),
         ),
@@ -65,7 +74,7 @@ class App extends StatelessWidget {
   }
 }
 
-/// Separate widget so GoRouter can read UserProvider from context after it is
+/// Separate widget so GoRouter can read AuthProvider from context after it is
 /// provided by [App] above.
 class _RouterScope extends StatefulWidget {
   const _RouterScope();
@@ -81,7 +90,7 @@ class _RouterScopeState extends State<_RouterScope> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Build the router once, after providers are available in context.
-    _router ??= AppRouter.create(context.read<UserProvider>());
+    _router ??= AppRouter.create(context.read<AuthProvider>());
   }
 
   @override

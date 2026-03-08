@@ -23,8 +23,9 @@
 
 import 'package:go_router/go_router.dart';
 
-import 'package:portfolioph/presentation/providers/user_provider.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
+import 'package:portfolioph/presentation/screens/auth/profile_setup_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/register_screen.dart';
 import 'package:portfolioph/presentation/screens/main_scaffold.dart';
 import 'package:portfolioph/presentation/screens/splash/splash_screen.dart';
@@ -34,6 +35,7 @@ abstract final class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String profileSetup = '/profile-setup';
   static const String dashboard = '/dashboard';
 
   // ── Reserved for future sprints ────────────────────────────────────────────
@@ -50,15 +52,15 @@ abstract final class AppRoutes {
 class AppRouter {
   AppRouter._();
 
-  /// Build and return a [GoRouter] instance that reads [UserProvider] for
+  /// Build and return a [GoRouter] instance that reads [AuthProvider] for
   /// auth-redirect decisions.
-  static GoRouter create(UserProvider userProvider) => GoRouter(
+  static GoRouter create(AuthProvider authProvider) => GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
 
-    // ── Auth redirect guard ────────────────────────────────────────────────
+    // ── Auth redirect guard ──────────────────────────────────────────
     redirect: (context, state) {
-      final isAuthenticated = userProvider.isAuthenticated;
+      final isAuthenticated = authProvider.isAuthenticated;
       final location = state.uri.path;
 
       final isAuthRoute =
@@ -95,7 +97,14 @@ class AppRouter {
         builder: (context, state) => const RegisterScreen(),
       ),
 
-      // ── Protected: dashboard shell ────────────────────────────────────────
+      // ── Profile setup (post-registration) ────────────────────────
+      GoRoute(
+        path: AppRoutes.profileSetup,
+        name: 'profile-setup',
+        builder: (context, state) => const ProfileSetupScreen(),
+      ),
+
+      // ── Protected: dashboard shell ──────────────────────────────────────────
       GoRoute(
         path: AppRoutes.dashboard,
         name: 'dashboard',

@@ -18,7 +18,7 @@ import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/data/datasources/local/database_service.dart';
-import 'package:portfolioph/presentation/providers/user_provider.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -60,9 +60,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
 
-    // Let UserProvider attempt session restore.
-    final userProvider = context.read<UserProvider>();
-    final hasSession = await userProvider.restoreSession();
+    // Let AuthProvider attempt session restore.
+    final authProvider = context.read<AuthProvider>();
+    final hasSession = await authProvider.restoreSession();
 
     if (!mounted) return;
 

@@ -1,6 +1,8 @@
 // lib/presentation/screens/auth/login_screen.dart
 // ─────────────────────────────────────────────────────────────────────────────
-// Login screen – Sprint 1 shell. Full implementation in Sprint 2.
+// Login screen – Sprint 2 full implementation.
+//
+// Calls AuthProvider.login(); shows SnackBar on error.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -8,7 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/presentation/providers/user_provider.dart';
+import 'package:portfolioph/core/utils/validators.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,8 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final userProvider = context.read<UserProvider>();
-    final success = await userProvider.login(
+    final auth = context.read<AuthProvider>();
+    final success = await auth.login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
@@ -46,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(userProvider.errorMessage ?? 'Login failed.'),
+          content: Text(auth.errorMessage ?? 'Login failed.'),
           backgroundColor: AppConstants.errorColor,
         ),
       );
@@ -55,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = context.watch<UserProvider>().isLoading;
+    final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
       backgroundColor: AppConstants.primaryColor,
@@ -98,12 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           labelText: 'Email',
                           prefixIcon: Icon(Icons.email_outlined),
                         ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Email is required.';
-                          }
-                          return null;
-                        },
+                        validator: AppValidators.validateEmail,
                       ),
                       const SizedBox(height: AppConstants.spacingMd),
 
@@ -127,12 +125,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Password is required.';
-                          }
-                          return null;
-                        },
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Password is required.'
+                            : null,
                       ),
                       const SizedBox(height: AppConstants.spacingLg),
 
