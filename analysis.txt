@@ -1,0 +1,72 @@
+Analyzing portfolioph...                                        
+
+   info - Dangling library doc comment - lib\core\mixins\animation_mixins.dart:1:1 - dangling_library_doc_comments
+   info - Dangling library doc comment - lib\core\mixins\screen_mixins.dart:1:1 - dangling_library_doc_comments
+   info - Dangling library doc comment - lib\core\styling\glass_presets.dart:1:1 - dangling_library_doc_comments
+warning - Unused import: 'package:flutter/material.dart' - lib\core\styling\glass_presets.dart:3:8 - unused_import
+   info - Dangling library doc comment - lib\presentation\providers\app_providers.dart:1:1 - dangling_library_doc_comments
+   info - Dangling library doc comment - lib\presentation\providers\app_providers.dart:2:1 - dangling_library_doc_comments
+   info - Dangling library doc comment - lib\presentation\providers\app_providers.dart:3:1 - dangling_library_doc_comments
+   info - Dangling library doc comment - lib\presentation\providers\app_providers.dart:4:1 - dangling_library_doc_comments
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\login_screen_new.dart:147:53 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\login_screen_new.dart:233:67 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\login_screen_new.dart:288:59 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\login_screen_new.dart:340:57 - undefined_getter
+  error - The method 'withLightness' isn't defined for the type 'Color' - lib\presentation\screens\auth\login_screen_new.dart:390:43 - undefined_method
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\login_screen_new.dart:522:39 - undefined_getter
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\screens\auth\profile_setup_screen.dart:523:11 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\screens\auth\profile_setup_screen.dart:556:11 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\presentation\screens\auth\profile_setup_screen.dart:587:11 - deprecated_member_use
+warning - The declaration '_avatarImage' isn't referenced - lib\presentation\screens\auth\profile_setup_screen.dart:687:26 - unused_element
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\register_screen_new.dart:172:53 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\register_screen_new.dart:337:59 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\register_screen_new.dart:389:57 - undefined_getter
+  error - The method 'withLightness' isn't defined for the type 'Color' - lib\presentation\screens\auth\register_screen_new.dart:439:43 - undefined_method
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\register_screen_new.dart:497:41 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\screens\auth\register_screen_new.dart:584:39 - undefined_getter
+warning - Unused import: 'dart:ui' - lib\presentation\screens\portfolio\portfolio_screen.dart:2:8 - unused_import
+warning - Unused import: 'dart:ui' - lib\presentation\screens\profile\profile_screen.dart:7:8 - unused_import
+warning - Unused import: 'package:portfolioph/core/styling/glass_constants.dart' - lib\presentation\screens\profile\profile_screen.dart:14:8 - unused_import
+warning - Unused import: 'package:portfolioph/presentation/widgets/glass/glass_container.dart' - lib\presentation\screens\profile\profile_screen.dart:17:8 - unused_import
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_education_screen.dart:146:17 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_education_screen.dart:147:17 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_experience_screen.dart:160:17 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_experience_screen.dart:161:17 - use_build_context_synchronously
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:196:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:197:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:221:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:222:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:245:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:246:17 - deprecated_member_use
+warning - Unused import: 'package:portfolioph/core/styling/glass_constants.dart' - lib\presentation\screens\resume\resume_screen.dart:6:8 - unused_import
+warning - Unused import: 'package:portfolioph/presentation/widgets/glass/glass_container.dart' - lib\presentation\screens\resume\resume_screen.dart:27:8 - unused_import
+warning - Unused import: 'package:portfolioph/core/constants/app_constants.dart' - lib\presentation\screens\settings\settings_screen.dart:4:8 - unused_import
+warning - Unused import: 'package:portfolioph/core/styling/glass_constants.dart' - lib\presentation\screens\settings\settings_screen.dart:6:8 - unused_import
+warning - Unused import: 'package:portfolioph/presentation/widgets/glass/glass_container.dart' - lib\presentation\screens\settings\settings_screen.dart:8:8 - unused_import
+warning - The value of the local variable 'isMobile' isn't used - lib\presentation\screens\settings\settings_screen.dart:72:11 - unused_local_variable
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:464:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:465:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:489:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:490:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:514:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:515:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:547:23 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:548:23 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:581:23 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:582:23 - deprecated_member_use
+warning - Unused import: 'package:portfolioph/core/styling/glass_constants.dart' - lib\presentation\screens\skills\skills_screen.dart:7:8 - unused_import
+warning - Unused import: 'package:portfolioph/presentation/widgets/glass/glass_container.dart' - lib\presentation\screens\skills\skills_screen.dart:13:8 - unused_import
+  error - The method 'withLightness' isn't defined for the type 'Color' - lib\presentation\widgets\glass\glass_button.dart:145:43 - undefined_method
+warning - The value of the local variable 'colorScheme' isn't used - lib\presentation\widgets\glass\glass_container.dart:71:11 - unused_local_variable
+warning - The value of the local variable 'colorScheme' isn't used - lib\presentation\widgets\glass\glass_input_field.dart:87:11 - unused_local_variable
+  error - The getter 'textPrimary' isn't defined for the type 'AppConstants' - lib\presentation\widgets\glass\glass_input_field.dart:163:41 - undefined_getter
+  error - The getter 'textSecondary' isn't defined for the type 'AppConstants' - lib\presentation\widgets\glass\glass_input_field.dart:169:43 - undefined_getter
+   info - Dangling library doc comment - lib\presentation\widgets\premium_app_background.dart:1:1 - dangling_library_doc_comments
+warning - Dead code - lib\services\resume_pdf_generator.dart:463:47 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\services\resume_pdf_generator.dart:463:50 - dead_null_aware_expression
+warning - Dead code - lib\services\resume_pdf_generator.dart:607:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\services\resume_pdf_generator.dart:607:42 - dead_null_aware_expression
+warning - Dead code - lib\services\student_portfolio_pdf_generator.dart:208:39 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\services\student_portfolio_pdf_generator.dart:208:42 - dead_null_aware_expression
+
+68 issues found. (ran in 12.2s)

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap Alignment - PortFolioPH</title>
+  <style>
+    body { font-family: "Segoe UI", Arial, sans-serif; margin: 28px; color: #1f2937; line-height: 1.5; }
+    h1 { color: #0d47a1; font-size: 24px; margin-bottom: 10px; }
+    h2 { color: #0f172a; font-size: 18px; margin-top: 20px; margin-bottom: 8px; }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 8px 24px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+    th { background: #eff6ff; color: #0b1e59; }
+    code { background: #f1f5f9; padding: 1px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>External Roadmap Alignment (SmartDentQue → PortFolioPH)</h1>
+
+  <h2>Context</h2>
+  <p>
+    The provided external roadmap (<code>SmartDentQue</code>) is for a dental queue/appointment domain and does not map 1:1 to
+    <code>PortFolioPH</code> (student portfolio builder).
+  </p>
+  <p>
+    To follow the roadmap responsibly, execution is aligned by sprint discipline and delivery cadence,
+    while adapting feature scope to this repository’s architecture and product goals.
+  </p>
+
+  <h2>Mapping Strategy</h2>
+  <ul>
+    <li>Keep sprint sequencing, delivery rigor, and validation gates.</li>
+    <li>Translate domain-specific tasks to PortfolioPH-equivalent modules.</li>
+    <li>Implement only tasks that fit existing project architecture (Flutter + Provider + SQLite).</li>
+  </ul>
+
+  <h2>Current Alignment Snapshot</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>External Theme</th>
+        <th>PortfolioPH Equivalent</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Sprint 1 Infrastructure</td>
+        <td>Core setup, routing, DB, theme</td>
+        <td>✅ Completed</td>
+      </tr>
+      <tr>
+        <td>Sprint 2 Core user flow</td>
+        <td>Auth + profile setup</td>
+        <td>✅ Completed</td>
+      </tr>
+      <tr>
+        <td>Sprint 3 CRUD-heavy feature set</td>
+        <td>Portfolio Projects CRUD + gallery</td>
+        <td>✅ Completed</td>
+      </tr>
+      <tr>
+        <td>Sprint 4 records/media modules</td>
+        <td>Resume Certifications + certificate media</td>
+        <td>✅ In Progress (first slice implemented)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Implemented in This Session (Sprint 4 Slice)</h2>
+  <ol>
+    <li>Certification state management via <code>CertificationProvider</code>.</li>
+    <li>Certificate image upload/delete service with local persistent file storage.</li>
+    <li>Resume tab upgraded from placeholder to certification CRUD list with search.</li>
+    <li>Add/Edit certification form with required validation, URL validation, issue/expiry date handling, and optional image attachment.</li>
+    <li>App dependency graph updated to register <code>CertificationProvider</code>.</li>
+  </ol>
+
+  <h2>Next Recommended Sprint 4 Steps</h2>
+  <ol>
+    <li>Add <code>Education</code> CRUD in Resume module.</li>
+    <li>Add <code>Work Experience</code> CRUD in Resume module.</li>
+    <li>Add timeline/section aggregation for complete Resume preview.</li>
+    <li>Add widget tests for Resume certification flow.</li>
+  </ol>
+
+  <h2>Validation Summary</h2>
+  <ul>
+    <li><code>flutter analyze</code> executed after implementation.</li>
+    <li>No new analyzer errors in changed files.</li>
+    <li>Existing analyzer infos/warnings are legacy issues outside this slice.</li>
+  </ul>
+</body>
+</html>

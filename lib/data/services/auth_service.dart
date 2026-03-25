@@ -15,6 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:portfolioph/core/exceptions/auth_exception.dart';
+import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/utils/helpers.dart';
 import 'package:portfolioph/data/models/user_model.dart';
 import 'package:portfolioph/data/repositories/user_repository.dart';
@@ -78,6 +79,7 @@ class AuthService {
     final newUser = UserModel(
       username: username.trim(),
       email: email.trim().toLowerCase(),
+      role: AppConstants.roleStudent,
       passwordHash: AppHelpers.hashPassword(password),
       fullName: fullName?.trim().isEmpty == true ? null : fullName?.trim(),
       createdAt: now,
@@ -86,7 +88,7 @@ class AuthService {
 
     try {
       final id = await _userRepository.insert(newUser);
-      return newUser.copyWith(id: id);
+      return _ensureAdminBootstrap(newUser.copyWith(id: id));
     } catch (e) {
       throw AuthException('Registration failed: $e', code: 'insert_failed');
     }
@@ -121,6 +123,174 @@ class AuthService {
       );
     }
 
-    return user;
+    return _ensureAdminBootstrap(user);
+  }
+
+  // ── Forgot/Reset password (offline) ────────────────────────────────────────
+  /// Resets a user's password using their registered email.
+  ///
+  /// Throws [AuthException] when:
+  ///   - email is blank/invalid
+  ///   - new password is blank
+  ///   - account is not found
+  Future<void> resetPassword({
+    required String email,
+    required String newPassword,
+  }) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) {
+      throw const AuthException('Email is required.', code: 'email_empty');
+    }
+    if (newPassword.isEmpty) {
+      throw const AuthException(
+        'New password is required.',
+        code: 'password_empty',
+      );
+    }
+
+    final user = await _userRepository.findByEmail(normalizedEmail);
+    if (user == null) {
+      throw const AuthException(
+        'No account found for this email.',
+        code: 'email_not_found',
+      );
+    }
+
+    final updatedUser = user.copyWith(
+      passwordHash: AppHelpers.hashPassword(newPassword),
+      updatedAt: AppHelpers.nowIso(),
+    );
+
+    await _userRepository.update(updatedUser);
+  }
+
+  /// Ensures there is always at least one admin account in local development.
+  /// If no admin exists yet, the current authenticated user is promoted.
+  Future<UserModel> ensureAdminBootstrap(UserModel user) {
+    return _ensureAdminBootstrap(user);
+  }
+
+  /// Ensures the dedicated local admin account exists for development/demo use.
+  /// If an account already exists with the seed email, it is promoted to admin.
+  Future<UserModel> ensureSeedAdminAccount() async {
+    final now = AppHelpers.nowIso();
+    final seededAdmin = UserModel(
+      username: AppConstants.localAdminUsername,
+      email: AppConstants.localAdminEmail,
+      role: 'admin',
+      passwordHash: AppHelpers.hashPassword(AppConstants.localAdminPassword),
+      fullName: AppConstants.localAdminFullName,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final existingUser = await _userRepository.findByEmail(
+      AppConstants.localAdminEmail,
+    );
+    if (existingUser != null) {
+      if (existingUser.role == 'admin') {
+        return existingUser;
+      }
+
+      final elevatedUser = existingUser.copyWith(
+        role: 'admin',
+        updatedAt: AppHelpers.nowIso(),
+      );
+      await _userRepository.update(elevatedUser);
+      return elevatedUser;
+    }
+
+    final createdUser = await _userRepository.createIfMissingByEmail(
+      seededAdmin,
+    );
+    if (createdUser == null) {
+      throw const AuthException(
+        'Failed to create local admin account.',
+        code: 'admin_seed_failed',
+      );
+    }
+
+    if (createdUser.role == 'admin') {
+      return createdUser;
+    }
+
+    final elevatedUser = createdUser.copyWith(
+      role: 'admin',
+      updatedAt: AppHelpers.nowIso(),
+    );
+    await _userRepository.update(elevatedUser);
+    return elevatedUser;
+  }
+
+  /// Ensures local teacher and coordinator accounts exist for academic review
+  /// dashboards in development and demo environments.
+  Future<void> ensureAcademicStaffSeedAccounts() async {
+    await _ensureSeedAccount(
+      username: AppConstants.localTeacherUsername,
+      email: AppConstants.localTeacherEmail,
+      password: AppConstants.localTeacherPassword,
+      fullName: AppConstants.localTeacherFullName,
+      role: AppConstants.roleTeacher,
+    );
+
+    await _ensureSeedAccount(
+      username: AppConstants.localCoordinatorUsername,
+      email: AppConstants.localCoordinatorEmail,
+      password: AppConstants.localCoordinatorPassword,
+      fullName: AppConstants.localCoordinatorFullName,
+      role: AppConstants.roleCoordinator,
+    );
+  }
+
+  Future<UserModel> _ensureAdminBootstrap(UserModel user) async {
+    final hasAdminUser = await _userRepository.hasUsersWithRole('admin');
+    if (hasAdminUser || user.id == null || user.role == 'admin') {
+      return user;
+    }
+
+    final elevatedUser = user.copyWith(
+      role: 'admin',
+      updatedAt: AppHelpers.nowIso(),
+    );
+    await _userRepository.update(elevatedUser);
+    return elevatedUser;
+  }
+
+  Future<UserModel> _ensureSeedAccount({
+    required String username,
+    required String email,
+    required String password,
+    required String fullName,
+    required String role,
+  }) async {
+    final now = AppHelpers.nowIso();
+    final existing = await _userRepository.findByEmail(email);
+
+    if (existing != null) {
+      if (existing.role == role) return existing;
+      final updated = existing.copyWith(role: role, updatedAt: now);
+      await _userRepository.update(updated);
+      return updated;
+    }
+
+    final user = UserModel(
+      username: username,
+      email: email,
+      role: role,
+      passwordHash: AppHelpers.hashPassword(password),
+      fullName: fullName,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final created = await _userRepository.createIfMissingByEmail(user);
+    if (created == null) {
+      throw AuthException(
+        'Failed to create local $role account.',
+        code: 'seed_${role}_failed',
+      );
+    }
+
+    return created;
   }
 }

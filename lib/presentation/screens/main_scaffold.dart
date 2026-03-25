@@ -6,6 +6,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:portfolioph/core/theme/color_palette.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/presentation/providers/navigation_provider.dart';
@@ -59,21 +61,125 @@ class MainScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<NavigationProvider>(
       builder: (context, nav, _) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final palette = Theme.of(context).extension<AppPalette>()!;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Scaffold(
-          // IndexedStack keeps all tab states alive simultaneously.
-          body: IndexedStack(index: nav.currentIndex, children: _bodies),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: nav.currentIndex,
-            onTap: nav.goTo,
-            items: _tabs
-                .map(
-                  (t) => BottomNavigationBarItem(
-                    icon: Icon(t.icon),
-                    activeIcon: Icon(t.activeIcon),
-                    label: t.label,
+          body: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  palette.gradientStart.withValues(alpha: 0.10),
+                  palette.gradientEnd.withValues(alpha: 0.08),
+                  colorScheme.surface,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 260),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.02, 0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey(nav.currentIndex),
+                  // IndexedStack keeps all tab states alive simultaneously.
+                  child: IndexedStack(
+                    index: nav.currentIndex,
+                    children: _bodies,
                   ),
-                )
-                .toList(),
+                ),
+              ),
+            ),
+          ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.glassFill,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: palette.glassBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.10),
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: NavigationBarTheme(
+                  data: NavigationBarThemeData(
+                    backgroundColor: Colors.transparent,
+                    iconTheme: WidgetStateProperty.resolveWith((states) {
+                      final isSelected = states.contains(WidgetState.selected);
+                      return IconThemeData(
+                        color: isSelected
+                            ? colorScheme.onSurface
+                            : colorScheme.onSurfaceVariant,
+                      );
+                    }),
+                    labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                      final isSelected = states.contains(WidgetState.selected);
+                      return TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? colorScheme.onSurface
+                            : colorScheme.onSurfaceVariant,
+                      );
+                    }),
+                  ),
+                  child: NavigationBar(
+                    selectedIndex: nav.currentIndex,
+                    onDestinationSelected: (index) {
+                      HapticFeedback.selectionClick();
+                      nav.goTo(index);
+                    },
+                    animationDuration: const Duration(milliseconds: 320),
+                    indicatorColor: isDark
+                        ? Colors.white.withValues(alpha: 0.14)
+                        : Colors.black.withValues(alpha: 0.06),
+                    destinations: _tabs
+                        .asMap()
+                        .entries
+                        .map(
+                          (entry) => NavigationDestination(
+                            icon: _NavIcon(
+                              icon: entry.value.icon,
+                              isSelected: false,
+                              showPhilippineDot: entry.key == 0,
+                            ),
+                            selectedIcon: _NavIcon(
+                              icon: entry.value.activeIcon,
+                              isSelected: true,
+                              showPhilippineDot: entry.key == 0,
+                            ),
+                            label: entry.value.label,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       },
@@ -92,4 +198,42 @@ class _TabItem {
     required this.activeIcon,
     required this.label,
   });
+}
+
+class _NavIcon extends StatelessWidget {
+  final IconData icon;
+  final bool isSelected;
+  final bool showPhilippineDot;
+
+  const _NavIcon({
+    required this.icon,
+    required this.isSelected,
+    required this.showPhilippineDot,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.38),
+                      blurRadius: 14,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(icon),
+        ),
+      ],
+    );
+  }
 }

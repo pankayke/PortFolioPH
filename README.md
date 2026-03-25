@@ -140,6 +140,63 @@ flutter build apk --release
 
 ---
 
+## Engineering Execution Standard (Mandatory)
+
+These rules are mandatory for all contributors in this repository.
+
+### 1) Workflow Orchestration
+- Plan mode is required for any task beyond one atomic step, all architecture decisions, or confidence below 90%.
+- If execution deviates >5% from plan, stop immediately, re-plan within 2 minutes, and get explicit approval before resuming.
+- Define executable acceptance specs before implementation (example: widget state + expected visual/result proof).
+- Verification, edge-case simulation, and post-change audits are part of plan mode, not optional.
+
+### 2) Subtask / Subagent Discipline
+- Parallelize independent research, alternatives, and validation tracks.
+- For complexity >7/10, evaluate at least two implementation options before selecting final approach.
+- Keep each parallel track scoped to one objective and consolidate with a single synthesis step.
+
+### 3) Continuous Improvement
+- Any correction or defect must be logged in `tasks/lessons.md` with:
+    - Mistake pattern
+    - Root cause
+    - Prevention rule(s)
+- Track weekly quality metrics and review lessons before starting high-risk tasks.
+
+### 4) Verification Bar (Zero Tolerance)
+- Never mark work complete without evidence:
+    - tests passing,
+    - manual repro/validation,
+    - edge-case checks,
+    - diff review for regressions.
+- Final self-check: "Would this be mergeable by a senior/L6 reviewer?" If no, iterate.
+
+### 5) Elegance Enforcement
+- For non-trivial changes, pause and evaluate cleaner alternatives before coding.
+- Reject hacky/non-idiomatic solutions; rewrite when maintainability is compromised.
+- Prefer minimal viable change (target: ≤3 files / ≤50 LOC) unless justified.
+
+### 6) Autonomous Bug Eradication
+- On bug reports: reproduce, isolate, fix, verify, and ship with evidence chain.
+- Proactively scan for similar bug patterns in nearby modules and fix preventively when safe.
+
+### 7) Failure Recovery
+- Three consecutive plan failures triggers full reset: fresh plan + explicit sync before continuing.
+- Revert if regression is detected post-change.
+
+### 8) Task Management Requirements
+- Keep live checklist in `tasks/todo.md` with status markers (`✅`, `❌`, `🚫 Blocked`).
+- Checkpoint verification every ~20% of task progress.
+- Add milestone deltas (what changed + measurable impact).
+
+### 9) Core Principles
+- Simplicity first, root-cause fixes only, surgical scope control, no side-effect ripple.
+- Metrics targets:
+    - plan accuracy >95%
+    - mistake rate <2%
+    - strong maintainability/elegance score (8/10+ self-review)
+
+---
+
 ## Sprint Roadmap
 
 | Sprint | Focus | Status |

@@ -92,6 +92,23 @@ Estimated: Xh | Actual: Xh
 
 ## Sprint Workflow
 
+### Engineering Control Gates (Mandatory)
+
+Before coding:
+1. Write an atomic plan in `tasks/todo.md`.
+2. Define executable acceptance criteria (testable outcomes).
+3. Confirm rollback approach for risky changes.
+
+During coding:
+1. Pause every ~20% progress and verify against criteria.
+2. If deviation >5% from plan or any regression appears, stop and re-plan.
+3. Keep scope minimal unless justified by root-cause analysis.
+
+Before merge:
+1. Review diff for behavioral regressions.
+2. Run tests/lint and manual validation of changed flows.
+3. Update `tasks/lessons.md` for any correction or failed attempt.
+
 ### Starting a Sprint
 
 ```bash

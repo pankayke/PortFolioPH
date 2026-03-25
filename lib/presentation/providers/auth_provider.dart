@@ -104,6 +104,31 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // ── Forgot password ─────────────────────────────────────────────────────────
+  /// Resets a user password using the registered email (offline/local DB).
+  /// Returns `true` on success; populates [errorMessage] on failure.
+  Future<bool> resetPassword({
+    required String email,
+    required String newPassword,
+  }) async {
+    _begin();
+    try {
+      await _authService.resetPassword(email: email, newPassword: newPassword);
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Password reset failed. Please try again.';
+      notifyListeners();
+      return false;
+    } finally {
+      _endLoading();
+    }
+  }
+
   // ── Logout ────────────────────────────────────────────────────────────────────
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -120,6 +145,9 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> restoreSession() async {
     _begin();
     try {
+      await _authService.ensureSeedAdminAccount();
+      await _authService.ensureAcademicStaffSeedAccounts();
+
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt(AppConstants.prefUserId);
       if (userId == null) return false;
@@ -129,7 +157,7 @@ class AuthProvider extends ChangeNotifier {
         await prefs.remove(AppConstants.prefUserId);
         return false;
       }
-      _currentUser = user;
+      _currentUser = await _authService.ensureAdminBootstrap(user);
       notifyListeners();
       return true;
     } catch (_) {

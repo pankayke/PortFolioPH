@@ -62,6 +62,28 @@ class UserRepository {
     return UserModel.fromMap(rows.first);
   }
 
+  Future<List<UserModel>> findByRoles(List<String> roles) async {
+    if (roles.isEmpty) return const [];
+
+    final db = await _db.getDatabase();
+    final normalizedRoles = roles
+        .map((role) => role.trim().toLowerCase())
+        .where((role) => role.isNotEmpty)
+        .toList(growable: false);
+
+    if (normalizedRoles.isEmpty) return const [];
+
+    final placeholders = List.filled(normalizedRoles.length, '?').join(', ');
+    final rows = await db.query(
+      'users',
+      where: 'LOWER(role) IN ($placeholders)',
+      whereArgs: normalizedRoles,
+      orderBy: 'COALESCE(full_name, username) ASC',
+    );
+
+    return rows.map(UserModel.fromMap).toList(growable: false);
+  }
+
   /// Verifies [plainPassword] against the stored hash for [email].
   /// Returns the [UserModel] on success, `null` on failure.
   Future<UserModel?> authenticate({
@@ -73,6 +95,34 @@ class UserRepository {
     final hash = AppHelpers.hashPassword(plainPassword);
     if (user.passwordHash != hash) return null;
     return user;
+  }
+
+  Future<bool> hasUsersWithRole(String role) async {
+    final db = await _db.getDatabase();
+    final rows = await db.query(
+      'users',
+      columns: ['id'],
+      where: 'role = ?',
+      whereArgs: [role],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
+  }
+
+  Future<UserModel> promoteToAdmin(UserModel user) async {
+    final elevatedUser = user.copyWith(role: 'admin');
+    await update(elevatedUser);
+    return elevatedUser;
+  }
+
+  Future<UserModel?> createIfMissingByEmail(UserModel user) async {
+    final existingUser = await findByEmail(user.email);
+    if (existingUser != null) {
+      return existingUser;
+    }
+
+    final id = await insert(user);
+    return user.copyWith(id: id);
   }
 
   // ── Update ──────────────────────────────────────────────────────────────────

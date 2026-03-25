@@ -12,6 +12,7 @@ void main() {
   testWidgets('App widget mounts without exceptions', (tester) async {
     final themeProvider = ThemeProvider();
     await tester.pumpWidget(App(themeProvider: themeProvider));
+    await tester.pump(const Duration(seconds: 4));
     // Verify the widget tree builds – SplashScreen should be the initial route.
     expect(find.byType(App), findsOneWidget);
   });

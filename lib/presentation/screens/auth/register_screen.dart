@@ -3,14 +3,14 @@
 // Registration screen – Sprint 2 full implementation.
 //
 // Form fields:
-//   • Full name  (optional)
+//   • Full name  (required)
 //   • Username   (required, unique)
 //   • Email      (required, valid format, unique)
 //   • Password   (required, min-length + letter + digit)
 //   • Confirm password (must match)
 //
 // Behaviour:
-//   • Real-time inline validation on every keystroke (autovalidateMode: always).
+//   • Field-level inline validation after user interaction.
 //   • Submit button disabled while form is invalid or loading.
 //   • On success  → navigate to /profile-setup.
 //   • On failure  → SnackBar with error from AuthProvider.
@@ -63,6 +63,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   /// [AutovalidateMode.onUserInteraction].
   void _onFieldChanged() {
     final valid =
+        AppValidators.validateRequired(
+              _fullNameController.text,
+              fieldName: 'Full name',
+            ) ==
+            null &&
         AppValidators.validateUsername(_usernameController.text) == null &&
         AppValidators.validateEmail(_emailController.text) == null &&
         AppValidators.validatePassword(_passwordController.text) == null &&
@@ -92,9 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
-      fullName: _fullNameController.text.trim().isEmpty
-          ? null
-          : _fullNameController.text.trim(),
+      fullName: _fullNameController.text.trim(),
     );
 
     if (!mounted) return;
@@ -114,168 +117,197 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: AppConstants.primaryColor,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppConstants.spacingLg),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppConstants.spacingLg),
-                child: Form(
-                  key: _formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ── Header ──────────────────────────────────────────
-                      const Icon(
-                        Icons.person_add_outlined,
-                        size: 56,
-                        color: AppConstants.primaryColor,
-                      ),
-                      const SizedBox(height: AppConstants.spacingSm),
-                      Text(
-                        'Create Account',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppConstants.primaryColor,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: AppConstants.spacingXs),
-                      Text(
-                        AppConstants.appTagline,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: AppConstants.spacingXl),
-
-                      // ── Full name (optional) ─────────────────────────────
-                      TextFormField(
-                        controller: _fullNameController,
-                        keyboardType: TextInputType.name,
-                        textCapitalization: TextCapitalization.words,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'Full Name (optional)',
-                          prefixIcon: Icon(Icons.badge_outlined),
-                        ),
-                      ),
-                      const SizedBox(height: AppConstants.spacingMd),
-
-                      // ── Username ─────────────────────────────────────────
-                      TextFormField(
-                        controller: _usernameController,
-                        keyboardType: TextInputType.text,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'Username',
-                          prefixIcon: Icon(Icons.alternate_email_rounded),
-                        ),
-                        validator: AppValidators.validateUsername,
-                      ),
-                      const SizedBox(height: AppConstants.spacingMd),
-
-                      // ── Email ────────────────────────────────────────────
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
-                        ),
-                        validator: AppValidators.validateEmail,
-                      ),
-                      const SizedBox(height: AppConstants.spacingMd),
-
-                      // ── Password ─────────────────────────────────────────
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outline_rounded),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
-                          ),
-                        ),
-                        validator: AppValidators.validatePassword,
-                      ),
-                      const SizedBox(height: AppConstants.spacingMd),
-
-                      // ── Confirm password ─────────────────────────────────
-                      TextFormField(
-                        controller: _confirmController,
-                        obscureText: _obscureConfirm,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _submit(),
-                        decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          prefixIcon: const Icon(Icons.lock_person_outlined),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirm
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscureConfirm = !_obscureConfirm,
-                            ),
-                          ),
-                        ),
-                        validator: (v) => AppValidators.validateConfirmPassword(
-                          v,
-                          _passwordController.text,
-                        ),
-                      ),
-                      const SizedBox(height: AppConstants.spacingLg),
-
-                      // ── Submit button ────────────────────────────────────
-                      ElevatedButton(
-                        onPressed: (isLoading || !_formValid) ? null : _submit,
-                        child: isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Create Account'),
-                      ),
-                      const SizedBox(height: AppConstants.spacingMd),
-
-                      // ── Login link ───────────────────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Already have an account?',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          TextButton(
-                            onPressed: isLoading
-                                ? null
-                                : () => context.go('/login'),
-                            child: const Text('Log In'),
-                          ),
-                        ],
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [colorScheme.primary, colorScheme.primaryContainer],
+            ),
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppConstants.spacingLg),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 430),
+                child: Container(
+                  padding: const EdgeInsets.all(AppConstants.spacingLg),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: colorScheme.outlineVariant),
+                    boxShadow: const [
+                      BoxShadow(
+                        blurRadius: 24,
+                        offset: Offset(0, 10),
+                        color: Color(0x22000000),
                       ),
                     ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Icon(
+                          Icons.person_add_outlined,
+                          size: 52,
+                          color: AppConstants.primaryColor,
+                        ),
+                        const SizedBox(height: AppConstants.spacingSm),
+                        Text(
+                          'Create Account',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            color: AppConstants.primaryColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingXs),
+                        Text(
+                          AppConstants.appTagline,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: AppConstants.spacingLg),
+
+                        TextFormField(
+                          controller: _fullNameController,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          keyboardType: TextInputType.name,
+                          textCapitalization: TextCapitalization.words,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'Full Name',
+                            prefixIcon: Icon(Icons.badge_outlined),
+                          ),
+                          validator: (v) => AppValidators.validateRequired(
+                            v,
+                            fieldName: 'Full name',
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        TextFormField(
+                          controller: _usernameController,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'Username',
+                            prefixIcon: Icon(Icons.alternate_email_rounded),
+                          ),
+                          validator: AppValidators.validateUsername,
+                        ),
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        TextFormField(
+                          controller: _emailController,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                          validator: AppValidators.validateEmail,
+                        ),
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        TextFormField(
+                          controller: _passwordController,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                            ),
+                          ),
+                          validator: AppValidators.validatePassword,
+                        ),
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        TextFormField(
+                          controller: _confirmController,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          obscureText: _obscureConfirm,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submit(),
+                          decoration: InputDecoration(
+                            labelText: 'Confirm Password',
+                            prefixIcon: const Icon(Icons.lock_person_outlined),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirm
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscureConfirm = !_obscureConfirm,
+                              ),
+                            ),
+                          ),
+                          validator: (v) =>
+                              AppValidators.validateConfirmPassword(
+                                v,
+                                _passwordController.text,
+                              ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingLg),
+
+                        SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: (isLoading || !_formValid)
+                                ? null
+                                : _submit,
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Create Account'),
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Already have an account?',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                            TextButton(
+                              onPressed: isLoading
+                                  ? null
+                                  : () => context.go('/login'),
+                              child: const Text('Log In'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -1,0 +1,59 @@
+{
+  "template_id": "student_portfolio_v1_ph",
+  "name": "Student Portfolio (Case Study Style)",
+  "document": {
+    "layout": "single-column",
+    "thumbnail_aspect_ratio": "16:9",
+    "theme": "minimal_clean"
+  },
+  "sections_order": [
+    "intro",
+    "selected_works",
+    "project_case_studies",
+    "skills_tools",
+    "contact_links"
+  ],
+  "sections": {
+    "intro": {
+      "fields": [
+        "full_name",
+        "discipline",
+        "location",
+        "one_line_positioning"
+      ],
+      "note": "Clearly indicate if works are academic, internship, or personal."
+    },
+    "selected_works": {
+      "max_items": 6,
+      "required_fields": [
+        "title",
+        "category",
+        "thumbnail",
+        "short_summary"
+      ]
+    },
+    "project_case_studies": {
+      "per_project_structure": [
+        "context",
+        "problem",
+        "process",
+        "tools",
+        "deliverables",
+        "outcomes",
+        "links"
+      ],
+      "outcomes_format": "metrics_or_clear_impact"
+    },
+    "skills_tools": {
+      "group_by": ["design", "development", "productivity"],
+      "fields": ["tool_name", "proficiency", "usage_examples"]
+    },
+    "contact_links": {
+      "fields": ["email", "phone_number", "linkedin", "github", "website"]
+    }
+  },
+  "defaults": {
+    "project_tags": ["academic", "internship", "capstone", "freelance", "personal"],
+    "cta": "Open to internships and entry-level opportunities"
+  }
+}

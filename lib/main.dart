@@ -23,9 +23,8 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/core/theme/app_theme.dart';
+import 'package:portfolioph/presentation/providers/app_providers.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
-import 'package:portfolioph/presentation/providers/navigation_provider.dart';
-import 'package:portfolioph/presentation/providers/portfolio_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
 
 void main() async {
@@ -37,11 +36,13 @@ void main() async {
     databaseFactory = databaseFactoryFfiWeb;
   }
 
-  // Lock orientation to portrait for mobile-first UX.
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Lock orientation to portrait for mobile-first UX (mobile only).
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   // Initialise theme preference before first paint to avoid flicker.
   final themeProvider = ThemeProvider();
@@ -58,17 +59,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        // ── Core providers ────────────────────────────────────────────────────
-        ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
-        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-        ChangeNotifierProvider<NavigationProvider>(
-          create: (_) => NavigationProvider(),
-        ),
-        ChangeNotifierProvider<PortfolioProvider>(
-          create: (_) => PortfolioProvider(),
-        ),
-      ],
+      providers: AppProviderRegistry.build(themeProvider),
       child: const _RouterScope(),
     );
   }

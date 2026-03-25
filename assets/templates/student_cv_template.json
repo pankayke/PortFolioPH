@@ -1,0 +1,109 @@
+{
+  "template_id": "student_cv_v1_ph",
+  "name": "Student CV (PH-Friendly)",
+  "document": {
+    "page_size": "A4",
+    "orientation": "portrait",
+    "max_pages": 1,
+    "export_format": "pdf"
+  },
+  "sections_order": [
+    "header",
+    "summary",
+    "education",
+    "experience",
+    "projects",
+    "skills",
+    "certifications",
+    "activities_awards",
+    "references"
+  ],
+  "sections": {
+    "header": {
+      "show_photo": false,
+      "fields": [
+        "full_name",
+        "target_role",
+        "email",
+        "phone_number",
+        "location",
+        "website_url",
+        "linkedin_url",
+        "github_url"
+      ]
+    },
+    "summary": {
+      "max_lines": 4,
+      "prompt": "Write 3-4 lines focused on role fit and strongest value."
+    },
+    "education": {
+      "reverse_chronological": true,
+      "fields": [
+        "institution",
+        "degree",
+        "field_of_study",
+        "start_date",
+        "end_date",
+        "honors"
+      ]
+    },
+    "experience": {
+      "include": ["internship", "ojt", "part_time", "volunteer"],
+      "bullet_format": "action + task + measurable_result",
+      "max_bullets_per_item": 3,
+      "fields": [
+        "organization",
+        "role",
+        "start_date",
+        "end_date",
+        "key_achievements"
+      ]
+    },
+    "projects": {
+      "max_items": 3,
+      "fields": [
+        "title",
+        "problem",
+        "contribution",
+        "tools",
+        "result",
+        "repo_url",
+        "demo_url"
+      ]
+    },
+    "skills": {
+      "group_by": "category",
+      "show_levels": true,
+      "fields": ["name", "level", "years_of_experience"]
+    },
+    "certifications": {
+      "fields": [
+        "name",
+        "issuer",
+        "issue_date",
+        "credential_id",
+        "credential_url"
+      ]
+    },
+    "activities_awards": {
+      "examples": [
+        "Leadership in orgs",
+        "Hackathon placements",
+        "Scholarships"
+      ]
+    },
+    "references": {
+      "default_text": "Available upon request"
+    }
+  },
+  "validation": {
+    "required": ["full_name", "email"],
+    "forbidden_buzzwords": [
+      "hardworking",
+      "team player",
+      "fast learner",
+      "self-motivated"
+    ],
+    "guidance": "Prefer measurable achievements over generic adjectives."
+  }
+}

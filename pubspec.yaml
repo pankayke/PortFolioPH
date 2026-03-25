@@ -1,9 +1,9 @@
 name: portfolioph
-description: "PortFolioPH – Offline-first Flutter Android portfolio builder for students."
+description: "PortFolioPH – Offline-first Flutter Android portfolio builder for students. [PROTOTYPE]"
 publish_to: 'none'
 
 # ─── Version ─────────────────────────────────────────────────────────────────
-version: 1.0.0+1
+version: 1.0.0-prototype+1
 
 environment:
   sdk: ^3.10.7
@@ -45,12 +45,21 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.5.1
   flutter_svg: ^2.0.10+1
+  pdf: ^3.11.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icons/app_icon.png
+  adaptive_icon_background: "#0D47A1"
+  adaptive_icon_foreground: assets/icons/app_icon.png
 
 # ─── Flutter section ──────────────────────────────────────────────────────────
 flutter:
@@ -59,6 +68,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/templates/
   #         style: italic
   #   - family: Trajan Pro
   #     fonts:

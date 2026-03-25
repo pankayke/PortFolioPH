@@ -52,23 +52,28 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _init() async {
-    // Run DB open and minimum splash timer concurrently.
-    await Future.wait([
-      DatabaseService().open(),
-      Future.delayed(AppConstants.splashDuration),
-    ]);
+    try {
+      // Run DB open and minimum splash timer concurrently.
+      await Future.wait([
+        DatabaseService().open(),
+        Future.delayed(AppConstants.splashDuration),
+      ]);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    // Let AuthProvider attempt session restore.
-    final authProvider = context.read<AuthProvider>();
-    final hasSession = await authProvider.restoreSession();
+      // Let AuthProvider attempt session restore.
+      final authProvider = context.read<AuthProvider>();
+      final hasSession = await authProvider.restoreSession();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (hasSession) {
-      context.go('/dashboard');
-    } else {
+      if (hasSession) {
+        context.go('/dashboard');
+      } else {
+        context.go('/login');
+      }
+    } catch (_) {
+      if (!mounted) return;
       context.go('/login');
     }
   }

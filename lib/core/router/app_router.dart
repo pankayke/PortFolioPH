@@ -23,12 +23,19 @@
 
 import 'package:go_router/go_router.dart';
 
+import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/data/models/project_model.dart';
 import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/profile_setup_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/register_screen.dart';
+import 'package:portfolioph/presentation/screens/portfolio/add_edit_project_screen.dart';
+import 'package:portfolioph/presentation/screens/portfolio/project_detail_screen.dart';
+import 'package:portfolioph/presentation/screens/admin_dashboard_screen.dart';
 import 'package:portfolioph/presentation/screens/main_scaffold.dart';
+import 'package:portfolioph/presentation/screens/settings/settings_screen.dart';
 import 'package:portfolioph/presentation/screens/splash/splash_screen.dart';
+import 'package:portfolioph/presentation/screens/teacher_dashboard_screen.dart';
 
 // ── Named route constants ──────────────────────────────────────────────────────
 abstract final class AppRoutes {
@@ -46,6 +53,8 @@ abstract final class AppRoutes {
   static const String resumeEducationNew = '/resume/education/new';
   static const String resumeExperienceNew = '/resume/experience/new';
   static const String settings = '/settings';
+  static const String adminDashboard = '/admin-dashboard';
+  static const String teacherDashboard = '/teacher-dashboard';
 }
 
 // ── Router factory ─────────────────────────────────────────────────────────────
@@ -125,12 +134,38 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.projectNew,
         name: 'project-new',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 3
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is! Map<String, dynamic>) {
+            return const MainScaffold();
+          }
+
+          final userId = extra['userId'] as int?;
+          final portfolioId = extra['portfolioId'] as int?;
+          if (userId == null || portfolioId == null) {
+            return const MainScaffold();
+          }
+
+          return AddEditProjectScreen(userId: userId, portfolioId: portfolioId);
+        },
       ),
       GoRoute(
         path: AppRoutes.projectDetail,
         name: 'project-detail',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 3
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is! Map<String, dynamic>) {
+            return const MainScaffold();
+          }
+
+          final project = extra['project'];
+          final userId = extra['userId'] as int?;
+          if (project is! ProjectModel || userId == null) {
+            return const MainScaffold();
+          }
+
+          return ProjectDetailScreen(project: project, userId: userId);
+        },
       ),
       GoRoute(
         path: AppRoutes.resumeEducationNew,
@@ -145,7 +180,32 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.settings,
         name: 'settings',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 6
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminDashboard,
+        name: 'admin-dashboard',
+        builder: (context, state) {
+          final user = authProvider.currentUser;
+          if (user == null || user.role != AppConstants.roleAdmin) {
+            return const MainScaffold();
+          }
+          return const AdminDashboardScreen();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.teacherDashboard,
+        name: 'teacher-dashboard',
+        builder: (context, state) {
+          final user = authProvider.currentUser;
+          final role = user?.role;
+          if (role != AppConstants.roleTeacher &&
+              role != AppConstants.roleCoordinator &&
+              role != AppConstants.roleAdmin) {
+            return const MainScaffold();
+          }
+          return const TeacherDashboardScreen();
+        },
       ),
     ],
   );

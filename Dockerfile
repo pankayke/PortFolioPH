@@ -5,6 +5,7 @@ FROM debian:bookworm-slim AS build
 
 # System dependencies needed by Flutter tooling
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         curl \
         git \
@@ -63,9 +64,13 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built Flutter web assets from the build stage
 COPY --from=build /app/build/web /usr/share/nginx/html
 
-EXPOSE 80
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/run /etc/nginx/conf.d
+
+USER nginx
+
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO /dev/null http://127.0.0.1/ || exit 1
+    CMD wget -qO /dev/null http://127.0.0.1:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

@@ -40,6 +40,14 @@ abstract final class AppValidators {
     return null;
   }
 
+  // ── Password login (simpler validation) ───────────────────────────────────────
+  /// Validates a password field during login (simpler than registration).
+  /// Only checks that the password is non-empty; server validates correctness.
+  static String? validatePasswordLogin(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required.';
+    return null;
+  }
+
   // ── Confirm password ──────────────────────────────────────────────────────────
   /// Validates that [confirmValue] matches [originalValue].
   static String? validateConfirmPassword(

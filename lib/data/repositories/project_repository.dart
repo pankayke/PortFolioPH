@@ -7,11 +7,13 @@ import 'package:portfolioph/data/models/project_model.dart';
 
 class ProjectRepository {
   final DatabaseService _db;
+  bool _schemaEnsured = false;
 
   ProjectRepository({DatabaseService? databaseService})
     : _db = databaseService ?? DatabaseService();
 
   Future<int> insert(ProjectModel project) async {
+    await _ensureSchema();
     final db = await _db.getDatabase();
     return db.insert(
       'projects',
@@ -21,6 +23,7 @@ class ProjectRepository {
   }
 
   Future<ProjectModel?> findById(int id) async {
+    await _ensureSchema();
     final db = await _db.getDatabase();
     final rows = await db.query(
       'projects',
@@ -31,18 +34,46 @@ class ProjectRepository {
     return rows.isEmpty ? null : ProjectModel.fromMap(rows.first);
   }
 
-  Future<List<ProjectModel>> findByPortfolioId(int portfolioId) async {
+  Future<List<ProjectModel>> findByPortfolioId(
+    int portfolioId, {
+    String? searchQuery,
+    int? limit,
+    int? offset,
+  }) async {
+    await _ensureSchema();
     final db = await _db.getDatabase();
+    final hasSearch = searchQuery != null && searchQuery.trim().isNotEmpty;
+    final trimmedQuery = searchQuery?.trim();
+
     final rows = await db.query(
       'projects',
-      where: 'portfolio_id = ?',
-      whereArgs: [portfolioId],
+      where: hasSearch
+          ? '''
+            portfolio_id = ?
+            AND (
+              LOWER(title) LIKE LOWER(?)
+              OR LOWER(COALESCE(description, '')) LIKE LOWER(?)
+              OR LOWER(COALESCE(tech_stack, '')) LIKE LOWER(?)
+            )
+          '''
+          : 'portfolio_id = ?',
+      whereArgs: hasSearch
+          ? [
+              portfolioId,
+              '%$trimmedQuery%',
+              '%$trimmedQuery%',
+              '%$trimmedQuery%',
+            ]
+          : [portfolioId],
       orderBy: 'sort_order ASC, created_at DESC',
+      limit: limit,
+      offset: offset,
     );
     return rows.map(ProjectModel.fromMap).toList();
   }
 
   Future<List<ProjectModel>> findFeaturedByUserId(int userId) async {
+    await _ensureSchema();
     final db = await _db.getDatabase();
     final rows = await db.query(
       'projects',
@@ -54,6 +85,7 @@ class ProjectRepository {
   }
 
   Future<int> update(ProjectModel project) async {
+    await _ensureSchema();
     final db = await _db.getDatabase();
     return db.update(
       'projects',
@@ -64,7 +96,22 @@ class ProjectRepository {
   }
 
   Future<int> delete(int id) async {
+    await _ensureSchema();
     final db = await _db.getDatabase();
     return db.delete('projects', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> _ensureSchema() async {
+    if (_schemaEnsured) return;
+
+    final db = await _db.getDatabase();
+    final columns = await db.rawQuery('PRAGMA table_info(projects)');
+    final hasImagePaths = columns.any((c) => c['name'] == 'image_paths');
+
+    if (!hasImagePaths) {
+      await db.execute('ALTER TABLE projects ADD COLUMN image_paths TEXT');
+    }
+
+    _schemaEnsured = true;
   }
 }

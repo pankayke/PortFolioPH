@@ -14,12 +14,36 @@ abstract final class AppConstants {
 
   // ── Database ────────────────────────────────────────────────────────────────
   static const String dbName = 'portfolioph.db';
-  static const int dbVersion = 1;
+  static const int dbVersion = 5;
 
   // ── SharedPreferences keys ──────────────────────────────────────────────────
   static const String prefUserId = 'userId';
   static const String prefThemeMode = 'themeMode';
   static const String prefOnboardingDone = 'onboardingDone';
+
+  // ── Local development admin seed account ──────────────────────────────────
+  static const String localAdminUsername = 'portfolioph_admin';
+  static const String localAdminEmail = 'admin@portfolioph.local';
+  static const String localAdminPassword = 'Admin12345';
+  static const String localAdminFullName = 'PortFolioPH Admin';
+
+  // ── Roles ─────────────────────────────────────────────────────────────────
+  static const String roleStudent = 'student';
+  static const String roleUser = 'user';
+  static const String roleTeacher = 'teacher';
+  static const String roleCoordinator = 'coordinator';
+  static const String roleAdmin = 'admin';
+
+  // ── Local development academic accounts (teacher/coordinator) ────────────
+  static const String localTeacherUsername = 'portfolioph_teacher';
+  static const String localTeacherEmail = 'teacher@portfolioph.local';
+  static const String localTeacherPassword = 'Teacher12345';
+  static const String localTeacherFullName = 'PortFolioPH Teacher';
+
+  static const String localCoordinatorUsername = 'portfolioph_coordinator';
+  static const String localCoordinatorEmail = 'coordinator@portfolioph.local';
+  static const String localCoordinatorPassword = 'Coordinator12345';
+  static const String localCoordinatorFullName = 'PortFolioPH Coordinator';
 
   // ── Brand colours (raw ARGB – used by AppTheme) ─────────────────────────────
   static const Color primaryColor = Color(0xFF0D47A1); // Deep Blue
@@ -29,6 +53,8 @@ abstract final class AppConstants {
   static const Color warningColor = Color(0xFFF57C00);
   static const Color surfaceColor = Color(0xFFF5F5F5);
   static const Color onPrimaryColor = Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF64748B);
 
   // ── Typography scale (sp) ────────────────────────────────────────────────────
   static const double fontSizeXs = 10.0;
@@ -51,6 +77,10 @@ abstract final class AppConstants {
   static const double radiusSm = 4.0;
   static const double radiusMd = 8.0;
   static const double radiusLg = 16.0;
+  static const double radiusXl = 12.0; // Additional: Card content
+  static const double radiusXxl = 14.0; // Additional: Dialog content
+  static const double radiusHero = 20.0; // Additional: Hero/premium sections
+  static const double radiusGlass = 24.0; // Additional: Glass containers
   static const double radiusFull = 999.0;
 
   // ── Elevation ────────────────────────────────────────────────────────────────
@@ -71,6 +101,26 @@ abstract final class AppConstants {
   static const int navIndexSkills = 3;
   static const int navIndexProfile = 4;
 
+  // ── Theme Background Colors (Dark Mode) ──────────────────────────────────────
+  static const Color darkBg1 = Color(0xFF0F172A); // Primary dark background
+  static const Color darkBg2 = Color(0xFF1E293B); // Secondary dark background
+  static const Color darkBg3 = Color(0xFF111827); // Tertiary dark background
+
+  // ── Theme Background Colors (Light Mode) ─────────────────────────────────────
+  static const Color lightBg1 = Color(0xFFF8FAFC); // Primary light background
+  static const Color lightBg2 = Color(0xFFF1F5F9); // Secondary light background
+  static const Color lightBg3 = Color(
+    0xFFE0F2FE,
+  ); // Tertiary light background (blue tint)
+
+  // ── Glassmorphism Colors ─────────────────────────────────────────────────────
+  static const Color glassBorderDark = Color(
+    0xFFFFFFFF,
+  ); // White border for dark mode
+  static const Color glassBorderLight = Color(
+    0xFF000000,
+  ); // Black border for light mode
+
   // ── Image/asset paths ────────────────────────────────────────────────────────
   static const String logoPath = 'assets/images/logo.png';
   static const String placeholderAvatarPath =
@@ -81,4 +131,7 @@ abstract final class AppConstants {
   static const int minPasswordLength = 8;
   static const int maxBioLength = 500;
   static const int maxProjectDescriptionLength = 1000;
+  static const int maxProjectImages = 5;
+  static const int maxProjectImageBytes = 500000;
+  static const int maxCertificateImageBytes = 500000;
 }

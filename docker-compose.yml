@@ -9,7 +9,7 @@ services:
     container_name: portfolioph
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8080:8080"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/index.html"]
       interval: 30s
