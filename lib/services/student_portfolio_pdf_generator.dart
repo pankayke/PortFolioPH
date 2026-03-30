@@ -205,7 +205,7 @@ class StudentPortfolioPdfGenerator {
   pw.Widget _buildSkillsSection(List<StudentSkillsModel> skills) {
     final grouped = <String, List<StudentSkillsModel>>{};
     for (final skill in skills) {
-      final category = skill.category ?? 'General';
+      final category = skill.category;
       grouped.putIfAbsent(category, () => []);
       grouped[category]!.add(skill);
     }
@@ -214,31 +214,29 @@ class StudentPortfolioPdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionHeader('SKILLS TRACKER'),
-        ...grouped.entries
-            .map(
-              (entry) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      entry.key,
-                      style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                        fontSize: 9,
-                      ),
-                    ),
-                    pw.Text(
-                      entry.value
-                          .map((s) => '${s.skillName} (${s.proficiency}/5)')
-                          .join(', '),
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                  ],
+        ...grouped.entries.map(
+          (entry) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  entry.key,
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 9,
+                  ),
                 ),
-              ),
-            )
-            ,
+                pw.Text(
+                  entry.value
+                      .map((s) => '${s.skillName} (${s.proficiency}/5)')
+                      .join(', '),
+                  style: const pw.TextStyle(fontSize: 8),
+                ),
+              ],
+            ),
+          ),
+        ),
         pw.SizedBox(height: 10),
       ],
     );
@@ -250,42 +248,40 @@ class StudentPortfolioPdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionHeader('EDUCATION'),
-        ...education
-            .map(
-              (item) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.RichText(
-                      text: pw.TextSpan(
-                        children: [
-                          pw.TextSpan(
-                            text: '${item.degree} in ${item.fieldOfStudy}',
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          pw.TextSpan(text: ' • ${item.institution}'),
-                        ],
-                        style: const pw.TextStyle(fontSize: 9),
+        ...education.map(
+          (item) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 4),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(
+                        text: '${item.degree} in ${item.fieldOfStudy}',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
-                    ),
-                    if (item.grade != null)
-                      pw.Text(
-                        'GPA: ${item.grade}',
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                    pw.Text(
-                      _formatDate(item.startDate),
-                      style: const pw.TextStyle(
-                        fontSize: 8,
-                        color: PdfColor(0.5, 0.5, 0.5),
-                      ),
-                    ),
-                  ],
+                      pw.TextSpan(text: ' • ${item.institution}'),
+                    ],
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
                 ),
-              ),
-            )
-            ,
+                if (item.grade != null)
+                  pw.Text(
+                    'GPA: ${item.grade}',
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+                pw.Text(
+                  _formatDate(item.startDate),
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColor(0.5, 0.5, 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         pw.SizedBox(height: 10),
       ],
     );
@@ -297,40 +293,38 @@ class StudentPortfolioPdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionHeader('WORK EXPERIENCE'),
-        ...experience
-            .map(
-              (item) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 4),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.RichText(
-                      text: pw.TextSpan(
-                        children: [
-                          pw.TextSpan(
-                            text: item.jobTitle,
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          pw.TextSpan(text: ' • ${item.company}'),
-                        ],
-                        style: const pw.TextStyle(fontSize: 9),
+        ...experience.map(
+          (item) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 4),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(
+                        text: item.jobTitle,
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
-                    ),
-                    if (item.location?.isNotEmpty == true)
-                      pw.Text(
-                        item.location!,
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                    if (item.description?.isNotEmpty == true)
-                      pw.Text(
-                        item.description!,
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                  ],
+                      pw.TextSpan(text: ' • ${item.company}'),
+                    ],
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
                 ),
-              ),
-            )
-            ,
+                if (item.location?.isNotEmpty == true)
+                  pw.Text(
+                    item.location!,
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+                if (item.description?.isNotEmpty == true)
+                  pw.Text(
+                    item.description!,
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+              ],
+            ),
+          ),
+        ),
         pw.SizedBox(height: 10),
       ],
     );
@@ -342,25 +336,23 @@ class StudentPortfolioPdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionHeader('ESSAYS'),
-        ...essays
-            .map(
-              (item) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.RichText(
-                  text: pw.TextSpan(
-                    children: [
-                      pw.TextSpan(
-                        text: item.title,
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      ),
-                      pw.TextSpan(text: ' • ${item.category}'),
-                    ],
-                    style: const pw.TextStyle(fontSize: 9),
+        ...essays.map(
+          (item) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.RichText(
+              text: pw.TextSpan(
+                children: [
+                  pw.TextSpan(
+                    text: item.title,
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                   ),
-                ),
+                  pw.TextSpan(text: ' • ${item.category}'),
+                ],
+                style: const pw.TextStyle(fontSize: 9),
               ),
-            )
-            ,
+            ),
+          ),
+        ),
         pw.SizedBox(height: 10),
       ],
     );
@@ -374,36 +366,34 @@ class StudentPortfolioPdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionHeader('ACHIEVEMENTS'),
-        ...achievements
-            .map(
-              (item) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.RichText(
-                      text: pw.TextSpan(
-                        children: [
-                          pw.TextSpan(
-                            text: item.title,
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          if (item.category.isNotEmpty == true)
-                            pw.TextSpan(text: ' • ${item.category}'),
-                        ],
-                        style: const pw.TextStyle(fontSize: 9),
+        ...achievements.map(
+          (item) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(
+                        text: item.title,
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
-                    ),
-                    if (item.description.isNotEmpty == true)
-                      pw.Text(
-                        item.description,
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                  ],
+                      if (item.category.isNotEmpty == true)
+                        pw.TextSpan(text: ' • ${item.category}'),
+                    ],
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
                 ),
-              ),
-            )
-            ,
+                if (item.description.isNotEmpty == true)
+                  pw.Text(
+                    item.description,
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+              ],
+            ),
+          ),
+        ),
         pw.SizedBox(height: 10),
       ],
     );
@@ -417,37 +407,35 @@ class StudentPortfolioPdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionHeader('CERTIFICATIONS'),
-        ...certifications
-            .map(
-              (item) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.RichText(
-                      text: pw.TextSpan(
-                        children: [
-                          pw.TextSpan(
-                            text: item.name,
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          pw.TextSpan(text: ' • ${item.issuingOrganization}'),
-                        ],
-                        style: const pw.TextStyle(fontSize: 9),
+        ...certifications.map(
+          (item) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(
+                        text: item.name,
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
-                    ),
-                    pw.Text(
-                      'Issued: ${_formatDate(item.issueDate)}',
-                      style: const pw.TextStyle(
-                        fontSize: 8,
-                        color: PdfColor(0.5, 0.5, 0.5),
-                      ),
-                    ),
-                  ],
+                      pw.TextSpan(text: ' • ${item.issuingOrganization}'),
+                    ],
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
                 ),
-              ),
-            )
-            ,
+                pw.Text(
+                  'Issued: ${_formatDate(item.issueDate)}',
+                  style: const pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColor(0.5, 0.5, 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

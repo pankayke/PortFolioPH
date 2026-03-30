@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:portfolioph/core/services/polling_service.dart';
 import 'package:portfolioph/data/models/certification_model.dart';
 import 'package:portfolioph/data/models/education_model.dart';
 import 'package:portfolioph/data/models/experience_model.dart';
@@ -9,15 +10,17 @@ import 'package:portfolioph/data/models/skill_model.dart';
 import 'package:portfolioph/data/repositories/job_feed_repository.dart';
 import 'package:portfolioph/data/services/job_matching_service.dart';
 
+/// JobFeedProvider - Online-only with real-time polling.
+/// Fetches jobs from API on every load/refresh. No local caching for jobs.
+/// Supports:
+/// - Manual refresh via pull-to-refresh
+/// - Automatic polling (30s interval recommended)
+/// - Job alignment scoring based on user profile
+/// - Graceful error  handling with retry UI
 class JobFeedProvider extends ChangeNotifier {
   final JobFeedRepository _repository;
   final JobMatchingService _matchingService;
-
-  JobFeedProvider({
-    JobFeedRepository? repository,
-    JobMatchingService? matchingService,
-  }) : _repository = repository ?? JobFeedRepository(),
-       _matchingService = matchingService ?? JobMatchingService();
+  final PollingService _pollingService = PollingService();
 
   List<JobListingModel> _jobs = [];
   final Set<int> _savedJobIds = <int>{};
@@ -25,14 +28,32 @@ class JobFeedProvider extends ChangeNotifier {
   String? _errorMessage;
   Map<int, double> _jobScores = {}; // Store alignment scores
 
+  // Polling state
+  bool _isPollingActive = false;
+  static const String _pollingTaskId = 'job_feed_polling';
+  static const Duration _pollingInterval = Duration(seconds: 30);
+
+  JobFeedProvider({
+    JobFeedRepository? repository,
+    JobMatchingService? matchingService,
+  }) : _repository = repository ?? JobFeedRepository(),
+       _matchingService = matchingService ?? JobMatchingService();
+
+  // ─── Getters ──────────────────────────────────────────────────────────────
+
   List<JobListingModel> get jobs => List.unmodifiable(_jobs);
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Set<int> get savedJobIds => Set.unmodifiable(_savedJobIds);
+  bool get isPollingActive => _isPollingActive;
 
   /// Get alignment score for a specific job (null if not scored)
   double? getJobScore(int jobId) => _jobScores[jobId];
 
+  // ─── Loading & Refresh ────────────────────────────────────────────────────
+
+  /// Load jobs from API (no caching).
+  /// Clears previous jobs and scores.
   Future<void> loadJobs() async {
     _isLoading = true;
     _errorMessage = null;
@@ -43,11 +64,16 @@ class JobFeedProvider extends ChangeNotifier {
       _jobScores.clear();
     } catch (e) {
       _errorMessage = e.toString();
+      debugPrint('[JobFeedProvider] Load failed: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
+
+  /// Pull-to-refresh wrapper.
+  /// Call from RefreshIndicator.
+  Future<void> refresh() => loadJobs();
 
   /// Load jobs with alignment scoring based on user profile.
   ///
@@ -83,43 +109,73 @@ class JobFeedProvider extends ChangeNotifier {
         _jobs = allJobs;
         _jobScores.clear();
       } else {
-        // User has profile data - rank jobs by alignment score
-        final scoredJobs = _matchingService.scoreJobs(
-          jobs: allJobs,
-          userSkills: userSkills.cast<SkillModel>(),
-          userExperience: userExperience,
-          userEducation: userEducation,
-          userCertifications: userCertifications,
-          userProjects: userProjects,
-          userLocation: userLocation,
-        );
-        _jobScores = {
-          for (var sj in scoredJobs)
-            if (sj.job.id != null) sj.job.id!: sj.score,
-        };
-        final filteredScored = _matchingService.filterByScore(
-          scoredJobs,
-          minimumScore: minimumScore,
-        );
-        _jobs = filteredScored.isNotEmpty
-            ? filteredScored.map((sj) => sj.job).toList()
-            : allJobs; // Fallback: show all jobs if none pass filter
+        // User has profile data - try alignment scoring
+        try {
+          final scoredJobs = _matchingService.scoreJobs(
+            jobs: allJobs,
+            userSkills: userSkills.cast<SkillModel>(),
+            userExperience: userExperience,
+            userEducation: userEducation,
+            userCertifications: userCertifications,
+            userProjects: userProjects,
+            userLocation: userLocation ?? '',
+          );
+
+          // Store scores and filter
+          _jobScores = {};
+          final filtered = <JobListingModel>[];
+          for (final scoredJob in scoredJobs) {
+            if (scoredJob.score >= minimumScore) {
+              filtered.add(scoredJob.job);
+              _jobScores[scoredJob.job.id ?? 0] = scoredJob.score;
+            }
+          }
+          _jobs = filtered.isNotEmpty ? filtered : allJobs;
+        } catch (e) {
+          // Fallback to all jobs if scoring fails
+          _jobs = allJobs;
+          _jobScores.clear();
+          debugPrint(
+            '[JobFeedProvider] Alignment scoring failed: $e, showing all jobs',
+          );
+        }
       }
     } catch (e) {
       _errorMessage = e.toString();
-      // Fallback: at least try to load jobs without alignment
-      try {
-        _jobs = await _repository.findAll();
-      } catch (e2) {
-        _errorMessage = 'Failed to load jobs: ${e.toString()}';
-      }
+      debugPrint('[JobFeedProvider] Alignment load failed: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> refresh() => loadJobs();
+  // ─── Polling ──────────────────────────────────────────────────────────────
+
+  /// Start automatic polling of jobs.
+  /// Useful for dashboard to get real-time job updates.
+  /// Polls every 30 seconds by default.
+  void startPolling() {
+    if (_isPollingActive) return;
+
+    _isPollingActive = true;
+    _pollingService.startPolling(
+      id: _pollingTaskId,
+      callback: loadJobs,
+      interval: _pollingInterval,
+    );
+    debugPrint('[JobFeedProvider] Started polling');
+  }
+
+  /// Stop automatic polling.
+  void stopPolling() {
+    if (!_isPollingActive) return;
+
+    _isPollingActive = false;
+    _pollingService.stopPolling(_pollingTaskId);
+    debugPrint('[JobFeedProvider] Stopped polling');
+  }
+
+  // ─── Save/Bookmark Management ─────────────────────────────────────────────
 
   void toggleSave(int jobId) {
     if (_savedJobIds.contains(jobId)) {
@@ -131,4 +187,12 @@ class JobFeedProvider extends ChangeNotifier {
   }
 
   bool isSaved(int jobId) => _savedJobIds.contains(jobId);
+
+  // ─── Cleanup ──────────────────────────────────────────────────────────────
+
+  @override
+  void dispose() {
+    stopPolling();
+    super.dispose();
+  }
 }

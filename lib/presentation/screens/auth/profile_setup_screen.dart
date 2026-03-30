@@ -520,7 +520,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
         // Year Level
         DropdownButtonFormField<String>(
-          value: _selectedYearLevel,
+          initialValue: _selectedYearLevel,
           decoration: const InputDecoration(
             labelText: 'Year Level (Optional)',
             prefixIcon: Icon(Icons.calendar_today_outlined),
@@ -553,7 +553,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
         // Experience Level
         DropdownButtonFormField<String>(
-          value: _selectedExperience,
+          initialValue: _selectedExperience,
           decoration: const InputDecoration(
             labelText: 'Experience Level (Optional)',
             prefixIcon: Icon(Icons.trending_up_outlined),
@@ -584,7 +584,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
         // Availability
         DropdownButtonFormField<String>(
-          value: _selectedAvailability,
+          initialValue: _selectedAvailability,
           decoration: const InputDecoration(
             labelText: 'Availability (Optional)',
             prefixIcon: Icon(Icons.schedule_outlined),
@@ -681,12 +681,5 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         ),
       ],
     );
-  }
-
-  // ── Avatar image provider ─────────────────────────────────────────────────────
-  ImageProvider<Object>? _avatarImage() {
-    if (_avatarPath == null) return null;
-    if (kIsWeb) return NetworkImage(_avatarPath!);
-    return FileImage(File(_avatarPath!));
   }
 }

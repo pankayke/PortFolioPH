@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/mixins/animation_mixins.dart';
-import 'package:portfolioph/core/styling/glass_constants.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
-import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/presentation/widgets/theme_toggle_button.dart';
 
@@ -70,7 +67,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     final themeProvider = context.watch<ThemeProvider>();
     final themeMode = themeProvider.themeMode;
     final theme = Theme.of(context);
-    final isMobile = MediaQuery.of(context).size.width < 640;
 
     return PremiumAppBackground(
       animation: bokehController,

@@ -1,0 +1,1 @@
+ C:\\Users\\USER\\portfolioph\\mobile-jobs\\build\\30ee23662ecc37955db79d7a4c79e9ef\\dart_build_result.json:  C:\\Users\\USER\\portfolioph\\mobile-jobs\\.dart_tool\\package_config.json C:\\Users\\USER\\portfolioph\\mobile-jobs\\pubspec.yaml C:\\src\\flutter\\bin\\cache\\dart-sdk\\version c:\\users\\user\\portfolioph\\mobile-jobs\\.dart_tool\\package_config.json

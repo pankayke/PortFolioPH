@@ -67,6 +67,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    // Start polling jobs when screen is visible
+    context.read<JobFeedProvider>().startPolling();
+
     loadDataForUserWithId((userId) {
       // Load all user data
       context.read<PortfolioProvider>().loadForUser(userId);
@@ -79,6 +83,13 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Load jobs with alignment scoring based on user profile
       _loadJobsWithAlignment();
     });
+  }
+
+  @override
+  void deactivate() {
+    // Stop polling when leaving dashboard to conserve battery
+    context.read<JobFeedProvider>().stopPolling();
+    super.deactivate();
   }
 
   /// Load jobs with alignment scoring based on user profile.

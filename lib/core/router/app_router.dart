@@ -29,9 +29,10 @@ import 'package:portfolioph/data/models/project_model.dart';
 import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/profile_setup_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/register_screen.dart';
+import 'package:portfolioph/presentation/screens/auth/role_selection_screen.dart';
 import 'package:portfolioph/presentation/screens/portfolio/add_edit_project_screen.dart';
 import 'package:portfolioph/presentation/screens/portfolio/project_detail_screen.dart';
-import 'package:portfolioph/presentation/screens/admin_dashboard_screen.dart';
+import 'package:portfolioph/presentation/screens/admin/filament_admin_screen.dart';
 import 'package:portfolioph/presentation/screens/main_scaffold.dart';
 import 'package:portfolioph/presentation/screens/settings/settings_screen.dart';
 import 'package:portfolioph/presentation/screens/splash/splash_screen.dart';
@@ -42,8 +43,25 @@ abstract final class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String roleSelection = '/role-selection';
   static const String profileSetup = '/profile-setup';
   static const String dashboard = '/dashboard';
+
+  // ── Recruiter routes ──────────────────────────────────────────────────────
+  static const String recruiterDashboard = '/recruiter/dashboard';
+  static const String recruiterJobCreate = '/recruiter/jobs/create';
+  static const String recruiterJobsList = '/recruiter/jobs';
+  static const String recruiterJobDetail = '/recruiter/jobs/:id';
+  static const String recruiterApplications = '/recruiter/applications';
+  static const String recruiterPending = '/recruiter/pending';
+  static const String recruiterRejected = '/recruiter/rejected';
+
+  // ── Seeker routes ────────────────────────────────────────────────────────
+  static const String seekerDashboard = '/seeker/dashboard';
+  static const String seekerJobsList = '/seeker/jobs';
+  static const String seekerJobDetail = '/seeker/jobs/:id';
+  static const String seekerApplications = '/seeker/applications';
+  static const String seekerProfile = '/seeker/profile';
 
   // ── Reserved for future sprints ────────────────────────────────────────────
   static const String portfolioNew = '/portfolio/new';
@@ -79,13 +97,15 @@ class AppRouter {
       // Always allow splash through – it manages its own redirect after init.
       if (isSplash) return null;
 
-      // Unauthenticated user hitting a protected route → login.
+      // Unauthenticated user trying to access a protected route → login.
       if (!isAuthenticated && !isAuthRoute) return AppRoutes.login;
 
-      // Authenticated user hitting an auth route → dashboard.
+      // Authenticated user trying to access login/register → go to dashboard.
+      // (Allows onboarding routes: role-selection, profile-setup)
       if (isAuthenticated && isAuthRoute) return AppRoutes.dashboard;
 
-      return null; // No redirect needed.
+      // All other cases allowed (including onboarding routes for authenticated users)
+      return null;
     },
 
     // ── Routes ──────────────────────────────────────────────────────────────
@@ -104,6 +124,13 @@ class AppRouter {
         path: AppRoutes.register,
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+
+      // ── Role selection (post-registration) ────────────────────────
+      GoRoute(
+        path: AppRoutes.roleSelection,
+        name: 'role-selection',
+        builder: (context, state) => const RoleSelectionScreen(),
       ),
 
       // ── Profile setup (post-registration) ────────────────────────
@@ -190,7 +217,7 @@ class AppRouter {
           if (user == null || user.role != AppConstants.roleAdmin) {
             return const MainScaffold();
           }
-          return const AdminDashboardScreen();
+          return const FilamentAdminScreen();
         },
       ),
       GoRoute(

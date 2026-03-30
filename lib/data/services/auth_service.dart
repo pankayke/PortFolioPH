@@ -76,47 +76,53 @@ class AuthService {
 
     // ── Build and persist model ─────────────────────────────────────────────
     final now = AppHelpers.nowIso();
-    final newUser = UserModel(
-      username: username.trim(),
-      email: email.trim().toLowerCase(),
-      role: AppConstants.roleStudent,
-      passwordHash: AppHelpers.hashPassword(password),
-      fullName: fullName?.trim().isEmpty == true ? null : fullName?.trim(),
-      createdAt: now,
-      updatedAt: now,
-    );
 
     try {
-      final id = await _userRepository.insert(newUser);
-      return _ensureAdminBootstrap(newUser.copyWith(id: id));
+      // For online-only API: send plain password to backend (backend hashes it)
+      final id = await _userRepository.registerUser(
+        username: username.trim(),
+        email: email.trim().toLowerCase(),
+        plainPassword: password, // Send plain password to backend
+        fullName: fullName?.trim().isEmpty == true ? null : fullName?.trim(),
+        role: AppConstants.roleStudent,
+      );
+
+      // Create UserModel with placeholder hash (won't be used for API requests)
+      final newUser = UserModel(
+        id: id,
+        username: username.trim(),
+        email: email.trim().toLowerCase(),
+        role: AppConstants.roleStudent,
+        passwordHash: '', // Backend handles hashing
+        fullName: fullName?.trim().isEmpty == true ? null : fullName?.trim(),
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      return _ensureAdminBootstrap(newUser);
     } catch (e) {
       throw AuthException('Registration failed: $e', code: 'insert_failed');
     }
   }
 
   // ── Login ─────────────────────────────────────────────────────────────────────
-  /// Verifies credentials and returns the authenticated [UserModel].
+  /// Verifies credentials via the backend API.
+  /// Backend handles password verification and returns user data.
   ///
   /// Throws [AuthException] when:
   ///   - email is not found.
-  ///   - password hash does not match.
+  ///   - password does not match.
   Future<UserModel> login({
     required String email,
     required String password,
   }) async {
-    // ── Lookup by email ─────────────────────────────────────────────────────
-    final user = await _userRepository.findByEmail(email);
-    if (user == null) {
-      // Use a generic message to avoid email enumeration attacks.
-      throw const AuthException(
-        'Invalid email or password.',
-        code: 'invalid_credentials',
-      );
-    }
+    // Backend authenticates and returns user
+    final user = await _userRepository.authenticate(
+      email: email.trim().toLowerCase(),
+      plainPassword: password,
+    );
 
-    // ── Hash compare ────────────────────────────────────────────────────────
-    final inputHash = AppHelpers.hashPassword(password);
-    if (user.passwordHash != inputHash) {
+    if (user == null) {
       throw const AuthException(
         'Invalid email or password.',
         code: 'invalid_credentials',

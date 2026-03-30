@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/mixins/animation_mixins.dart';
 import 'package:portfolioph/core/mixins/screen_mixins.dart';
-import 'package:portfolioph/core/styling/glass_constants.dart';
 import 'package:portfolioph/core/utils/helpers.dart';
 import 'package:portfolioph/data/models/student_essay_model.dart';
 import 'package:portfolioph/data/models/student_achievement_model.dart';
@@ -24,7 +23,6 @@ import 'package:portfolioph/presentation/screens/resume/add_edit_experience_scre
 import 'package:portfolioph/presentation/screens/resume/resume_export_screen.dart';
 import 'package:portfolioph/presentation/widgets/gwa_tracker_widget.dart';
 import 'package:portfolioph/presentation/widgets/student_portfolio_sections.dart';
-import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class ResumeScreen extends StatefulWidget {

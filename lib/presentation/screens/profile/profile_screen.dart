@@ -4,17 +4,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/core/styling/glass_constants.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
-import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class ProfileScreen extends StatelessWidget {

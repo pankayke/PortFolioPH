@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../presentation/providers/auth_provider.dart';
+import '../presentation/screens/auth/login_screen.dart';
+import '../presentation/screens/auth/register_screen.dart';
+import '../presentation/screens/auth/role_selection_screen.dart';
+import '../presentation/screens/jobs/job_list_screen.dart';
+import '../presentation/screens/jobs/job_detail_screen.dart';
+import '../presentation/screens/jobs/post_job_screen.dart';
+import '../presentation/screens/applications/my_applications_screen.dart';
+
+class AppRouter {
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+  static final GoRouter router = GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/splash',
+    redirect: (context, state) async {
+      final authProvider = context.read<AuthProvider>();
+      final isAuthenticated = authProvider.isAuthenticated;
+      final isGoingToAuth =
+          state.uri.path == '/login' ||
+          state.uri.path == '/register' ||
+          state.uri.path == '/role-selection' ||
+          state.uri.path == '/splash';
+
+      if (isAuthenticated && isGoingToAuth) {
+        return '/jobs';
+      }
+
+      if (!isAuthenticated && !isGoingToAuth) {
+        return '/login';
+      }
+
+      return null;
+    },
+    routes: [
+      // Auth Routes
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/role-selection',
+        builder: (context, state) => const RoleSelectionScreen(),
+      ),
+
+      // Job Routes
+      GoRoute(
+        path: '/jobs',
+        builder: (context, state) => const JobListScreen(),
+      ),
+      GoRoute(
+        path: '/jobs/:id',
+        builder: (context, state) {
+          final jobId = int.parse(state.pathParameters['id'] ?? '0');
+          return JobDetailScreen(jobId: jobId);
+        },
+      ),
+      GoRoute(
+        path: '/post-job',
+        builder: (context, state) => const PostJobScreen(),
+      ),
+
+      // Application Routes
+      GoRoute(
+        path: '/my-applications',
+        builder: (context, state) => const MyApplicationsScreen(),
+      ),
+    ],
+  );
+}
+
+// Splash Screen
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      context.go('/login');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blue,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.work, size: 50, color: Colors.blue),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Job Platform',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Find Your Dream Job',
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

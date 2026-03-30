@@ -161,10 +161,7 @@ class ResumePdfGenerator {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 _sectionTitle('WORK EXPERIENCE'),
-                ...experience
-                    .take(3)
-                    .map((exp) => _buildExperienceEntry(exp))
-                    ,
+                ...experience.take(3).map((exp) => _buildExperienceEntry(exp)),
                 pw.SizedBox(height: 4),
               ],
             ),
@@ -188,8 +185,7 @@ class ResumePdfGenerator {
                 _sectionTitle('CERTIFICATIONS'),
                 ...certifications
                     .take(5)
-                    .map((cert) => _buildCertificationEntry(cert))
-                    ,
+                    .map((cert) => _buildCertificationEntry(cert)),
               ],
             ),
         ],
@@ -242,9 +238,7 @@ class ResumePdfGenerator {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 _sectionTitle('WORK EXPERIENCE'),
-                ...experience
-                    .map((exp) => _buildExperienceEntryDetailed(exp))
-                    ,
+                ...experience.map((exp) => _buildExperienceEntryDetailed(exp)),
                 pw.SizedBox(height: 6),
               ],
             ),
@@ -277,9 +271,9 @@ class ResumePdfGenerator {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   _sectionTitle('CERTIFICATIONS'),
-                  ...certifications
-                      .map((cert) => _buildCertificationEntryDetailed(cert))
-                      ,
+                  ...certifications.map(
+                    (cert) => _buildCertificationEntryDetailed(cert),
+                  ),
                   pw.SizedBox(height: 6),
                 ],
               ),
@@ -290,8 +284,7 @@ class ResumePdfGenerator {
                   _sectionTitle('ACHIEVEMENTS'),
                   ...achievements
                       .take(8)
-                      .map((ach) => _buildAchievementEntry(ach))
-                      ,
+                      .map((ach) => _buildAchievementEntry(ach)),
                   pw.SizedBox(height: 6),
                 ],
               ),
@@ -302,8 +295,7 @@ class ResumePdfGenerator {
                   _sectionTitle('ACADEMIC REFLECTIONS'),
                   ...reflections
                       .take(6)
-                      .map((ref) => _buildReflectionEntry(ref))
-                      ,
+                      .map((ref) => _buildReflectionEntry(ref)),
                 ],
               ),
           ],
@@ -460,7 +452,7 @@ class ResumePdfGenerator {
                 ),
                 pw.TextSpan(
                   text:
-                      ' in ${edu.fieldOfStudy ?? 'Not Specified'} • '
+                      ' in ${edu.fieldOfStudy} • '
                       '${edu.institution}',
                 ),
               ],
@@ -604,7 +596,7 @@ class ResumePdfGenerator {
     final grouped = <String, List<StudentSkillsModel>>{};
 
     for (final skill in skills) {
-      final category = skill.category ?? 'General';
+      final category = skill.category;
       grouped.putIfAbsent(category, () => []);
       grouped[category]!.add(skill);
     }

@@ -17,8 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/router/app_router.dart';
@@ -31,10 +29,7 @@ void main() async {
   // Ensure binding is initialised before any plugin calls.
   WidgetsFlutterBinding.ensureInitialized();
 
-  // On web, redirect sqflite through the IndexedDB-backed FFI factory.
-  if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb;
-  }
+  // Online-only architecture: no local SQLite
 
   // Lock orientation to portrait for mobile-first UX (mobile only).
   if (!kIsWeb) {

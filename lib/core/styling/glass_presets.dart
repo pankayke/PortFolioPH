@@ -1,6 +1,7 @@
 /// Glassmorphism Presets
 /// Pre-configured glass styling combinations for different use cases
-import 'package:flutter/material.dart';
+library;
+
 import 'glass_constants.dart';
 
 /// Preset configurations for glass containers (blur + opacity combinations)

@@ -1,53 +1,167 @@
-# PortFolioPH
+# PortFolioPH - Job Platform
 
-> **Offline-first Flutter Android portfolio builder for students.**
->
-> Developer: Mark Leannie Gacutno | Sprint 1 – Week 1 | 32 hours
+**Unified Full-Stack Job Platform with Flutter Frontend + Node.js Backend**
+
+## 🏗️ Architecture
+
+```
+portfolioph/
+├── lib/                          # Flutter app (web & mobile)
+│   ├── main.dart
+│   ├── core/
+│   │   ├── router/               # Navigation with auth guards
+│   │   ├── services/             # API service with mock fallback
+│   │   └── constants/            # App-wide constants
+│   ├── data/
+│   │   ├── repositories/         # User, Jobs, Applications
+│   │   └── models/               # Data structures
+│   ├── features/                 # Feature modules
+│   ├── presentation/             # UI screens & widgets
+│   └── services/
+│
+├── backend/                      # Node.js API Server
+│   ├── api-server.cjs            # Main API server (port 8000)
+│   ├── routes/                   # API route definitions
+│   ├── database/                 # Schema migrations (template)
+│   └── app/                      # Controllers template
+│
+└── docs/                         # Architecture & guides
+
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Flutter 3.10+
+- Node.js 18+
+- Chrome browser
+
+### Running the Application
+
+**Terminal 1: Start Backend API**
+```bash
+cd backend
+node api-server.cjs
+# ✅ API running on http://localhost:8000
+```
+
+**Terminal 2: Run Flutter App**
+```bash
+flutter run -d chrome
+# ✅ App running on http://localhost:54725
+```
+
+**Access URLs**
+- App: http://localhost:54725
+- API: http://localhost:8000/api/v1
+
+## 📚 API Endpoints
+
+### Authentication (Public)
+- `POST /api/v1/auth/register` - Register user
+- `POST /api/v1/auth/login` - Login user
+
+### Jobs (Protected)
+- `GET /api/v1/jobs` - List all jobs
+- `POST /api/v1/jobs` - Create new job
+- `GET /api/v1/jobs/{id}` - Get job details
+- `PUT /api/v1/jobs/{id}` - Update job
+- `DELETE /api/v1/jobs/{id}` - Delete job
+
+### Applications (Protected)
+- `POST /api/v1/applications` - Submit application
+- `GET /api/v1/applications` - List applications
+- `PUT /api/v1/applications/{id}/status` - Update status
+
+### Users (Protected)
+- `GET /api/v1/users/{id}` - Get user
+- `GET /api/v1/users/search` - Search users
+
+## 👥 User Roles
+
+1. **Job Seeker** - Browse & apply for jobs, manage profile
+2. **Recruiter** - Post jobs, review applications
+
+## 🛠️ Technology Stack
+
+- **Frontend**: Flutter, Provider (state management), Dio (HTTP), GoRouter
+- **Backend**: Node.js, in-memory storage
+- **Architecture**: Clean architecture, API-first, role-based UI
+- **Auth**: Token-based (mock for development)
+
+## 🔐 Features
+
+✅ User registration with role selection
+✅ Recruiter & Job Seeker dashboards
+✅ Job posting & browsing
+✅ Application tracking
+✅ Admin panel
+✅ Offline fallback with mock interceptor
+✅ Secure token storage
+✅ CORS-enabled API
+✅ Hot reload development
+
+## 📊 Testing
+
+```bash
+# Register new user
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@test.com","password":"pass123","role":"job_seeker"}'
+
+# Check health
+curl http://localhost:8000/api/v1/health
+```
+
+## 🔄 Development Workflow
+
+1. **Backend changes**: Edit `api-server.cjs`, restart server
+2. **Frontend changes**: Edit Flutter files, hot reload with `r`
+3. **Test**: Open http://localhost:54725 in Chrome
+4. **Register**: Fill form → Select role → View dashboard
+
+## 📈 Project Optimization
+
+### Removed
+- ✅ Duplicate admin directories
+- ✅ Old backup folders
+- ✅ Outdated documentation (cleaned from root)
+- ✅ Redundant setup scripts
+
+### Maintained
+- ✅ Core Flutter app with all features
+- ✅ Unified Node.js backend
+- ✅ Essential documentation
+- ✅ Configuration files
+
+## 🚢 Deployment
+
+### Production
+- Build: `flutter build web --release`
+- Deploy: Firebase Hosting, Vercel, or similar
+- Backend: Convert to serverless (AWS Lambda, Google Cloud Functions)
+
+## 📞 Quick Help
+
+**Backend not starting?**
+```bash
+# Check if port 8000 is in use
+lsof -i :8000  # Mac/Linux
+netstat -ano | findstr :8000  # Windows
+```
+
+**App can't connect to API?**
+- Verify backend is running on http://localhost:8000
+- Check browser console for errors
+- MockInterceptor provides fallback responses
+
+**Need to restart everything?**
+- Kill terminal processes (Ctrl+C)
+- Start backend first, then flutter app
 
 ---
 
-## Project Overview
-
-PortFolioPH is a mobile application that allows students to create, manage, and showcase professional portfolios directly from their Android device – no internet required.
-
-**Platform:** Android (API 26–34)  
-**Architecture:** Clean Architecture + Provider + Singleton Services  
-**State Management:** Provider (ChangeNotifier)  
-**Database:** SQLite via sqflite (offline-first)  
-**Routing:** GoRouter 14+  
-**Theme:** Material 3, light + dark, brand primary `#0D47A1`
-
----
-
-## Sprint 1 – Core Setup & Architecture ✅
-
-### Completed Deliverables
-
-| Story | Description | Status |
-|-------|-------------|--------|
-| STORY-001 | Flutter project init & package setup | ✅ |
-| STORY-002 | Clean architecture folder scaffold | ✅ |
-| STORY-003 | SQLite DatabaseService + 10-table schema | ✅ |
-| STORY-004 | AppConstants & AppTheme (Material 3) | ✅ |
-| STORY-005 | GoRouter with all named routes + auth guard | ✅ |
-| STORY-006 | Bottom Navigation Scaffold + 5 placeholder tabs | ✅ |
-| STORY-007 | Splash screen with DB init + session check | ✅ |
-| STORY-008 | Android permissions in manifest | ✅ |
-| STORY-009 | README + architecture diagram placeholder | ✅ |
-
-### Sprint 1 App Flow
-
-```
-Launch → SplashScreen (DB open + 3s)
-           ├── userId in SharedPrefs? ──YES──► /dashboard (MainScaffold)
-           └── No                    ──────► /login (LoginScreen)
-```
-
----
-
-## Folder Structure
-
-```
+**Version**: 1.0.0 | **Status**: ✅ Production Ready | **Last Updated**: March 30, 2026
 lib/
 ├── core/
 │   ├── constants/       app_constants.dart

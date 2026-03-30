@@ -1,4 +1,6 @@
 /// Animation mixins for common animation patterns
+library;
+
 import 'package:flutter/material.dart';
 
 /// Provides a managed AnimationController for bokeh background animations

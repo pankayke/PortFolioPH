@@ -78,21 +78,29 @@ class JobFeedCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(job.description),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  FilledButton(onPressed: onApply, child: const Text('Apply')),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: onSaveToggle,
-                    icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border),
-                    label: Text(saved ? 'Saved' : 'Save'),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton(
-                    onPressed: onShare,
-                    child: const Text('Share'),
-                  ),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    FilledButton(
+                      onPressed: onApply,
+                      child: const Text('Apply'),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: onSaveToggle,
+                      icon: Icon(
+                        saved ? Icons.bookmark : Icons.bookmark_border,
+                      ),
+                      label: Text(saved ? 'Saved' : 'Save'),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton(
+                      onPressed: onShare,
+                      child: const Text('Share'),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/core/utils/validators.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
@@ -103,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (success) {
-      context.go('/profile-setup');
+      context.go(AppRoutes.roleSelection);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -42,45 +42,6 @@ class ScoredJob {
 
 /// Service for calculating alignment scores between jobs and user profiles.
 class JobMatchingService {
-  /// Common tech stack keywords by category (for skill extraction)
-  static const Map<String, List<String>> _techKeywords = {
-    'Frontend': [
-      'flutter',
-      'react',
-      'vue',
-      'angular',
-      'swift',
-      'kotlin',
-      'jetpack compose',
-      'swiftui',
-    ],
-    'Backend': [
-      'node',
-      'python',
-      'java',
-      'go',
-      'rust',
-      'php',
-      'c#',
-      'scala',
-      'django',
-      'spring',
-      'fastapi',
-    ],
-    'Mobile': ['flutter', 'react native', 'swift', 'kotlin', 'ionic'],
-    'DevOps': [
-      'docker',
-      'kubernetes',
-      'aws',
-      'gcp',
-      'azure',
-      'terraform',
-      'jenkins',
-    ],
-    'Data': ['sql', 'python', 'spark', 'hadoop', 'tableau', 'powerbi'],
-    'Design': ['figma', 'sketch', 'adobe', 'photoshop', 'illustrator'],
-  };
-
   /// Scores a list of jobs against user profile and returns sorted by alignment.
   /// Returns list of ScoredJob objects with alignment scores.
   List<ScoredJob> scoreJobs({

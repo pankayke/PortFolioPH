@@ -8,7 +8,6 @@ import 'package:portfolioph/core/utils/helpers.dart';
 import 'package:portfolioph/data/models/skills_model.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/skills_provider.dart';
-import 'package:portfolioph/presentation/providers/theme_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/presentation/widgets/theme_toggle_button.dart';
 

@@ -84,7 +84,6 @@ class _GlassInputFieldState extends State<GlassInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isFocused = _focusNode.hasFocus;
     final hasError = _errorText != null;
 

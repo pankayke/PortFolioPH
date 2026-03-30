@@ -1,4 +1,6 @@
 /// Screen state mixins for common patterns
+library;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
