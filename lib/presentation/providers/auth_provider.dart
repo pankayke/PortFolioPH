@@ -54,6 +54,7 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
     String? fullName,
+    String? role,
   }) async {
     _begin();
     try {
@@ -62,6 +63,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
         fullName: fullName,
+        role: role,
       );
       _currentUser = user;
       await _persistSession(user.id!);

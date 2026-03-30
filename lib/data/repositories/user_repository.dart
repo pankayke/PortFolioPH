@@ -25,12 +25,16 @@ class UserRepository {
     required String email,
     required String plainPassword,
     String? fullName,
-    String role = 'student',
+    String role = 'job_seeker',
   }) async {
     try {
       final response = await _apiService.post(
         '/auth/register',
         data: {
+          // Backend expects `name`; keep `username` too for compatibility.
+          'name': (fullName != null && fullName.trim().isNotEmpty)
+              ? fullName.trim()
+              : username,
           'username': username,
           'email': email,
           'password': plainPassword, // Plain password - backend hashes it
@@ -39,9 +43,15 @@ class UserRepository {
         },
       );
 
-      // Backend should return user with ID
+      // Accept both response styles:
+      // 1) {"id": 123, ...}
+      // 2) {"user": {"id": 123, ...}, "token": "..."}
       if (response is Map<String, dynamic>) {
-        final userId = response['id'] as int?;
+        int? userId = response['id'] as int?;
+        final user = response['user'];
+        if (userId == null && user is Map<String, dynamic>) {
+          userId = user['id'] as int?;
+        }
         if (userId != null) return userId;
       }
 

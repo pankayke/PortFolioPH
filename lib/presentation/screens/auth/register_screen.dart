@@ -43,6 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _formValid = false;
+  String? _selectedRole;
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   /// [AutovalidateMode.onUserInteraction].
   void _onFieldChanged() {
     final valid =
+        _selectedRole != null &&
         AppValidators.validateRequired(
               _fullNameController.text,
               fieldName: 'Full name',
@@ -91,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false) || _selectedRole == null) return;
 
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
@@ -99,6 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
       fullName: _fullNameController.text.trim(),
+      role: _selectedRole!,
     );
 
     if (!mounted) return;
@@ -249,7 +252,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           obscureText: _obscureConfirm,
                           textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _submit(),
                           decoration: InputDecoration(
                             labelText: 'Confirm Password',
                             prefixIcon: const Icon(Icons.lock_person_outlined),
@@ -269,6 +271,140 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 v,
                                 _passwordController.text,
                               ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        const SizedBox(height: AppConstants.spacingMd),
+
+                        Text(
+                          'I am a...',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingSm),
+
+                        // Role Selection - Job Seeker
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _selectedRole = AppConstants.roleSeeker;
+                            _onFieldChanged();
+                          }),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppConstants.spacingMd),
+                            decoration: BoxDecoration(
+                              color: _selectedRole == AppConstants.roleSeeker
+                                  ? colorScheme.primary.withOpacity(0.1)
+                                  : colorScheme.surface,
+                              border: Border.all(
+                                color: _selectedRole == AppConstants.roleSeeker
+                                    ? colorScheme.primary
+                                    : colorScheme.outlineVariant,
+                                width: _selectedRole == AppConstants.roleSeeker ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.search_rounded,
+                                  color: _selectedRole == AppConstants.roleSeeker
+                                      ? colorScheme.primary
+                                      : colorScheme.outline,
+                                ),
+                                const SizedBox(width: AppConstants.spacingMd),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Job Seeker',
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: _selectedRole == AppConstants.roleSeeker
+                                              ? colorScheme.primary
+                                              : null,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Apply for jobs & track applications',
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.outline,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (_selectedRole == AppConstants.roleSeeker)
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: colorScheme.primary,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.spacingSm),
+
+                        // Role Selection - Recruiter
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _selectedRole = AppConstants.roleRecruiter;
+                            _onFieldChanged();
+                          }),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppConstants.spacingMd),
+                            decoration: BoxDecoration(
+                              color: _selectedRole == AppConstants.roleRecruiter
+                                  ? colorScheme.primary.withOpacity(0.1)
+                                  : colorScheme.surface,
+                              border: Border.all(
+                                color: _selectedRole == AppConstants.roleRecruiter
+                                    ? colorScheme.primary
+                                    : colorScheme.outlineVariant,
+                                width: _selectedRole == AppConstants.roleRecruiter ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.business_rounded,
+                                  color: _selectedRole == AppConstants.roleRecruiter
+                                      ? colorScheme.primary
+                                      : colorScheme.outline,
+                                ),
+                                const SizedBox(width: AppConstants.spacingMd),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Recruiter',
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: _selectedRole == AppConstants.roleRecruiter
+                                              ? colorScheme.primary
+                                              : null,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Post jobs & manage candidates',
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.outline,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (_selectedRole == AppConstants.roleRecruiter)
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: colorScheme.primary,
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                         const SizedBox(height: AppConstants.spacingLg),
 

@@ -9,9 +9,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
-  // For local development: http://localhost:8000/api/v1
+  // For local development: http://localhost:8000/api
   // For production: update to your API domain
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  static const String baseUrl = 'http://localhost:8000/api';
   static const String tokenKey = 'auth_token';
   static const String userKey = 'auth_user';
 

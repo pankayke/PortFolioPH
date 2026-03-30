@@ -39,6 +39,7 @@ class AuthService {
     required String email,
     required String password,
     String? fullName,
+    String? role,
   }) async {
     // ── Field-level guards ──────────────────────────────────────────────────
     if (username.trim().isEmpty) {
@@ -76,6 +77,7 @@ class AuthService {
 
     // ── Build and persist model ─────────────────────────────────────────────
     final now = AppHelpers.nowIso();
+    final userRole = role ?? AppConstants.roleSeeker;
 
     try {
       // For online-only API: send plain password to backend (backend hashes it)
@@ -84,7 +86,7 @@ class AuthService {
         email: email.trim().toLowerCase(),
         plainPassword: password, // Send plain password to backend
         fullName: fullName?.trim().isEmpty == true ? null : fullName?.trim(),
-        role: AppConstants.roleStudent,
+        role: userRole,
       );
 
       // Create UserModel with placeholder hash (won't be used for API requests)
@@ -92,7 +94,7 @@ class AuthService {
         id: id,
         username: username.trim(),
         email: email.trim().toLowerCase(),
-        role: AppConstants.roleStudent,
+        role: userRole,
         passwordHash: '', // Backend handles hashing
         fullName: fullName?.trim().isEmpty == true ? null : fullName?.trim(),
         createdAt: now,
@@ -249,17 +251,9 @@ class AuthService {
   }
 
   Future<UserModel> _ensureAdminBootstrap(UserModel user) async {
-    final hasAdminUser = await _userRepository.hasUsersWithRole('admin');
-    if (hasAdminUser || user.id == null || user.role == 'admin') {
-      return user;
-    }
-
-    final elevatedUser = user.copyWith(
-      role: 'admin',
-      updatedAt: AppHelpers.nowIso(),
-    );
-    await _userRepository.update(elevatedUser);
-    return elevatedUser;
+    // Online API mode: backend owns role governance.
+    // Do not auto-promote or attempt protected updates during signup/login.
+    return user;
   }
 
   Future<UserModel> _ensureSeedAccount({

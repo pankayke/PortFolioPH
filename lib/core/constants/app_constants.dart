@@ -34,7 +34,7 @@ abstract final class AppConstants {
   static const String roleCoordinator = 'coordinator';
   static const String roleAdmin = 'admin';
   static const String roleRecruiter = 'recruiter';
-  static const String roleSeeker = 'seeker';
+  static const String roleSeeker = 'job_seeker';
 
   // ── Local development academic accounts (teacher/coordinator) ────────────
   static const String localTeacherUsername = 'portfolioph_teacher';
