@@ -20,6 +20,9 @@ class UserRepository {
   // ── Create ──────────────────────────────────────────────────────────────────
   /// Registers a new user via the API (online-only).
   /// Accepts plain password; backend hashes and stores it.
+  /// 
+  /// Returns: user ID from backend
+  /// Throws: Exception if registration fails or backend is unavailable
   Future<int> registerUser({
     required String username,
     required String email,
@@ -31,41 +34,40 @@ class UserRepository {
       final response = await _apiService.post(
         '/auth/register',
         data: {
-          // Backend expects `name`; keep `username` too for compatibility.
           'name': (fullName != null && fullName.trim().isNotEmpty)
               ? fullName.trim()
               : username,
           'username': username,
           'email': email,
-          'password': plainPassword, // Plain password - backend hashes it
+          'password': plainPassword,
           'full_name': fullName,
           'role': role,
         },
       );
 
-      // Accept both response styles:
-      // 1) {"id": 123, ...}
-      // 2) {"user": {"id": 123, ...}, "token": "..."}
+      // Laravel returns: {"success": true, "message": "...", "data": {"user": {...}, "token": "..."}, "errors": null}
+      // ApiService extracts the 'data' field, so we receive: {"user": {...}, "token": "..."}
       if (response is Map<String, dynamic>) {
-        int? userId = response['id'] as int?;
         final user = response['user'];
-        if (userId == null && user is Map<String, dynamic>) {
-          userId = user['id'] as int?;
+        if (user is Map<String, dynamic>) {
+          final userId = user['id'] as int?;
+          if (userId != null) {
+            // IMPORTANT: AuthService should save the token after registration
+            final token = response['token'] as String?;
+            if (token != null) {
+              await _apiService.saveToken(token);
+            }
+            return userId;
+          }
         }
-        if (userId != null) return userId;
       }
 
-      throw Exception('Backend did not return user ID');
+      throw Exception('Backend returned invalid registration response: $response');
     } catch (e) {
-      // If backend is unavailable, use mock data for development
-      debugPrint('[UserRepository] Registration error (using mock): $e');
-      return _generateMockUserId(); // Return a mock user ID for development
+      debugPrint('[UserRepository] Registration failed: $e');
+      rethrow; // Let caller handle the error - NO fallback to mock data
     }
   }
-
-  // Mock ID generator for development (when backend unavailable)
-  static int _mockUserCounter = 100;
-  int _generateMockUserId() => ++_mockUserCounter;
 
   /// Generic insert method (kept for backward compatibility, uses plain password).
   Future<int> insert(UserModel user) async {
@@ -158,8 +160,14 @@ class UserRepository {
     }
   }
 
-  /// Authenticates user via API (backend verifies password).
-  /// Returns the [UserModel] on success, `null` on failure.
+  /// Authenticates user via API (Sanctum token-based auth).
+  /// 
+  /// Returns: UserModel on success, null on failure
+  /// Side effect: Saves Sanctum token to secure storage on success
+  /// 
+  /// Response from Laravel:
+  /// {"success": true, "message": "...", "data": {"user": {...}, "token": "..."}, "errors": null}
+  /// ApiService extracts 'data', so we receive: {"user": {...}, "token": "..."}
   Future<UserModel?> authenticate({
     required String email,
     required String plainPassword,
@@ -167,14 +175,33 @@ class UserRepository {
     try {
       final response = await _apiService.post(
         '/auth/login',
-        data: {'email': email.trim().toLowerCase(), 'password': plainPassword},
+        data: {
+          'email': email.trim().toLowerCase(),
+          'password': plainPassword,
+        },
       );
 
       if (response is Map<String, dynamic>) {
-        return UserModel.fromMap(response);
+        // Extract user
+        final userMap = response['user'];
+        if (userMap is Map<String, dynamic>) {
+          final user = UserModel.fromMap(userMap);
+          
+          // CRITICAL: Save token for future authenticated requests
+          final token = response['token'] as String?;
+          if (token != null && token.isNotEmpty) {
+            await _apiService.saveToken(token);
+            debugPrint('[UserRepository] Login successful - token saved');
+          }
+          
+          return user;
+        }
       }
+      
+      debugPrint('[UserRepository] Login failed - invalid response format');
       return null;
     } catch (e) {
+      debugPrint('[UserRepository] Login failed: $e');
       return null;
     }
   }

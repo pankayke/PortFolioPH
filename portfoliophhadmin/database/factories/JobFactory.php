@@ -19,7 +19,7 @@ class JobFactory extends Factory
     public function definition(): array
     {
         $jobTypes = ['full_time', 'part_time', 'contract', 'freelance'];
-        $jobStatuses = ['open', 'closed'];
+        $jobStatuses = ['draft', 'pending', 'approved', 'closed'];
 
         return [
             'recruiter_id' => User::factory()->recruiter(),
@@ -36,13 +36,33 @@ class JobFactory extends Factory
     }
 
     /**
-     * Create an open job.
+     * Create an approved job.
      */
-    public function open(): static
+    public function approved(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'open',
+            'status' => 'approved',
             'deadline' => fake()->dateTimeBetween('+1 week', '+3 months'),
+        ]);
+    }
+
+    /**
+     * Create a draft job.
+     */
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'draft',
+        ]);
+    }
+
+    /**
+     * Create a pending job (awaiting review).
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'pending',
         ]);
     }
 

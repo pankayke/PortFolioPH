@@ -12,10 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Apply JSON response structure middleware to API requests
+        $middleware->append(\App\Http\Middleware\EnsureJsonResponseStructure::class);
+        
         $middleware->alias([
             'recruiter' => \App\Http\Middleware\RecruiterMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'ensure.json.structure' => \App\Http\Middleware\EnsureJsonResponseStructure::class,
         ]);
+        
+        // Replace Authenticate middleware for JSON API responses
+        $middleware->replace(
+            \Illuminate\Auth\Middleware\Authenticate::class,
+            \App\Http\Middleware\Authenticate::class
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

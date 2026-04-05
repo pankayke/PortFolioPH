@@ -22,7 +22,7 @@ return new class extends Migration
             $table->json('required_skills')->nullable();
             $table->dateTime('deadline')->nullable();
             $table->enum('job_type', ['full_time', 'part_time', 'contract', 'freelance'])->default('full_time');
-            $table->enum('status', ['open', 'closed'])->default('open');
+            $table->enum('status', ['draft', 'pending', 'approved', 'closed'])->default('draft');
             $table->timestamps();
 
             // Performance indexes

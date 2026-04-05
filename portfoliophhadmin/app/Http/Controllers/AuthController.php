@@ -2,60 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\ApiResponse;
+use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function __construct(private AuthService $authService) {}
+
+    /**
+     * Register a new user
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:8',
-            'role' => 'required|in:job_seeker,recruiter',
-        ]);
+        $user = $this->authService->register($request->validated());
+        $token = $this->authService->createToken($user);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-        ]);
-
-        return response()->json([
-            'user' => $user->only(['id', 'name', 'email', 'role']),
-            'token' => $user->createToken('auth_token')->plainTextToken,
-        ], 201);
+        return ApiResponse::success(
+            [
+                'user' => $user->only(['id', 'name', 'email', 'role']),
+                'token' => $token,
+            ],
+            'Registration successful',
+            201
+        );
     }
 
-    public function login(Request $request)
+    /**
+     * Login user
+     */
+    public function login(LoginRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are invalid.'],
-            ]);
+        $user = $this->authService->authenticate($request->validated());
+        
+        if (!$user) {
+            return ApiResponse::error('Invalid credentials', 401);
         }
 
-        return response()->json([
-            'user' => $user->only(['id', 'name', 'email', 'role']),
-            'token' => $user->createToken('auth_token')->plainTextToken,
-        ]);
+        $token = $this->authService->createToken($user);
+
+        return ApiResponse::success(
+            [
+                'user' => $user->only(['id', 'name', 'email', 'role']),
+                'token' => $token,
+            ],
+            'Login successful',
+            200
+        );
     }
 
-    public function logout(Request $request)
+    /**
+     * Logout user
+     */
+    public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->authService->logout($request->user());
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return ApiResponse::success(
+            null,
+            'Logged out successfully',
+            200
+        );
     }
 }

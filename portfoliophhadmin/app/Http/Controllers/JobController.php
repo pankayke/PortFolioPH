@@ -2,85 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreJobRequest;
+use App\Http\Requests\UpdateJobRequest;
+use App\Http\Resources\ApiResponse;
 use App\Models\Job;
+use App\Services\JobService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class JobController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(private JobService $jobService) {}
+
+    /**
+     * Get all approved jobs with optional filters
+     */
+    public function index(Request $request): JsonResponse
     {
-        $query = Job::query();
+        $filters = $request->only(['search', 'location']);
+        $perPage = $request->input('per_page', 15);
+        $jobs = $this->jobService->getApprovedJobs($filters, $perPage);
 
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where('title', 'like', "%$search%")
-                  ->orWhere('description', 'like', "%$search%");
-        }
+        return ApiResponse::paginated($jobs, 'Jobs retrieved successfully', 200);
+    }
 
-        if ($request->has('location')) {
-            $query->where('location', $request->input('location'));
-        }
+    /**
+     * Create a new job (recruiter only)
+     */
+    public function store(StoreJobRequest $request): JsonResponse
+    {
+        $job = $this->jobService->createJob(auth()->user(), $request->validated());
 
-        return response()->json(
-            $query->with('recruiter:id,name,email')
-                  ->paginate(15)
+        return ApiResponse::success(
+            $job,
+            'Job created successfully',
+            201
         );
     }
 
-    public function store(Request $request)
+    /**
+     * Get single job details
+     */
+    public function show(Job $job): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'location' => 'required|string|max:255',
-            'salary_min' => 'nullable|numeric',
-            'salary_max' => 'nullable|numeric',
-            'job_type' => 'required|in:full_time,part_time,contract,freelance',
-            'required_skills' => 'nullable|array',
-            'required_skills.*' => 'string',
-            'deadline' => 'nullable|date|after:now',
-        ]);
+        $jobData = $this->jobService->getJob($job);
 
-        $job = $request->user()->jobs()->create($validated);
-
-        return response()->json($job, 201);
-    }
-
-    public function show(Job $job)
-    {
-        return response()->json(
-            $job->load('recruiter:id,name,email', 'applications')
+        return ApiResponse::success(
+            $jobData,
+            'Job retrieved successfully',
+            200
         );
     }
 
-    public function update(Request $request, Job $job)
+    /**
+     * Update job (recruiter who owns it)
+     */
+    public function update(UpdateJobRequest $request, Job $job): JsonResponse
     {
         $this->authorize('update', $job);
 
-        $validated = $request->validate([
-            'title' => 'string|max:255',
-            'description' => 'string',
-            'location' => 'string|max:255',
-            'salary_min' => 'nullable|numeric',
-            'salary_max' => 'nullable|numeric',
-            'job_type' => 'in:full_time,part_time,contract,freelance',
-            'required_skills' => 'nullable|array',
-            'required_skills.*' => 'string',
-            'status' => 'in:open,closed',
-            'deadline' => 'nullable|date|after:now',
-        ]);
+        $updated = $this->jobService->updateJob($job, $request->validated());
 
-        $job->update($validated);
-
-        return response()->json($job);
+        return ApiResponse::success(
+            $updated,
+            'Job updated successfully',
+            200
+        );
     }
 
-    public function destroy(Request $request, Job $job)
+    /**
+     * Delete job
+     */
+    public function destroy(Job $job): JsonResponse
     {
         $this->authorize('delete', $job);
+        $this->jobService->deleteJob($job);
 
-        $job->delete();
-
-        return response()->json(['message' => 'Job deleted']);
+        return ApiResponse::success(
+            null,
+            'Job deleted successfully',
+            200
+        );
     }
 }

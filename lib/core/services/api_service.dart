@@ -7,6 +7,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'api_error_interceptor.dart';
 
 class ApiService {
   // For local development: http://localhost:8000/api
@@ -37,10 +38,7 @@ class ApiService {
       ),
     );
 
-    // Add mock interceptor for development (handles failed real-backend calls)
-    _dio.interceptors.add(_MockInterceptor());
-
-    // Add interceptors
+    // Add interceptors in order: request → response → error
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: _onRequest,
@@ -48,6 +46,9 @@ class ApiService {
         onError: _onError,
       ),
     );
+
+    // Add intelligent error interceptor with retry logic (TIER 2)
+    _dio.interceptors.add(ApiErrorInterceptor());
   }
 
   Future<void> _onRequest(
@@ -251,112 +252,10 @@ class ApiService {
   }
 }
 
-// ─── Mock Interceptor (Development Only) ──────────────────────────────────────
+// ─── Custom Exceptions (deprecated - moved to api_error_interceptor.dart) ────────────────────────────────────────────────
 
-/// Intercepts API calls and provides mock responses when backend is unavailable.
-/// This allows testing the registration flow without a running backend.
-class _MockInterceptor extends Interceptor {
-  static int _nextUserId = 1;
-
-  @override
-  Future<void> onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
-    final path = err.requestOptions.path;
-    debugPrint('[MockInterceptor] Error type: ${err.type}, Path: $path');
-
-    // Only intercept connection errors (backend not running)
-    if (err.type != DioExceptionType.unknown &&
-        err.type != DioExceptionType.connectionTimeout) {
-      return handler.next(err);
-    }
-
-    // Mock registration endpoint
-    if (path.contains('auth/register')) {
-      final data = err.requestOptions.data as Map<String, dynamic>?;
-      final mockResponse = Response<dynamic>(
-        requestOptions: err.requestOptions,
-        statusCode: 201,
-        data: {
-          'id': _nextUserId++,
-          'username': data?['username'] ?? 'user',
-          'email': data?['email'] ?? 'user@example.com',
-          'full_name': data?['full_name'] ?? 'User Name',
-          'role': data?['role'] ?? 'seeker',
-          'token': 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
-        },
-      );
-      debugPrint('[MockInterceptor] Mocked /auth/register');
-      return handler.resolve(mockResponse);
-    }
-
-    // Mock login endpoint
-    if (path.contains('auth/login')) {
-      final mockResponse = Response<dynamic>(
-        requestOptions: err.requestOptions,
-        statusCode: 200,
-        data: {
-          'id': 1,
-          'username': 'demo_user',
-          'email': 'demo@example.com',
-          'full_name': 'Demo User',
-          'role': 'seeker',
-          'token': 'mock_token_login_${DateTime.now().millisecondsSinceEpoch}',
-        },
-      );
-      debugPrint('[MockInterceptor] Mocked /auth/login');
-      return handler.resolve(mockResponse);
-    }
-
-    // Mock user search endpoints
-    if (path.contains('users/search')) {
-      final mockResponse = Response<dynamic>(
-        requestOptions: err.requestOptions,
-        statusCode: 200,
-        data: {
-          'id': 1,
-          'username': 'searchuser',
-          'email': 'search@example.com',
-          'full_name': 'Search User',
-          'role': 'seeker',
-        },
-      );
-      debugPrint('[MockInterceptor] Mocked /users/search');
-      return handler.resolve(mockResponse);
-    }
-
-    // Mock get user by ID (path ends with digits like /users/1)
-    if (path.contains('users/') && RegExp(r'/?\d+/?$').hasMatch(path)) {
-      final mockResponse = Response<dynamic>(
-        requestOptions: err.requestOptions,
-        statusCode: 200,
-        data: {
-          'id': 1,
-          'username': 'testuser',
-          'email': 'test@example.com',
-          'full_name': 'Test User',
-          'role': 'seeker',
-        },
-      );
-      debugPrint('[MockInterceptor] Mocked /users/{id}');
-      return handler.resolve(mockResponse);
-    }
-
-    // Default: pass through to next handler
-    return handler.next(err);
-  }
-}
-
-// ─── Custom Exceptions ────────────────────────────────────────────────────────
-
-class ApiException implements Exception {
-  final String message;
-  ApiException(this.message);
-
-  @override
-  String toString() => message;
-}
+// These exception classes are kept for backward compatibility during transition
+// New code should use ApiException from api_error_interceptor.dart
 
 class UnauthorizedException extends ApiException {
   UnauthorizedException(String message) : super(message);

@@ -2,68 +2,85 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateApplicationRequest;
+use App\Http\Requests\UpdateApplicationStatusRequest;
+use App\Http\Resources\ApiResponse;
 use App\Models\Application;
-use App\Models\Job;
-use Illuminate\Http\Request;
+use App\Services\ApplicationService;
+use Illuminate\Http\JsonResponse;
 
 class ApplicationController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(private ApplicationService $applicationService) {}
+
+    /**
+     * Get applications (current user as job seeker, or for recruiter's jobs if recruiter)
+     */
+    public function index(): JsonResponse
     {
-        $user = $request->user();
+        $applications = $this->applicationService->getApplications(auth()->user());
 
-        if ($user->role === 'job_seeker') {
-            $applications = $user->applications()->with('job:id,title')->paginate(15);
-        } else {
-            // Recruiter sees applications for their jobs
-            $applications = Application::whereHas('job', function ($query) use ($user) {
-                $query->where('recruiter_id', $user->id);
-            })->with('user:id,name,email', 'job:id,title')->paginate(15);
-        }
-
-        return response()->json($applications);
+        return ApiResponse::paginated($applications, 'Applications retrieved successfully', 200);
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'job_id' => 'required|exists:jobs,id',
-            'cover_letter' => 'nullable|string|max:5000',
-        ]);
-
-        // Check if already applied
-        $existing = Application::where('job_id', $validated['job_id'])
-            ->where('user_id', $request->user()->id)
-            ->first();
-
-        if ($existing) {
-            return response()->json(['message' => 'Already applied to this job'], 409);
-        }
-
-        $application = $request->user()->applications()->create($validated);
-
-        return response()->json($application->load('job:id,title'), 201);
-    }
-
-    public function show(Application $application)
+    /**
+     * Get single application
+     */
+    public function show(Application $application): JsonResponse
     {
         $this->authorize('view', $application);
 
-        return response()->json(
-            $application->load('user:id,name,email', 'job')
+        $appData = $this->applicationService->getApplication($application);
+
+        return ApiResponse::success(
+            $appData,
+            'Application retrieved successfully',
+            200
         );
     }
 
-    public function updateStatus(Request $request, Application $application)
+    /**
+     * Create new application
+     */
+    public function store(CreateApplicationRequest $request): JsonResponse
     {
-        $this->authorize('update', $application);
+        try {
+            $application = $this->applicationService->createApplication(
+                auth()->user(),
+                $request->validated()
+            );
 
-        $validated = $request->validate([
-            'status' => 'required|in:pending,reviewed,shortlisted,rejected,accepted',
-        ]);
+            return ApiResponse::success(
+                $application,
+                'Application submitted successfully',
+                201
+            );
+        } catch (\Exception $e) {
+            if ($e->getCode() === 409) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+            throw $e;
+        }
+    }
 
-        $application->update($validated);
+    /**
+     * Update application status (recruiter only)
+     */
+    public function updateStatus(
+        UpdateApplicationStatusRequest $request,
+        Application $application
+    ): JsonResponse {
+        $this->authorize('updateStatus', $application);
 
-        return response()->json($application);
+        $updated = $this->applicationService->updateApplicationStatus(
+            $application,
+            $request->validated()
+        );
+
+        return ApiResponse::success(
+            $updated,
+            'Application status updated successfully',
+            200
+        );
     }
 }

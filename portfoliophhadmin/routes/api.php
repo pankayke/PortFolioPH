@@ -7,14 +7,27 @@ use App\Http\Controllers\JobController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\UserController;
 
-// Public routes
-Route::prefix('auth')->group(function () {
+// ─── Rate Limiting Configuration ──────────────────────────────────────────────
+// - auth: 5 attempts per minute (stricter for auth endpoints)
+// - api: 60 requests per minute per user
+
+// Public routes (rate limited)
+Route::middleware('throttle:5,1')->prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+// Public job viewing routes (no auth required)
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/jobs', [JobController::class, 'index']);
+    Route::get('/jobs/{job}', [JobController::class, 'show']);
+});
+
+// Protected routes (standard rate limit)
+Route::middleware([
+    'auth:sanctum',
+    'throttle:60,1',  // 60 requests per minute
+])->group(function () {
     // Auth
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     
@@ -24,21 +37,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/role', [UserController::class, 'hasRole']);
     Route::put('/users/{user}', [UserController::class, 'update']);
     
-    // Jobs
-    Route::post('/jobs', [JobController::class, 'store']);
-    Route::get('/jobs', [JobController::class, 'index']);
-    Route::get('/jobs/{job}', [JobController::class, 'show']);
-    Route::put('/jobs/{job}', [JobController::class, 'update']);
-    Route::delete('/jobs/{job}', [JobController::class, 'destroy']);
+    // Jobs (write operations only)
+    Route::post('/jobs', [JobController::class, 'store'])->middleware('throttle:10,1');  // Stricter for writes
+    Route::put('/jobs/{job}', [JobController::class, 'update'])->middleware('throttle:10,1');
+    Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->middleware('throttle:10,1');
     
     // Applications
-    Route::post('/applications', [ApplicationController::class, 'store']);
+    Route::post('/applications', [ApplicationController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/applications', [ApplicationController::class, 'index']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show']);
-    Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus']);
+    Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->middleware('throttle:10,1');
 });
 
-// Health check
+// Health check (no rate limit)
 Route::get('/health', function () {
     return response()->json(['status' => 'ok', 'timestamp' => now()]);
 });
