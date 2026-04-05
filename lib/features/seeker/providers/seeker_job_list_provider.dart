@@ -3,7 +3,10 @@
 // Manages job listing for job seekers with search, filter, and pagination.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:portfolioph/core/services/error_handler.dart';
+import 'package:portfolioph/core/services/toast_service.dart';
 import 'package:portfolioph/features/seeker/models/seeker_job_model.dart';
 import 'package:portfolioph/features/seeker/repositories/seeker_repository_impl.dart';
 
@@ -99,11 +102,16 @@ class SeekerJobListProvider extends ChangeNotifier {
       _hasMore = loadedJobs.isNotEmpty;
       _isLoading = false;
       notifyListeners();
-    } catch (e) {
-      _error = e.toString();
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
       _isLoading = false;
       notifyListeners();
-      rethrow;
+    } catch (e) {
+      _error = e.toString();
+      ToastService.showError('An error occurred. Please try again.');
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -145,10 +153,14 @@ class SeekerJobListProvider extends ChangeNotifier {
         _jobs[index] = _jobs[index].copyWith(isSaved: true);
         notifyListeners();
       }
-    } catch (e) {
-      _error = e.toString();
+      ToastService.showSuccess('Job saved! ✅');
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
       notifyListeners();
-      rethrow;
+    } catch (e) {
+      ToastService.showError('Failed to save job. Try again.');
+      notifyListeners();
     }
   }
 
@@ -162,10 +174,14 @@ class SeekerJobListProvider extends ChangeNotifier {
         _jobs[index] = _jobs[index].copyWith(isSaved: false);
         notifyListeners();
       }
-    } catch (e) {
-      _error = e.toString();
+      ToastService.showSuccess('Job removed from saved! ✅');
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
       notifyListeners();
-      rethrow;
+    } catch (e) {
+      ToastService.showError('Failed to unsave job. Try again.');
+      notifyListeners();
     }
   }
 
@@ -187,11 +203,16 @@ class SeekerJobListProvider extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-    } catch (e) {
-      _error = e.toString();
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
       _isLoading = false;
       notifyListeners();
-      rethrow;
+    } catch (e) {
+      _error = e.toString();
+      ToastService.showError('Failed to load saved jobs. Try again.');
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

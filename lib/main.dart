@@ -20,6 +20,7 @@ import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/core/services/toast_service.dart';
 import 'package:portfolioph/core/theme/app_theme.dart';
 import 'package:portfolioph/presentation/providers/app_providers.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
@@ -91,6 +92,7 @@ class _RouterScopeState extends State<_RouterScope> {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      scaffoldMessengerKey: ToastService.scaffoldMessengerKey,
       routerConfig: router,
     );
   }

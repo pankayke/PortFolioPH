@@ -132,37 +132,66 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────────
+  /// Logs out user by:
+  /// 1. Calling /auth/logout endpoint (invalidates Sanctum token on backend)
+  /// 2. Clearing token from secure storage
+  /// 3. Clearing currentUser state
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(AppConstants.prefUserId);
+    try {
+      // Call backend logout endpoint (invalidates token)
+      await _authService.logout();
+    } catch (e) {
+      debugPrint('[AuthProvider] Backend logout failed: $e (proceeding with local logout)');
+    }
+    
+    // Clear token from secure storage
+    await _authService.clearToken();
+    
+    // Clear user state
     _currentUser = null;
     _errorMessage = null;
     notifyListeners();
+    
+    debugPrint('[AuthProvider] Logged out successfully');
   }
 
   // ── Session restore ───────────────────────────────────────────────────────────
   /// Called by [SplashScreen] on launch.
-  /// Reads persisted [userId] from SharedPreferences and reloads the user.
-  /// Returns `true` if a valid, live session was found.
+  /// Restores session from stored Sanctum token.
+  /// Called on app startup by SplashScreen.
+  /// 
+  /// Flow:
+  /// 1. Check if token exists in secure storage
+  /// 2. If yes, call /auth/me to verify token is still valid
+  /// 3. If valid, restore user and stay logged in
+  /// 4. If invalid/expired, clear token and redirect to login
+  /// 
+  /// Returns true if session restored successfully, false otherwise.
   Future<bool> restoreSession() async {
     _begin();
     try {
-      await _authService.ensureSeedAdminAccount();
-      await _authService.ensureAcademicStaffSeedAccounts();
-
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt(AppConstants.prefUserId);
-      if (userId == null) return false;
-
-      final user = await _userRepository.findById(userId);
-      if (user == null) {
-        await prefs.remove(AppConstants.prefUserId);
+      // Check if token exists in secure storage
+      final hasToken = await _authService.hasToken();
+      if (!hasToken) {
+        debugPrint('[AuthProvider] No token found - user not logged in');
         return false;
       }
-      _currentUser = await _authService.ensureAdminBootstrap(user);
+
+      // Token exists, now verify it with backend
+      final user = await _authService.getCurrentUser();
+      if (user == null) {
+        debugPrint('[AuthProvider] Token validation failed - redirecting to login');
+        await _authService.clearToken();
+        return false;
+      }
+
+      _currentUser = user;
       notifyListeners();
+      debugPrint('[AuthProvider] Session restored successfully for ${user.email}');
       return true;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[AuthProvider] Session restore failed: $e');
+      await _authService.clearToken();
       return false;
     } finally {
       _endLoading();

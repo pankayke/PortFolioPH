@@ -29,6 +29,7 @@ Route::middleware([
     'throttle:60,1',  // 60 requests per minute
 ])->group(function () {
     // Auth
+    Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     
     // Users

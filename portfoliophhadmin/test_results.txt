@@ -1,0 +1,108 @@
+
+======================================================================
+PORTFOLIOPH RUNTIME VALIDATION SUITE
+Date: 2026-04-05 09:50:24
+======================================================================
+
+
+----------------------------------------------------------------------
+TEST GROUP A: AUTHENTICATION FLOW
+----------------------------------------------------------------------
+Γ£à PASS: A1: User Registration
+Γ£à PASS: A2: User Login
+Γ£à PASS: A3: Token Persistence (/auth/me)
+Γ£à PASS: A4: Recruiter Registration
+
+----------------------------------------------------------------------
+TEST GROUP B: JOB FLOW
+----------------------------------------------------------------------
+Γ¥î FAIL: B1: Create Job (as Recruiter)
+Γ¥î FAIL: B2: Job Appears in List
+Γ¥î FAIL: B3: Job Persists in Database
+
+----------------------------------------------------------------------
+TEST GROUP C: APPLICATION FLOW
+----------------------------------------------------------------------
+Γ¥î FAIL: C1: Job Seeker Applies to Job
+Γ¥î FAIL: C2: Application Saved in Database
+Γ£à PASS: C3: Recruiter Can See Application
+
+----------------------------------------------------------------------
+TEST GROUP D: AUTHORIZATION & SECURITY
+----------------------------------------------------------------------
+Γ¥î FAIL: D1: Cannot Edit Job Not Owned
+Γ¥î FAIL: D2: Cannot Delete Job Not Owned
+Γ¥î FAIL: D3: Owner CAN Edit Own Job
+
+----------------------------------------------------------------------
+TEST GROUP E: ERROR HANDLING
+----------------------------------------------------------------------
+Γ£à PASS: E1: Invalid Request Returns 422
+Γ£à PASS: E2: Validation Errors Returned Properly
+Γ£à PASS: E3: Nonexistent Resource Returns 404
+Γ£à PASS: E4: API Server Responds Properly
+
+----------------------------------------------------------------------
+TEST GROUP F: TOKEN & SESSION FAILURE
+----------------------------------------------------------------------
+Γ£à PASS: F1: Invalid Token Returns 401
+Γ£à PASS: F2: Missing Auth Header Returns 401
+Γ£à PASS: F3: Logout Clears Session
+
+----------------------------------------------------------------------
+TEST GROUP G: PAGINATION & PERFORMANCE
+----------------------------------------------------------------------
+Γ¥î FAIL: G1: Create 10 More Jobs for Pagination
+Γ¥î FAIL: G2: Pagination Meta Returned
+Γ£à PASS: G3: Page 2 Returns Different Data
+         Response time: 588.66810798645ms
+Γ¥î FAIL: G4: Performance: Response Time < 500ms
+
+----------------------------------------------------------------------
+TEST GROUP H: UI STATES & RESPONSES
+----------------------------------------------------------------------
+Γ£à PASS: H1: Empty Pagination Field Returns Sensible Default
+Γ£à PASS: H2: Empty Job List Query Returns Empty Array
+Γ¥î FAIL: H3: Error Response Has Proper Structure
+Γ¥î FAIL: H4: Success Response Has Proper Structure
+
+======================================================================
+FINAL VALIDATION REPORT
+======================================================================
+Total Tests: 28
+Passed:      15 Γ£à
+Failed:      13 Γ¥î
+Pass Rate:   53.6%
+
+Γ¥î SYSTEM HAS FAILURES - DO NOT DEPLOY
+Failed tests:
+  - B1: Create Job (as Recruiter)
+    Reason: Assertion returned false
+  - B2: Job Appears in List
+    Reason: Assertion returned false
+  - B3: Job Persists in Database
+    Reason: Assertion returned false
+  - C1: Job Seeker Applies to Job
+    Reason: Assertion returned false
+  - C2: Application Saved in Database
+    Reason: Assertion returned false
+  - D1: Cannot Edit Job Not Owned
+    Reason: Assertion returned false
+  - D2: Cannot Delete Job Not Owned
+    Reason: Assertion returned false
+  - D3: Owner CAN Edit Own Job
+    Reason: Assertion returned false
+  - G1: Create 10 More Jobs for Pagination
+    Reason: Assertion returned false
+  - G2: Pagination Meta Returned
+    Reason: Assertion returned false
+  - G4: Performance: Response Time < 500ms
+    Reason: Assertion returned false
+  - H3: Error Response Has Proper Structure
+    Reason: Assertion returned false
+  - H4: Success Response Has Proper Structure
+    Reason: Assertion returned false
+
+Overall Status: NOT READY FOR DEPLOYMENT
+Deployment Confidence: 54%
+======================================================================

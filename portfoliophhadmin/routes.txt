@@ -1,0 +1,64 @@
+
+  GET|HEAD  / .............................................. routes/web.php:11
+  GET|HEAD  admin/applications admin.applications.index ΓÇ║ AdminWebController@ΓÇª
+  GET|HEAD  admin/audit ............ admin.audit ΓÇ║ AdminWebController@auditLog
+  GET|HEAD  admin/dashboard ... admin.dashboard ΓÇ║ AdminWebController@dashboard
+  GET|HEAD  admin/jobs ............ admin.jobs.index ΓÇ║ AdminWebController@jobs
+  GET|HEAD  admin/jobs/{job} .... admin.jobs.show ΓÇ║ AdminWebController@showJob
+  DELETE    admin/jobs/{job} admin.jobs.delete ΓÇ║ AdminWebController@deleteJob
+  POST      admin/jobs/{job}/approve admin.jobs.approve ΓÇ║ AdminWebController@ΓÇª
+  POST      admin/jobs/{job}/suspend admin.jobs.suspend ΓÇ║ AdminWebController@ΓÇª
+  GET|HEAD  admin/users ......... admin.users.index ΓÇ║ AdminWebController@users
+  GET|HEAD  admin/users/{user} admin.users.show ΓÇ║ AdminWebController@showUser
+  PUT       admin/users/{user} admin.users.update ΓÇ║ AdminWebController@updateΓÇª
+  DELETE    admin/users/{user} admin.users.delete ΓÇ║ AdminWebController@deleteΓÇª
+  GET|HEAD  admin/users/{user}/edit admin.users.edit ΓÇ║ AdminWebController@ediΓÇª
+  POST      admin/users/{user}/suspend admin.users.suspend ΓÇ║ AdminWebControllΓÇª
+  POST      api/applications ..................... ApplicationController@store
+  GET|HEAD  api/applications ..................... ApplicationController@index
+  GET|HEAD  api/applications/{application} ........ ApplicationController@show
+  PUT       api/applications/{application}/status ApplicationController@updatΓÇª
+  POST      api/auth/login .............................. AuthController@login
+  POST      api/auth/logout ............................ AuthController@logout
+  GET|HEAD  api/auth/me .................................... AuthController@me
+  POST      api/auth/register ........................ AuthController@register
+  GET|HEAD  api/health ..................................... routes/api.php:54
+  GET|HEAD  api/jobs ..................................... JobController@index
+  POST      api/jobs ..................................... JobController@store
+  GET|HEAD  api/jobs/{job} ................................ JobController@show
+  PUT       api/jobs/{job} .............................. JobController@update
+  DELETE    api/jobs/{job} ............................. JobController@destroy
+  GET|HEAD  api/users/role ............................ UserController@hasRole
+  GET|HEAD  api/users/search ........................... UserController@search
+  GET|HEAD  api/users/{user} ............................. UserController@show
+  PUT       api/users/{user} ........................... UserController@update
+  GET|HEAD  applications . applications.index ΓÇ║ ApplicationWebController@index
+  POST      applications . applications.store ΓÇ║ ApplicationWebController@store
+  GET|HEAD  applications/{application} applications.show ΓÇ║ ApplicationWebContΓÇª
+  GET|HEAD  applications/{application}/edit applications.edit ΓÇ║ ApplicationWeΓÇª
+  PUT       applications/{application}/status applications.update-status ΓÇ║ ApΓÇª
+  GET|HEAD  dashboard .................. dashboard ΓÇ║ DashboardController@index
+  GET|HEAD  jobs ......................... jobs.index ΓÇ║ JobWebController@index
+  POST      jobs ......................... jobs.store ΓÇ║ JobWebController@store
+  GET|HEAD  jobs/create ................ jobs.create ΓÇ║ JobWebController@create
+  GET|HEAD  jobs/list ...................... jobs.list ΓÇ║ JobWebController@list
+  GET|HEAD  jobs/{job} ..................... jobs.show ΓÇ║ JobWebController@show
+  PUT       jobs/{job} ................. jobs.update ΓÇ║ JobWebController@update
+  DELETE    jobs/{job} ............... jobs.destroy ΓÇ║ JobWebController@destroy
+  GET|HEAD  jobs/{job}/edit ................ jobs.edit ΓÇ║ JobWebController@edit
+  POST      jobs/{job}/status jobs.update-status ΓÇ║ JobWebController@updateStaΓÇª
+  GET|HEAD  login ........................ login ΓÇ║ AuthWebController@showLogin
+  POST      login .................................... AuthWebController@login
+  POST      logout ......................... logout ΓÇ║ AuthWebController@logout
+  GET|HEAD  my-applications my-applications ΓÇ║ ApplicationWebController@myApplΓÇª
+  GET|HEAD  profile ...................... profile ΓÇ║ AuthWebController@profile
+  POST      profile ......... profile.update ΓÇ║ AuthWebController@updateProfile
+  GET|HEAD  register ............... register ΓÇ║ AuthWebController@showRegister
+  POST      register .............................. AuthWebController@register
+  GET|HEAD  sanctum/csrf-cookie sanctum.csrf-cookie ΓÇ║ Laravel\Sanctum ΓÇ║ CsrfCΓÇª
+  GET|HEAD  storage/{path} storage.local ΓÇ║ vendor/laravel/framework/src/IllumΓÇª
+  PUT       storage/{path} storage.local.upload ΓÇ║ vendor/laravel/framework/srΓÇª
+  GET|HEAD  up vendor/laravel/framework/src/Illuminate/Foundation/ConfiguratiΓÇª
+
+                                                           Showing [60] routes
+

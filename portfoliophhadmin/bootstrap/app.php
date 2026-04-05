@@ -12,9 +12,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Apply JSON response structure middleware to API requests
-        $middleware->append(\App\Http\Middleware\EnsureJsonResponseStructure::class);
-        
         $middleware->alias([
             'recruiter' => \App\Http\Middleware\RecruiterMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,

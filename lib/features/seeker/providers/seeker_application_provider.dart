@@ -3,7 +3,10 @@
 // Manages seeker's job applications with tracking and status updates.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:portfolioph/core/services/error_handler.dart';
+import 'package:portfolioph/core/services/toast_service.dart';
 import 'package:portfolioph/features/seeker/models/seeker_application_model.dart';
 import 'package:portfolioph/features/seeker/repositories/seeker_repository_impl.dart';
 
@@ -86,11 +89,16 @@ class SeekerApplicationProvider extends ChangeNotifier {
       _hasMore = loadedApplications.isNotEmpty;
       _isLoading = false;
       notifyListeners();
-    } catch (e) {
-      _error = e.toString();
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
       _isLoading = false;
       notifyListeners();
-      rethrow;
+    } catch (e) {
+      _error = e.toString();
+      ToastService.showError('Failed to load applications. Try again.');
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -105,10 +113,16 @@ class SeekerApplicationProvider extends ChangeNotifier {
     try {
       final application = await _repository.applyForJob(jobId);
       _applications.insert(0, application);
+      ToastService.showSuccess('Application submitted successfully! ✅');
       notifyListeners();
       return application;
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
+      notifyListeners();
+      rethrow;
     } catch (e) {
-      _error = e.toString();
+      ToastService.showError('Failed to submit application. Try again.');
       notifyListeners();
       rethrow;
     }
@@ -126,10 +140,14 @@ class SeekerApplicationProvider extends ChangeNotifier {
         );
         notifyListeners();
       }
-    } catch (e) {
-      _error = e.toString();
+      ToastService.showSuccess('Application withdrawn! ✅');
+    } on DioException catch (e) {
+      _error = ErrorHandler.mapError(e);
+      ToastService.showError(_error!);
       notifyListeners();
-      rethrow;
+    } catch (e) {
+      ToastService.showError('Failed to withdraw application. Try again.');
+      notifyListeners();
     }
   }
 

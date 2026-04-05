@@ -19,12 +19,16 @@ import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/utils/helpers.dart';
 import 'package:portfolioph/data/models/user_model.dart';
 import 'package:portfolioph/data/repositories/user_repository.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:portfolioph/core/services/api_service.dart';
 
 class AuthService {
   final UserRepository _userRepository;
+  final ApiService _apiService;
 
-  AuthService({UserRepository? userRepository})
-    : _userRepository = userRepository ?? UserRepository();
+  AuthService({UserRepository? userRepository, ApiService? apiService})
+    : _userRepository = userRepository ?? UserRepository(),
+      _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
   // ── Register ──────────────────────────────────────────────────────────────────
   /// Creates a new user account.
@@ -292,5 +296,55 @@ class AuthService {
     }
 
     return created;
+  }
+
+  // ── Token Management (NEW - Sanctum Integration) ────────────────────────────
+  
+  /// Check if a token exists in secure storage
+  Future<bool> hasToken() async {
+    return _apiService.hasToken();
+  }
+
+  /// Save a Sanctum token to secure storage
+  Future<void> saveToken(String token) async {
+    await _apiService.saveToken(token);
+  }
+
+  /// Clear the stored token (logout)
+  Future<void> clearToken() async {
+    await _apiService.clearToken();
+  }
+
+  /// Call backend logout endpoint (invalidates token on server)
+  /// Then clear local token
+  Future<void> logout() async {
+    try {
+      // Call /auth/logout endpoint on backend
+      // This invalidates the Sanctum token server-side
+      await _apiService.post('/auth/logout');
+    } catch (e) {
+      // Even if backend logout fails, we should clear local token
+      print('[AuthService] Backend logout error: $e');
+    }
+    
+    // Clear token from local storage
+    await _apiService.clearToken();
+  }
+
+  /// Get current user from API using stored token
+  /// Called on app startup to restore session
+  /// Returns null if token is invalid or expired
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      final response = await _apiService.get('/auth/me');
+      
+      if (response is Map<String, dynamic>) {
+        return UserModel.fromMap(response);
+      }
+      return null;
+    } catch (e) {
+      print('[AuthService] getCurrentUser failed: $e');
+      return null;
+    }
   }
 }

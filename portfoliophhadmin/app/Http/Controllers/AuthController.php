@@ -55,6 +55,23 @@ class AuthController extends Controller
     }
 
     /**
+     * Get current authenticated user (session restore)
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponse::error('Not authenticated', 401);
+        }
+
+        return ApiResponse::success(
+            $user->only(['id', 'name', 'email', 'role']),
+            'Current user',
+            200
+        );
+    }
+
+    /**
      * Logout user
      */
     public function logout(Request $request): JsonResponse
