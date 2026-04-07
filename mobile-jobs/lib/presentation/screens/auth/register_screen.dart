@@ -394,7 +394,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
-            color: isSelected ? primary.withOpacity(0.1) : Colors.transparent,
+            color: isSelected ? primary.withValues(alpha: 0.1) : Colors.transparent,
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(

@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (success) {
-      context.go(AppRoutes.roleSelection);
+      context.go(AppRoutes.profileSetup);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -294,7 +294,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             padding: const EdgeInsets.all(AppConstants.spacingMd),
                             decoration: BoxDecoration(
                               color: _selectedRole == AppConstants.roleSeeker
-                                  ? colorScheme.primary.withOpacity(0.1)
+                                  ? colorScheme.primary.withValues(alpha: 0.1)
                                   : colorScheme.surface,
                               border: Border.all(
                                 color: _selectedRole == AppConstants.roleSeeker
@@ -356,7 +356,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             padding: const EdgeInsets.all(AppConstants.spacingMd),
                             decoration: BoxDecoration(
                               color: _selectedRole == AppConstants.roleRecruiter
-                                  ? colorScheme.primary.withOpacity(0.1)
+                                  ? colorScheme.primary.withValues(alpha: 0.1)
                                   : colorScheme.surface,
                               border: Border.all(
                                 color: _selectedRole == AppConstants.roleRecruiter

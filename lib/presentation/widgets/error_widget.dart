@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
-import '../../core/services/api_error_interceptor.dart';
+import '../../core/exceptions/custom_exceptions.dart';
 
 /// Displays error message with optional retry button
 /// 
@@ -41,7 +41,7 @@ class ApiErrorWidget extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _getErrorColor(context).withOpacity(0.1),
+                  color: _getErrorColor(context).withValues(alpha: 0.1),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Icon(
@@ -149,8 +149,8 @@ class CompactErrorWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        color: Colors.red.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
