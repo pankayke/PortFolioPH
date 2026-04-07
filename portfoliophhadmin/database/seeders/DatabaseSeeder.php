@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Always ensure admin accounts exist first.
+        $this->call(AdminSeeder::class);
+
         // Create test job seeker
         $jobSeeker = User::factory()->jobSeeker()->create([
             'name' => 'Test Job Seeker',

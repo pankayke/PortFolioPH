@@ -25,20 +25,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/exceptions/auth_exception.dart';
 import 'package:portfolioph/data/models/user_model.dart';
-import 'package:portfolioph/data/repositories/user_repository.dart';
 import 'package:portfolioph/data/services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
-  final UserRepository _userRepository;
 
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
 
-  AuthProvider({AuthService? authService, UserRepository? userRepository})
-    : _authService = authService ?? AuthService(),
-      _userRepository = userRepository ?? UserRepository();
+  AuthProvider({AuthService? authService})
+    : _authService = authService ?? AuthService();
 
   // ── Getters ───────────────────────────────────────────────────────────────────
   UserModel? get currentUser => _currentUser;
@@ -74,7 +71,10 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = 'Registration failed. Please try again.';
+      final msg = e.toString().trim();
+      _errorMessage = msg.isEmpty
+          ? 'Registration failed. Please try again.'
+          : msg;
       notifyListeners();
       return false;
     } finally {
@@ -98,7 +98,8 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = 'Login failed. Please try again.';
+      final msg = e.toString().trim();
+      _errorMessage = msg.isEmpty ? 'Login failed. Please try again.' : msg;
       notifyListeners();
       return false;
     } finally {
@@ -107,15 +108,40 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ── Forgot password ─────────────────────────────────────────────────────────
-  /// Resets a user password using the registered email (offline/local DB).
+  /// Requests a reset token for the provided email.
+  Future<String?> requestPasswordReset({required String email}) async {
+    _begin();
+    try {
+      final token = await _authService.requestPasswordReset(email: email);
+      notifyListeners();
+      return token;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return null;
+    } catch (_) {
+      _errorMessage = 'Could not request reset token. Please try again.';
+      notifyListeners();
+      return null;
+    } finally {
+      _endLoading();
+    }
+  }
+
+  /// Confirms password reset using email + token + new password.
   /// Returns `true` on success; populates [errorMessage] on failure.
-  Future<bool> resetPassword({
+  Future<bool> confirmPasswordReset({
     required String email,
+    required String token,
     required String newPassword,
   }) async {
     _begin();
     try {
-      await _authService.resetPassword(email: email, newPassword: newPassword);
+      await _authService.confirmPasswordReset(
+        email: email,
+        token: token,
+        newPassword: newPassword,
+      );
       notifyListeners();
       return true;
     } on AuthException catch (e) {
@@ -203,6 +229,37 @@ class AuthProvider extends ChangeNotifier {
   /// Called by the profile setup / edit flows after [ProfileService.updateProfile].
   void updateCurrentUser(UserModel updated) {
     _currentUser = updated;
+    notifyListeners();
+  }
+
+  // ── Token expiry handling ─────────────────────────────────────────────────────
+  /// Handles 401 Unauthorized responses (expired or invalid token).
+  /// 
+  /// Called by providers/screens when they catch UnauthorizedException.
+  /// This ensures consistent logout behavior across the app.
+  /// 
+  /// Flow:
+  /// 1. Clear stored token from secure storage
+  /// 2. Clear currentUser from state
+  /// 3. Notify listeners (triggers UI rebuild)
+  /// 4. Caller should navigate to /login
+  /// 
+  /// Usage in providers:
+  /// ```dart
+  /// try {
+  ///   final result = await _userRepository.updateProfile(...);
+  /// } on UnauthorizedException catch (e) {
+  ///   debugPrint('Token expired: $e');
+  ///   authProvider.handleTokenExpired();
+  ///   // Then in UI, navigate to login
+  /// }
+  /// ```
+  Future<void> handleTokenExpired() async {
+    debugPrint('[AuthProvider] Token expired - clearing session');
+    
+    await _authService.clearToken();
+    _currentUser = null;
+    _errorMessage = 'Session expired. Please log in again.';
     notifyListeners();
   }
 

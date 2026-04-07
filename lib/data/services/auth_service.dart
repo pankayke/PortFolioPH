@@ -21,6 +21,7 @@ import 'package:portfolioph/data/models/user_model.dart';
 import 'package:portfolioph/data/repositories/user_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
+import 'package:portfolioph/core/utils/logging_utils.dart';
 
 class AuthService {
   final UserRepository _userRepository;
@@ -138,20 +139,53 @@ class AuthService {
     return _ensureAdminBootstrap(user);
   }
 
-  // ── Forgot/Reset password (offline) ────────────────────────────────────────
-  /// Resets a user's password using their registered email.
+  // ── Forgot/Reset password ──────────────────────────────────────────────────
+  /// Requests a reset token for the provided email.
   ///
-  /// Throws [AuthException] when:
-  ///   - email is blank/invalid
-  ///   - new password is blank
-  ///   - account is not found
-  Future<void> resetPassword({
+  /// In local/development, backend may return `reset_token` in response data.
+  Future<String?> requestPasswordReset({required String email}) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) {
+      throw const AuthException('Email is required.', code: 'email_empty');
+    }
+
+    try {
+      final response = await _apiService.post(
+        '/auth/password-reset/request',
+        data: {'email': normalizedEmail},
+      );
+
+      if (response is Map<String, dynamic>) {
+        final token = response['reset_token'];
+        if (token is String && token.isNotEmpty) {
+          return token;
+        }
+      }
+
+      return null;
+    } catch (_) {
+      throw const AuthException(
+        'Could not request reset token. Please try again.',
+        code: 'password_reset_request_failed',
+      );
+    }
+  }
+
+  /// Confirms password reset using email + token + new password.
+  Future<void> confirmPasswordReset({
     required String email,
+    required String token,
     required String newPassword,
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
     if (normalizedEmail.isEmpty) {
       throw const AuthException('Email is required.', code: 'email_empty');
+    }
+    if (token.trim().isEmpty) {
+      throw const AuthException(
+        'Reset token is required.',
+        code: 'token_empty',
+      );
     }
     if (newPassword.isEmpty) {
       throw const AuthException(
@@ -160,20 +194,29 @@ class AuthService {
       );
     }
 
-    final user = await _userRepository.findByEmail(normalizedEmail);
-    if (user == null) {
-      throw const AuthException(
-        'No account found for this email.',
-        code: 'email_not_found',
+    try {
+      await _apiService.post(
+        '/auth/password-reset/confirm',
+        data: {
+          'email': normalizedEmail,
+          'token': token.trim(),
+          'new_password': newPassword,
+        },
+      );
+    } catch (e) {
+      final errorText = e.toString().toLowerCase();
+      if (errorText.contains('invalid or expired reset token') ||
+          errorText.contains('422')) {
+        throw const AuthException(
+          'Invalid or expired reset token.',
+          code: 'token_invalid_or_expired',
+        );
+      }
+      throw AuthException(
+        'Password reset failed. Please try again.',
+        code: 'password_reset_failed',
       );
     }
-
-    final updatedUser = user.copyWith(
-      passwordHash: AppHelpers.hashPassword(newPassword),
-      updatedAt: AppHelpers.nowIso(),
-    );
-
-    await _userRepository.update(updatedUser);
   }
 
   /// Ensures there is always at least one admin account in local development.
@@ -324,7 +367,7 @@ class AuthService {
       await _apiService.post('/auth/logout');
     } catch (e) {
       // Even if backend logout fails, we should clear local token
-      print('[AuthService] Backend logout error: $e');
+      AppLogger.warning('[AuthService] Backend logout error: $e');
     }
     
     // Clear token from local storage
@@ -343,7 +386,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('[AuthService] getCurrentUser failed: $e');
+      AppLogger.warning('[AuthService] getCurrentUser failed: $e');
       return null;
     }
   }

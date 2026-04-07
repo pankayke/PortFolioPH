@@ -26,11 +26,11 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
     try {
       final queryParams = {
         'page': page,
-        if (search != null) 'search': search,
-        if (category != null) 'category': category,
-        if (location != null) 'location': location,
-        if (employmentType != null) 'employment_type': employmentType,
-        if (experienceLevel != null) 'experience_level': experienceLevel,
+        'search': ?search,
+        'category': ?category,
+        'location': ?location,
+        'employment_type': ?employmentType,
+        'experience_level': ?experienceLevel,
       };
 
       final response = await _apiService.get(
@@ -114,7 +114,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
       final queryParams = {
         'page': page,
         'sort_by': sortBy,
-        if (status != null) 'status': status,
+        'status': ?status,
       };
 
       final response = await _apiService.get(

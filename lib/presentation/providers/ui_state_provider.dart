@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/foundation.dart';
-import '../../core/services/api_error_interceptor.dart';
+import '../../core/exceptions/custom_exceptions.dart';
 
 /// Enum for UI state lifecycle
 enum UiStateType { initial, loading, success, error }
@@ -91,11 +91,7 @@ mixin AsyncOperationMixin on ChangeNotifier {
       notifyListeners();
       return null;
     } catch (e) {
-      final error = ApiException(
-        e.toString(),
-        code: 'UNKNOWN',
-        originalError: e,
-      );
+      final error = ApiException(e.toString(), e);
       _state = UiState.error(error);
       onError?.call(error);
       notifyListeners();
@@ -120,7 +116,7 @@ mixin AsyncOperationMixin on ChangeNotifier {
 /// Shows how to use AsyncOperationMixin for common use cases
 class ExampleAsyncProvider extends ChangeNotifier with AsyncOperationMixin {
   // Example: List state
-  List<dynamic> _items = [];
+  final List<dynamic> _items = [];
   List<dynamic> get items => _items;
 
   // Example usage:
@@ -143,9 +139,9 @@ class ExampleAsyncProvider extends ChangeNotifier with AsyncOperationMixin {
 }
 
 /// Pagination mixin for paginated list screens
-mixin PaginationMixin on ChangeNotifier with AsyncOperationMixin {
+mixin PaginationMixin on ChangeNotifier, AsyncOperationMixin {
   int _currentPage = 1;
-  int _perPage = 15;
+  final int _perPage = 15;
   List<dynamic> _items = [];
   bool _hasMore = true;
 

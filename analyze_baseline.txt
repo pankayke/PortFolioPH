@@ -1,0 +1,113 @@
+Analyzing portfolioph...                                        
+
+   info - Dangling library doc comment - lib\core\exceptions\custom_exceptions.dart:1:1 - dangling_library_doc_comments
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:44:3 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:48:3 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:52:3 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:56:3 - use_super_parameters
+   info - Parameters ''message' and 'details'' could be super parameters - lib\core\exceptions\custom_exceptions.dart:60:3 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:65:3 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:69:3 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\core\exceptions\custom_exceptions.dart:73:3 - use_super_parameters
+   info - The imported package 'path' isn't a dependency of the importing package - lib\core\utils\file_utils.dart:3:8 - depend_on_referenced_packages
+   info - The imported package 'path_provider' isn't a dependency of the importing package - lib\core\utils\file_utils.dart:4:8 - depend_on_referenced_packages
+   info - Dangling library doc comment - lib\data\services\api_service.dart:1:1 - dangling_library_doc_comments
+   info - Don't invoke 'print' in production code - lib\data\services\auth_service.dart:327:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\data\services\auth_service.dart:346:7 - avoid_print
+   info - The imported package 'path' isn't a dependency of the importing package - lib\data\services\certification_image_service.dart:5:8 - depend_on_referenced_packages
+   info - The imported package 'path' isn't a dependency of the importing package - lib\data\services\image_storage_service.dart:5:8 - depend_on_referenced_packages
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:18:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:25:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:34:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:42:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:49:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:56:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:63:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:70:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:77:9 - use_super_parameters
+   info - Parameter 'message' could be a super parameter - lib\domain\failures\failures.dart:84:9 - use_super_parameters
+   info - The private field _totalPages could be 'final' - lib\features\recruiter\providers\recruiter_job_manager_provider.dart:19:7 - prefer_final_fields
+   info - Unnecessary override - lib\features\recruiter\providers\recruiter_job_manager_provider.dart:204:8 - unnecessary_overrides
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\recruiter\repositories\recruiter_repository_impl.dart:23:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\recruiter\repositories\recruiter_repository_impl.dart:24:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\recruiter\repositories\recruiter_repository_impl.dart:109:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\recruiter\repositories\recruiter_repository_impl.dart:110:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\recruiter\repositories\recruiter_repository_impl.dart:151:34 - use_null_aware_elements
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\approval\recruiter_pending_screen.dart:14:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\approval\recruiter_rejected_screen.dart:14:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\dashboard\recruiter_dashboard_screen.dart:14:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\placeholder_screens.dart:13:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\placeholder_screens.dart:26:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\placeholder_screens.dart:39:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\placeholder_screens.dart:52:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\recruiter\screens\placeholder_screens.dart:65:9 - use_super_parameters
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\seeker\repositories\seeker_repository_impl.dart:29:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\seeker\repositories\seeker_repository_impl.dart:30:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\seeker\repositories\seeker_repository_impl.dart:31:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\seeker\repositories\seeker_repository_impl.dart:32:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\seeker\repositories\seeker_repository_impl.dart:33:9 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\seeker\repositories\seeker_repository_impl.dart:117:9 - use_null_aware_elements
+   info - Parameter 'key' could be a super parameter - lib\features\seeker\screens\dashboard\seeker_dashboard_screen.dart:14:9 - use_super_parameters
+   info - Unnecessary use of multiple underscores - lib\presentation\providers\app_providers.dart:91:31 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\providers\app_providers.dart:96:31 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\presentation\providers\app_providers.dart:101:31 - unnecessary_underscores
+   info - The private field _items could be 'final' - lib\presentation\providers\ui_state_provider.dart:119:17 - prefer_final_fields
+   info - The private field _perPage could be 'final' - lib\presentation\providers\ui_state_provider.dart:144:7 - prefer_final_fields
+   info - Parameter 'key' could be a super parameter - lib\presentation\screens\admin\filament_admin_screen.dart:10:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\auth\register_screen.dart:297:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\auth\register_screen.dart:359:57 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\dashboard\applied_jobs_screen.dart:40:7 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\dashboard\applied_jobs_screen.dart:189:44 - deprecated_member_use
+warning - Unused import: 'package:portfolioph/core/constants/app_constants.dart' - lib\presentation\screens\main_scaffold.dart:13:8 - unused_import
+   info - The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\presentation\screens\profile\edit_profile_screen.dart:17:8 - unnecessary_import
+   info - 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre - lib\presentation\screens\profile\edit_profile_screen.dart:281:68 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\profile\edit_profile_screen.dart:485:32 - deprecated_member_use
+   info - 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre - lib\presentation\screens\profile\notification_settings_screen.dart:256:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\screens\profile\notification_settings_screen.dart:322:56 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_education_screen.dart:146:17 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_education_screen.dart:147:17 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_experience_screen.dart:160:17 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\presentation\screens\resume\add_edit_experience_screen.dart:161:17 - use_build_context_synchronously
+   info - The imported package 'path_provider' isn't a dependency of the importing package - lib\presentation\screens\resume\resume_export_screen.dart:16:8 - depend_on_referenced_packages
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:196:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:197:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:221:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:222:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:245:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\resume\resume_export_screen.dart:246:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:453:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:454:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:478:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:479:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:503:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:504:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:536:23 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:537:23 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:570:23 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\presentation\screens\settings\settings_screen.dart:571:23 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\common\skeleton_loader.dart:13:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\common\skeleton_loader.dart:76:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\common\skeleton_loader.dart:112:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\error_widget.dart:22:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\widgets\error_widget.dart:44:50 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\error_widget.dart:139:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\widgets\error_widget.dart:152:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\widgets\error_widget.dart:153:46 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\skeleton_loader.dart:16:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\skeleton_loader.dart:84:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\skeleton_loader.dart:141:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\skeleton_loader.dart:157:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\skeleton_loader.dart:218:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\presentation\widgets\skeleton_loader.dart:289:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\presentation\widgets\skeleton_loader.dart:303:33 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\main.dart:15:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\presentation\screens\applications\my_applications_screen.dart:4:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\presentation\screens\auth\login_screen.dart:7:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\presentation\screens\auth\register_screen.dart:7:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - mobile-jobs\lib\presentation\screens\auth\register_screen.dart:397:41 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\presentation\screens\jobs\job_detail_screen.dart:6:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\presentation\screens\jobs\job_list_screen.dart:4:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\presentation\screens\jobs\post_job_screen.dart:4:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - mobile-jobs\lib\routes\app_router.dart:76:9 - use_super_parameters
+
+109 issues found. (ran in 10.6s)

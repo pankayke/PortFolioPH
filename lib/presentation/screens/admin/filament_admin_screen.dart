@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 
 class FilamentAdminScreen extends StatefulWidget {
-  const FilamentAdminScreen({Key? key}) : super(key: key);
+  const FilamentAdminScreen({super.key});
 
   @override
   State<FilamentAdminScreen> createState() => _FilamentAdminScreenState();

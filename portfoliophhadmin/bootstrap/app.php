@@ -3,6 +3,11 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,9 +18,16 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'auth' => \App\Http\Middleware\Authenticate::class,
+            'api.guard' => \App\Http\Middleware\ApiGuard::class,
             'recruiter' => \App\Http\Middleware\RecruiterMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'ensure.json.structure' => \App\Http\Middleware\EnsureJsonResponseStructure::class,
+        ]);
+
+        $middleware->appendToGroup('api', [
+            \App\Http\Middleware\ApiGuard::class,
+            \App\Http\Middleware\EnsureJsonResponseStructure::class,
         ]);
         
         // Replace Authenticate middleware for JSON API responses
@@ -25,5 +37,55 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated',
+                    'data' => null,
+                    'errors' => null,
+                ], 401);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Forbidden',
+                    'data' => null,
+                    'errors' => null,
+                ], 403);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (ModelNotFoundException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resource not found',
+                    'data' => null,
+                    'errors' => null,
+                ], 404);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resource not found',
+                    'data' => null,
+                    'errors' => null,
+                ], 404);
+            }
+
+            return null;
+        });
     })->create();

@@ -5,8 +5,12 @@
 // User-friendly error messages mapped by type
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+
+import '../exceptions/custom_exceptions.dart';
 
 /// Intelligent error interceptor with retry logic
 /// 
@@ -18,7 +22,6 @@ import 'package:flutter/foundation.dart';
 /// - User-friendly error message mapping
 class ApiErrorInterceptor extends Interceptor {
   static const int _maxRetries = 3;
-  static const int _retryOn = 500; // Retry on 5xx, 0 (network error)
   
   /// Retry delay strategy: exponential backoff
   /// Attempt 1: 100ms, Attempt 2: 200ms, Attempt 3: 400ms
@@ -61,7 +64,14 @@ class ApiErrorInterceptor extends Interceptor {
 
     // Convert to user-friendly exception
     final exception = _mapToUserFriendlyError(err);
-    return handler.reject(exception);
+    // Wrap ApiException in DioException for handler.reject()
+    return handler.reject(
+      DioException(
+        requestOptions: err.requestOptions,
+        error: exception,
+        message: exception.message,
+      ),
+    );
   }
 
   /// Determine if request should be retried
@@ -140,21 +150,21 @@ class ApiErrorInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionTimeout) {
       return ApiException(
         'Connection timeout\nPlease check your internet connection',
-        code: 'CONNECTION_TIMEOUT',
+        'CONNECTION_TIMEOUT',
       );
     }
 
     if (err.type == DioExceptionType.receiveTimeout) {
       return ApiException(
         'Server took too long to respond\nPlease try again',
-        code: 'RECEIVE_TIMEOUT',
+        'RECEIVE_TIMEOUT',
       );
     }
 
     if (err.type == DioExceptionType.sendTimeout) {
       return ApiException(
         'Request took too long to send\nPlease try again',
-        code: 'SEND_TIMEOUT',
+        'SEND_TIMEOUT',
       );
     }
 
@@ -163,12 +173,12 @@ class ApiErrorInterceptor extends Interceptor {
       if (err.error is SocketException) {
         return ApiException(
           'No internet connection\nPlease connect and try again',
-          code: 'NO_INTERNET',
+          'NO_INTERNET',
         );
       }
       return ApiException(
         'Network error occurred\nPlease try again',
-        code: 'NETWORK_ERROR',
+        'NETWORK_ERROR',
       );
     }
 
@@ -176,7 +186,7 @@ class ApiErrorInterceptor extends Interceptor {
     if (err.response?.statusCode != null && err.response!.statusCode! >= 500) {
       return ApiException(
         'Server error\nPlease try again later',
-        code: 'SERVER_ERROR_${err.response!.statusCode}',
+        'SERVER_ERROR_${err.response!.statusCode}',
       );
     }
 
@@ -184,43 +194,14 @@ class ApiErrorInterceptor extends Interceptor {
     if (err.type == DioExceptionType.cancel) {
       return ApiException(
         'Request was cancelled',
-        code: 'REQUEST_CANCELLED',
+        'REQUEST_CANCELLED',
       );
     }
 
     // Default
     return ApiException(
       err.message ?? 'An unexpected error occurred',
-      code: 'UNKNOWN_ERROR',
+      'UNKNOWN_ERROR',
     );
   }
 }
-
-/// Base API exception with optional error code for handling
-class ApiException implements Exception {
-  final String message;
-  final String? code;
-  final dynamic originalError;
-
-  ApiException(
-    this.message, {
-    this.code,
-    this.originalError,
-  });
-
-  @override
-  String toString() => message;
-
-  /// Check if this is a network error
-  bool get isNetworkError =>
-      code?.contains('TIMEOUT') == true || code?.contains('INTERNET') == true;
-
-  /// Check if this is a server error
-  bool get isServerError => code?.contains('SERVER_ERROR') == true;
-
-  /// Check if retries are recommended
-  bool get isRetryable => isNetworkError || isServerError;
-}
-
-// Import socket exception from dart:io for connection error handling
-import 'dart:io';

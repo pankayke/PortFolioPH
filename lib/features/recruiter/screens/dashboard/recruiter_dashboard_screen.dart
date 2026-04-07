@@ -8,10 +8,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
+import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class RecruiterDashboardScreen extends StatefulWidget {
-  const RecruiterDashboardScreen({Key? key}) : super(key: key);
+  const RecruiterDashboardScreen({super.key});
 
   @override
   State<RecruiterDashboardScreen> createState() =>
@@ -20,6 +22,18 @@ class RecruiterDashboardScreen extends StatefulWidget {
 
 class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<RecruiterJobManagerProvider>().loadJobs(refresh: true);
+      context.read<RecruiterApplicationManagerProvider>().loadApplications(
+        refresh: true,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +98,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   }
 
   Widget _buildOverviewTab() {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
+    return Consumer3<AuthProvider, RecruiterJobManagerProvider,
+        RecruiterApplicationManagerProvider>(
+      builder: (context, authProvider, jobsProvider, appsProvider, _) {
         final user = authProvider.currentUser;
 
         return SingleChildScrollView(
@@ -133,28 +148,28 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                   _buildStatCard(
                     context,
                     title: 'Open Jobs',
-                    value: '5',
+                    value: '${jobsProvider.openJobCount}',
                     icon: Icons.work,
                     color: Colors.blue,
                   ),
                   _buildStatCard(
                     context,
                     title: 'Applications',
-                    value: '23',
+                    value: '${appsProvider.applications.length}',
                     icon: Icons.assignment,
                     color: Colors.orange,
                   ),
                   _buildStatCard(
                     context,
-                    title: 'Total Candidates',
-                    value: '15',
+                    title: 'Reviewed',
+                    value: '${appsProvider.reviewingCount}',
                     icon: Icons.group,
                     color: Colors.green,
                   ),
                   _buildStatCard(
                     context,
                     title: 'Shortlisted',
-                    value: '7',
+                    value: '${appsProvider.shortlistedCount}',
                     icon: Icons.favorite,
                     color: Colors.red,
                   ),
@@ -194,39 +209,66 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   }
 
   Widget _buildJobsTab() {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.work, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          const Text('Jobs Management - Coming Soon'),
+          const Text('Manage your posted jobs and hiring pipeline.'),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () => context.push(AppRoutes.recruiterJobCreate),
+            icon: const Icon(Icons.add),
+            label: const Text('Post New Job'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () => context.push(AppRoutes.recruiterJobsList),
+            icon: const Icon(Icons.work_outline),
+            label: const Text('Open My Jobs'),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildApplicantsTab() {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.group, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          const Text('Applicants Tab - Coming Soon'),
+          const Text('Review applicants and update decisions.'),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () => context.push(AppRoutes.recruiterApplications),
+            icon: const Icon(Icons.group_outlined),
+            label: const Text('Open Applicants'),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildProfileTab() {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.person, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          const Text('Profile Tab - Coming Soon'),
+          const Text('Keep your recruiter profile updated.'),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () => context.push(AppRoutes.editProfile),
+            icon: const Icon(Icons.edit_outlined),
+            label: const Text('Edit Profile'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () => context.push(AppRoutes.notificationSettings),
+            icon: const Icon(Icons.notifications_outlined),
+            label: const Text('Notification Settings'),
+          ),
         ],
       ),
     );

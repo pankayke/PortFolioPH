@@ -1,18 +1,31 @@
 // lib/core/services/api_service.dart
 // ─────────────────────────────────────────────────────────────────────────────
 // HTTP client service using Dio with Sanctum auth interceptors.
-// NOW: Online-only, no caching. Real-time API pulls for all dynamic data.
+// 
+// CRITICAL: This is the ONLY place that makes HTTP calls to Laravel.
+// NO MOCKS. NO FALLBACKS. REAL DATA ONLY.
+// 
+// Features:
+//   • Initializes Dio with base URL and timeouts
+//   • Automatically injects Sanctum bearer token in all requests
+//   • Handles errors and converts to user-friendly exceptions
+//   • Manages token storage in flutter_secure_storage
+//   • Implements get, post, put, delete methods
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:portfolioph/core/config/app_config.dart';
+import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
+import 'package:portfolioph/core/utils/logging_utils.dart';
+
 import 'api_error_interceptor.dart';
 
 class ApiService {
-  // For local development: http://localhost:8000/api
-  // For production: update to your API domain
-  static const String baseUrl = 'http://localhost:8000/api';
+  // Base URL is now environment-aware (configured via AppConfig)
+  // - Development: http://localhost:8000/api
+  // - Staging: https://staging-api.portfolioph.dev/api
+  // - Production: https://api.portfolioph.dev/api
   static const String tokenKey = 'auth_token';
   static const String userKey = 'auth_user';
 
@@ -30,10 +43,14 @@ class ApiService {
   void _initializeDio() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: kConnectTimeout,
         receiveTimeout: kReceiveTimeout,
         contentType: 'application/json',
+        headers: const {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
         validateStatus: (_) => true, // Don't throw on any status
       ),
     );
@@ -49,6 +66,8 @@ class ApiService {
 
     // Add intelligent error interceptor with retry logic (TIER 2)
     _dio.interceptors.add(ApiErrorInterceptor());
+
+    AppLogger.success('ApiService initialized with ${AppConfig.apiBaseUrl}');
   }
 
   Future<void> _onRequest(
@@ -68,8 +87,8 @@ class ApiService {
     Response response,
     ResponseInterceptorHandler handler,
   ) async {
-    debugPrint(
-      '[ApiService] Response ${response.statusCode} | ${response.requestOptions.path}',
+    AppLogger.debug(
+      'Response ${response.statusCode} | ${response.requestOptions.path}',
     );
     return handler.next(response);
   }
@@ -78,14 +97,15 @@ class ApiService {
     DioException error,
     ErrorInterceptorHandler handler,
   ) async {
-    debugPrint(
-      '[ApiService] Error ${error.response?.statusCode} | ${error.message}',
+    AppLogger.error(
+      'API Error ${error.response?.statusCode} | ${error.message}',
+      error: error,
     );
 
     // Handle 401 - token expired or invalid
     if (error.response?.statusCode == 401) {
       await _secureStorage.delete(key: tokenKey);
-      debugPrint('[ApiService] Token cleared - unauthorized');
+      AppLogger.warning('Token cleared - unauthorized');
       // Caller should handle logout
     }
 
@@ -148,6 +168,36 @@ class ApiService {
       final response = await _dio.delete(
         path,
         queryParameters: queryParameters,
+      );
+      return _handleResponse(response);
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  /// Multipart form data upload (for file uploads with additional fields).
+  /// 
+  /// Usage:
+  /// ```dart
+  /// final formData = FormData.fromMap({
+  ///   'name': 'John Doe',
+  ///   'avatar': await MultipartFile.fromFile(imagePath),
+  /// });
+  /// await apiService.multipart('/profile/update', data: formData);
+  /// ```
+  Future<dynamic> multipart(
+    String path, {
+    required FormData data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
       );
       return _handleResponse(response);
     } on DioException catch (e) {
@@ -232,6 +282,8 @@ class ApiService {
   }
 
   dynamic _handleError(DioException error) {
+    final baseOrigin = _dio.options.baseUrl;
+
     if (error.response != null) {
       return _handleResponse(error.response!);
     }
@@ -243,36 +295,27 @@ class ApiService {
         return TimeoutException('Request timeout');
       case DioExceptionType.badResponse:
         return ApiException('Bad response');
+      case DioExceptionType.connectionError:
+        return NetworkException(
+          'Cannot reach API at $baseOrigin. Ensure the backend server is running and CORS allows this origin.',
+        );
       case DioExceptionType.cancel:
         return ApiException('Request cancelled');
       case DioExceptionType.unknown:
+        final message = error.message ?? 'Unknown error';
+        if (message.contains('XMLHttpRequest onError callback')) {
+          return NetworkException(
+            'Browser request failed before receiving a response. This usually means the API is offline or blocked by CORS at $baseOrigin.',
+          );
+        }
+        return ApiException(message);
       default:
         return ApiException(error.message ?? 'Unknown error');
     }
   }
 }
 
-// ─── Custom Exceptions (deprecated - moved to api_error_interceptor.dart) ────────────────────────────────────────────────
+// ─── Error Handling ────────────────────────────────────────────────────────
 
-// These exception classes are kept for backward compatibility during transition
-// New code should use ApiException from api_error_interceptor.dart
-
-class UnauthorizedException extends ApiException {
-  UnauthorizedException(String message) : super(message);
-}
-
-class ForbiddenException extends ApiException {
-  ForbiddenException(String message) : super(message);
-}
-
-class ValidationException extends ApiException {
-  ValidationException(String message) : super(message);
-}
-
-class ServerException extends ApiException {
-  ServerException(String message) : super(message);
-}
-
-class TimeoutException extends ApiException {
-  TimeoutException(String message) : super(message);
-}
+/* Exception classes are now defined in lib/core/exceptions/custom_exceptions.dart
+   See: UnauthorizedException, ForbiddenException, ValidationException, etc. */

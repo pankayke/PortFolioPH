@@ -20,11 +20,11 @@ class ApiErrorWidget extends StatelessWidget {
   final bool showRetryButton;
 
   const ApiErrorWidget({
-    Key? key,
+    super.key,
     required this.error,
     this.onRetry,
     this.showRetryButton = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -137,10 +137,10 @@ class CompactErrorWidget extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const CompactErrorWidget({
-    Key? key,
+    super.key,
     required this.error,
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -9,13 +9,15 @@ class UpdateApplicationStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === 'recruiter';
+        $user = $this->user();
+
+        return $user?->role === 'recruiter';
     }
 
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in('pending', 'accepted', 'rejected')],
+            'status' => ['required', Rule::in('pending', 'reviewed', 'shortlisted', 'accepted', 'rejected')],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
     }

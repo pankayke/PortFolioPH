@@ -53,6 +53,9 @@
             <p class="text-sm text-blue-800"><strong>Demo Credentials:</strong></p>
             <p class="text-sm text-blue-800">Email: recruiter@example.com</p>
             <p class="text-sm text-blue-800">Password: password</p>
+            <p class="text-sm text-blue-800 mt-2"><strong>Admin Credentials:</strong></p>
+            <p class="text-sm text-blue-800">Email: admin@portfolio.ph</p>
+            <p class="text-sm text-blue-800">Password: password</p>
         </div>
     </div>
 </div>

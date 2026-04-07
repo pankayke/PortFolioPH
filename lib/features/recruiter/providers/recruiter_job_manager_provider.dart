@@ -16,7 +16,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   String? _error;
   String? _selectedStatus;
   int _currentPage = 1;
-  int _totalPages = 1;
+  final int _totalPages = 1;
   bool _hasMore = true;
   String? _searchQuery;
 
@@ -31,7 +31,13 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   bool get hasMore => _hasMore;
   String? get searchQuery => _searchQuery;
 
-  int get activeJobCount => _jobs.where((j) => j.status == 'active').length;
+  int get activeJobCount => _jobs
+      .where((j) => j.status == 'approved' || j.status == 'pending')
+      .length;
+  int get openJobCount => _jobs
+      .where((j) => j.status == 'approved' || j.status == 'pending')
+      .length;
+  int get draftJobCount => _jobs.where((j) => j.status == 'draft').length;
   int get closedJobCount => _jobs.where((j) => j.status == 'closed').length;
 
   // ─────── Constructor ───────────────────────────────────────────────────────
@@ -200,8 +206,4 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
     return 'Unknown error occurred';
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }

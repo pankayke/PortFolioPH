@@ -9,7 +9,9 @@ class UpdateJobRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === 'recruiter';
+        $user = $this->user();
+
+        return $user?->role === 'recruiter';
     }
 
     public function rules(): array
@@ -24,7 +26,7 @@ class UpdateJobRequest extends FormRequest
             'required_skills' => ['nullable', 'array'],
             'required_skills.*' => ['string', 'max:100'],
             'deadline' => ['nullable', 'date', 'after:now'],
-            'status' => ['sometimes', Rule::in('open', 'closed')],
+            'status' => ['sometimes', Rule::in('draft', 'pending', 'approved', 'closed')],
         ];
     }
 

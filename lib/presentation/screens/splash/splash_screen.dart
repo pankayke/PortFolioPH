@@ -17,7 +17,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/data/datasources/local/database_service.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -53,15 +52,13 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _init() async {
     try {
-      // Run DB open and minimum splash timer concurrently.
-      await Future.wait([
-        DatabaseService().open(),
-        Future.delayed(AppConstants.splashDuration),
-      ]);
+      // ✅ API-First: No database initialization required.
+      // Run minimum splash timer (3s UX requirement).
+      await Future.delayed(AppConstants.splashDuration);
 
       if (!mounted) return;
 
-      // Let AuthProvider attempt session restore.
+      // Let AuthProvider attempt session restore from SharedPreferences.
       final authProvider = context.read<AuthProvider>();
       final hasSession = await authProvider.restoreSession();
 

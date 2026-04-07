@@ -1,55 +1,98 @@
-import 'package:sqflite/sqflite.dart';
-
-import 'package:portfolioph/data/datasources/local/database_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/student_skills_model.dart';
 
+/// StudentSkillsRepository (API-First)
+/// 
+/// Fetches student skills from the backend API.
+/// No local SQLite operations - all data is from the server.
 class StudentSkillsRepository {
-  final DatabaseService _db;
+  final ApiService _apiService;
 
-  StudentSkillsRepository({DatabaseService? databaseService})
-    : _db = databaseService ?? DatabaseService();
+  StudentSkillsRepository({ApiService? apiService})
+    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
-  Future<int> insert(StudentSkillsModel skill) async {
-    final db = await _db.getDatabase();
-    return db.insert(
-      'skills_tracker',
-      skill.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.abort,
-    );
-  }
-
+  /// Fetch all skills for a specific student
   Future<List<StudentSkillsModel>> findByStudentId(int studentId) async {
-    final db = await _db.getDatabase();
-    final rows = await db.query(
-      'skills_tracker',
-      where: 'user_id = ?',
-      whereArgs: [studentId],
-      orderBy: 'date_added DESC, name ASC',
-    );
-    return rows.map(StudentSkillsModel.fromMap).toList(growable: false);
+    try {
+      final response = await _apiService.get(
+        '/students/$studentId/skills',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as List;
+        return data
+            .map((json) => StudentSkillsModel.fromMap(json as Map<String, dynamic>))
+            .toList();
+      }
+
+      return [];
+    } catch (e) {
+      throw Exception('Failed to load student skills: $e');
+    }
   }
 
+  /// Count skills for a specific student
   Future<int> countByStudentId(int studentId) async {
-    final db = await _db.getDatabase();
-    final rows = await db.rawQuery(
-      'SELECT COUNT(*) AS count FROM skills_tracker WHERE user_id = ?',
-      [studentId],
-    );
-    return (rows.first['count'] as int?) ?? 0;
+    try {
+      final response = await _apiService.get(
+        '/students/$studentId/skills/count',
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['count'] as int? ?? 0;
+      }
+
+      return 0;
+    } catch (e) {
+      throw Exception('Failed to count student skills: $e');
+    }
   }
 
+  /// Add a new skill for a student
+  Future<int> insert(StudentSkillsModel skill) async {
+    try {
+      final response = await _apiService.post(
+        '/students/${skill.studentId}/skills',
+        data: skill.toMap(),
+      );
+
+      if (response.statusCode == 201) {
+        return response.data['id'] as int;
+      }
+
+      throw Exception('Failed to insert skill');
+    } catch (e) {
+      throw Exception('Failed to add student skill: $e');
+    }
+  }
+
+  /// Update an existing skill
   Future<int> update(StudentSkillsModel skill) async {
-    final db = await _db.getDatabase();
-    return db.update(
-      'skills_tracker',
-      skill.toMap(),
-      where: 'id = ?',
-      whereArgs: [skill.id],
-    );
+    try {
+      final response = await _apiService.put(
+        '/students/${skill.studentId}/skills/${skill.id}',
+        data: skill.toMap(),
+      );
+
+      if (response.statusCode == 200) {
+        return 1;
+      }
+
+      return 0;
+    } catch (e) {
+      throw Exception('Failed to update student skill: $e');
+    }
   }
 
+  /// Delete a skill
   Future<int> delete(int id) async {
-    final db = await _db.getDatabase();
-    return db.delete('skills_tracker', where: 'id = ?', whereArgs: [id]);
+    try {
+      final response = await _apiService.delete('/skills/$id');
+
+      return (response.statusCode == 204 || response.statusCode == 200) ? 1 : 0;
+    } catch (e) {
+      throw Exception('Failed to delete student skill: $e');
+    }
   }
 }

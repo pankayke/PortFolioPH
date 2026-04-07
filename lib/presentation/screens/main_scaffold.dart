@@ -10,15 +10,12 @@ import 'package:flutter/services.dart';
 import 'package:portfolioph/core/theme/color_palette.dart';
 import 'package:provider/provider.dart';
 
-import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/navigation_provider.dart';
 import 'package:portfolioph/presentation/screens/dashboard/dashboard_screen.dart';
 import 'package:portfolioph/presentation/screens/portfolio/portfolio_screen.dart';
 import 'package:portfolioph/presentation/screens/resume/resume_screen.dart';
 import 'package:portfolioph/presentation/screens/skills/skills_screen.dart';
 import 'package:portfolioph/presentation/screens/profile/profile_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
 
 class MainScaffold extends StatelessWidget {
   const MainScaffold({super.key});
@@ -60,59 +57,16 @@ class MainScaffold extends StatelessWidget {
     ProfileScreen(),
   ];
 
-  // ── Recruiter tabs ─────────────────────────────────────────────────────────
-  static const List<_TabItem> _recruiterTabs = [
-    _TabItem(
-      icon: Icons.business_outlined,
-      activeIcon: Icons.business_rounded,
-      label: 'Jobs',
-    ),
-    _TabItem(
-      icon: Icons.people_outline_rounded,
-      activeIcon: Icons.people_rounded,
-      label: 'Applications',
-    ),
-    _TabItem(
-      icon: Icons.hourglass_empty_rounded,
-      activeIcon: Icons.hourglass_full_rounded,
-      label: 'Pending',
-    ),
-    _TabItem(
-      icon: Icons.close_rounded,
-      activeIcon: Icons.close_rounded,
-      label: 'Rejected',
-    ),
-    _TabItem(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-    ),
-  ];
-
-  static const List<Widget> _recruiterBodies = [
-    RecruiterDashboardScreen(),
-    // TODO: Applications screen
-    Placeholder(),
-    // TODO: Pending approvals screen
-    Placeholder(),
-    // TODO: Rejected screen
-    Placeholder(),
-    ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Consumer2<NavigationProvider, AuthProvider>(
-      builder: (context, nav, auth, _) {
+    return Consumer<NavigationProvider>(
+      builder: (context, nav, _) {
         final colorScheme = Theme.of(context).colorScheme;
         final palette = Theme.of(context).extension<AppPalette>()!;
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
-        // Determine tabs based on user role
-        final isRecruiter =
-            auth.currentUser?.role == AppConstants.roleRecruiter;
-        final tabs = isRecruiter ? _recruiterTabs : _seekerTabs;
-        final bodies = isRecruiter ? _recruiterBodies : _seekerBodies;
+        final tabs = _seekerTabs;
+        final bodies = _seekerBodies;
 
         // Ensure current index is valid for the selected tabs
         final currentIndex = nav.currentIndex.clamp(0, tabs.length - 1);

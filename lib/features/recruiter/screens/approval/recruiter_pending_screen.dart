@@ -11,7 +11,7 @@ import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class RecruiterPendingScreen extends StatelessWidget {
-  const RecruiterPendingScreen({Key? key}) : super(key: key);
+  const RecruiterPendingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

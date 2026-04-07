@@ -36,7 +36,8 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     // Load applications on screen init
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<SeekerApplicationProvider>().loadApplications();
     });
   }

@@ -18,14 +18,15 @@ class RecruiterRepositoryImpl {
     String? search,
   }) async {
     try {
-      final queryParams = {
+      final queryParams = <String, dynamic>{
         'page': page,
-        if (status != null) 'status': status,
-        if (search != null) 'search': search,
+        'per_page': 15,
       };
+      if (status != null && status.isNotEmpty) queryParams['status'] = status;
+      if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
       final response = await _apiService.get(
-        '/recruiter/jobs',
+        '/jobs/mine',
         queryParameters: queryParams,
       );
 
@@ -43,7 +44,7 @@ class RecruiterRepositoryImpl {
 
   Future<Job> getJobById(int jobId) async {
     try {
-      final response = await _apiService.get('/recruiter/jobs/$jobId');
+      final response = await _apiService.get('/jobs/$jobId');
       return Job.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -53,7 +54,7 @@ class RecruiterRepositoryImpl {
   Future<Job> createJob(CreateJobRequest request) async {
     try {
       final response = await _apiService.post(
-        '/recruiter/jobs',
+        '/jobs',
         data: request.toJson(),
       );
       return Job.fromJson(response as Map<String, dynamic>);
@@ -65,7 +66,7 @@ class RecruiterRepositoryImpl {
   Future<Job> updateJob(int jobId, Map<String, dynamic> data) async {
     try {
       final response = await _apiService.put(
-        '/recruiter/jobs/$jobId',
+        '/jobs/$jobId',
         data: data,
       );
       return Job.fromJson(response as Map<String, dynamic>);
@@ -76,7 +77,7 @@ class RecruiterRepositoryImpl {
 
   Future<void> deleteJob(int jobId) async {
     try {
-      await _apiService.delete('/recruiter/jobs/$jobId');
+      await _apiService.delete('/jobs/$jobId');
     } catch (e) {
       rethrow;
     }
@@ -84,7 +85,7 @@ class RecruiterRepositoryImpl {
 
   Future<void> closeJob(int jobId) async {
     try {
-      await _apiService.post('/recruiter/jobs/$jobId/close');
+      await _apiService.put('/jobs/$jobId', data: {'status': 'closed'});
     } catch (e) {
       rethrow;
     }
@@ -103,15 +104,16 @@ class ApplicationRepositoryImpl {
     String sortBy = 'created_at',
   }) async {
     try {
-      final queryParams = {
+      final queryParams = <String, dynamic>{
         'page': page,
-        'sort_by': sortBy,
-        if (status != null) 'status': status,
-        if (jobId != null) 'job_id': jobId,
+        'per_page': 15,
       };
+      if (status != null && status.isNotEmpty) queryParams['status'] = status;
+      if (jobId != null) queryParams['job_id'] = jobId;
+      queryParams['sort_by'] = sortBy;
 
       final response = await _apiService.get(
-        '/recruiter/applications',
+        '/applications',
         queryParameters: queryParams,
       );
 
@@ -131,9 +133,7 @@ class ApplicationRepositoryImpl {
 
   Future<RecruiterApplication> getApplicationById(int applicationId) async {
     try {
-      final response = await _apiService.get(
-        '/recruiter/applications/$applicationId',
-      );
+      final response = await _apiService.get('/applications/$applicationId');
       return RecruiterApplication.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -147,8 +147,11 @@ class ApplicationRepositoryImpl {
   }) async {
     try {
       await _apiService.put(
-        '/recruiter/applications/$applicationId',
-        data: {'status': status, if (notes != null) 'notes': notes},
+        '/applications/$applicationId/status',
+        data: {
+          'status': status,
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
+        },
       );
     } catch (e) {
       rethrow;
@@ -160,10 +163,9 @@ class ApplicationRepositoryImpl {
     String status,
   ) async {
     try {
-      await _apiService.post(
-        '/recruiter/applications/bulk-update',
-        data: {'application_ids': applicationIds, 'status': status},
-      );
+      for (final id in applicationIds) {
+        await _apiService.put('/applications/$id/status', data: {'status': status});
+      }
     } catch (e) {
       rethrow;
     }
@@ -174,41 +176,32 @@ class ApplicationRepositoryImpl {
 class CreateJobRequest {
   final String title;
   final String description;
-  final String category;
   final String location;
   final double? salaryMin;
   final double? salaryMax;
-  final String employmentType;
-  final String experienceLevel;
+  final String jobType;
   final List<String> requiredSkills;
-  final String? requiredQualifications;
-  final DateTime deadline;
+  final DateTime? deadline;
 
   CreateJobRequest({
     required this.title,
     required this.description,
-    required this.category,
     required this.location,
     this.salaryMin,
     this.salaryMax,
-    required this.employmentType,
-    required this.experienceLevel,
+    required this.jobType,
     required this.requiredSkills,
-    this.requiredQualifications,
-    required this.deadline,
+    this.deadline,
   });
 
   Map<String, dynamic> toJson() => {
     'title': title,
     'description': description,
-    'category': category,
     'location': location,
     'salary_min': salaryMin,
     'salary_max': salaryMax,
-    'employment_type': employmentType,
-    'experience_level': experienceLevel,
+    'job_type': jobType,
     'required_skills': requiredSkills,
-    'required_qualifications': requiredQualifications,
-    'deadline': deadline.toIso8601String(),
+    if (deadline != null) 'deadline': deadline!.toIso8601String(),
   };
 }

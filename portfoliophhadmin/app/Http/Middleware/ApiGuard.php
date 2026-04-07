@@ -13,9 +13,12 @@ class ApiGuard
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        // For API routes, ensure we don't go through Session-based authentication
+        // Force API semantics so auth middleware returns JSON responses, not redirects.
         if ($request->is('api/*')) {
-            // Set the expectsJson to true so middleware knows this is an API request
+            $request->headers->set('Accept', 'application/json');
+            $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+
+            // Resolve user from Sanctum for API route handling.
             $request->setUserResolver(function () use ($request) {
                 return auth('sanctum')->user();
             });

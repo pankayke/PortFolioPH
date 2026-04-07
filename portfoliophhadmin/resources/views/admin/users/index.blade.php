@@ -25,7 +25,7 @@
 
     <!-- Search & Filter Bar -->
     <div class="mb-6">
-        <form method="GET" class="flex gap-3">
+        <form method="GET" class="flex flex-wrap gap-3">
             <div class="flex-1 relative">
                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                 <input 
@@ -36,9 +36,29 @@
                     class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >
             </div>
+            <select
+                name="role"
+                class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+                <option value="">All Roles</option>
+                <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="recruiter" {{ request('role') === 'recruiter' ? 'selected' : '' }}>Recruiter</option>
+                <option value="job_seeker" {{ request('role') === 'job_seeker' ? 'selected' : '' }}>Job Seeker</option>
+            </select>
+            <select
+                name="status"
+                class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+                <option value="">All Statuses</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="suspended" {{ request('status') === 'suspended' ? 'selected' : '' }}>Suspended</option>
+            </select>
             <button type="submit" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150 text-sm font-medium">
                 Search
             </button>
+            <a href="{{ route('admin.users.index') }}" class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-150 text-sm font-medium">
+                Reset
+            </a>
         </form>
     </div>
 
@@ -96,10 +116,10 @@
                                 <div class="flex items-center gap-2 text-sm text-gray-600">
                                     @if($user->role === 'recruiter')
                                         <i class="fas fa-briefcase text-blue-500"></i>
-                                        <span>{{ $user->jobs->count() }} {{ Str::plural('job', $user->jobs->count()) }}</span>
+                                        <span>{{ $user->jobs_count }} {{ Str::plural('job', $user->jobs_count) }}</span>
                                     @else
                                         <i class="fas fa-file-alt text-purple-500"></i>
-                                        <span>{{ $user->applications->count() }} {{ Str::plural('application', $user->applications->count()) }}</span>
+                                        <span>{{ $user->applications_count }} {{ Str::plural('application', $user->applications_count) }}</span>
                                     @endif
                                 </div>
                             </td>

@@ -32,6 +32,7 @@ import 'package:portfolioph/presentation/providers/certification_provider.dart';
 import 'package:portfolioph/presentation/providers/education_provider.dart';
 import 'package:portfolioph/presentation/providers/experience_provider.dart';
 import 'package:portfolioph/presentation/providers/job_feed_provider.dart';
+import 'package:portfolioph/presentation/providers/profile_provider.dart';
 import 'package:portfolioph/presentation/providers/reflections_provider.dart';
 import 'package:portfolioph/presentation/providers/skills_provider.dart';
 import 'package:portfolioph/presentation/providers/student_reflections_provider.dart';
@@ -68,6 +69,9 @@ class AppProviderRegistry {
     /// Authentication provider — handles user login, registration, session
     ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
 
+    /// Profile provider — handles user profile updates (upload avatar, edit bio, etc.)
+    ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
+
     /// Navigation provider — manages app-wide navigation state
     ChangeNotifierProvider<NavigationProvider>(
       create: (_) => NavigationProvider(),
@@ -84,17 +88,17 @@ class AppProviderRegistry {
 
     /// Recruiter Repository — Job and application CRUD operations
     ProxyProvider<ApiService, RecruiterRepositoryImpl>(
-      update: (_, apiService, __) => RecruiterRepositoryImpl(apiService),
+      update: (_, apiService, previous) => RecruiterRepositoryImpl(apiService),
     ),
 
     /// Seeker Repository — Job search and application management
     ProxyProvider<ApiService, SeekerRepositoryImpl>(
-      update: (_, apiService, __) => SeekerRepositoryImpl(apiService),
+      update: (_, apiService, previous) => SeekerRepositoryImpl(apiService),
     ),
 
     /// Seeker Application Repository — Application tracking for job seekers
     ProxyProvider<ApiService, SeekerApplicationRepositoryImpl>(
-      update: (_, apiService, __) =>
+      update: (_, apiService, previous) =>
           SeekerApplicationRepositoryImpl(apiService),
     ),
 

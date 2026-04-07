@@ -24,5 +24,4 @@
 
 export 'domain/index.dart';
 export 'integration/index.dart';
-export 'fixtures/mock_fixtures.dart';
 export 'test_helpers.dart';

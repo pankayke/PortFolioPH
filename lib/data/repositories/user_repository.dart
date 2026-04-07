@@ -6,8 +6,12 @@
 // All operations now call the backend API.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/user_model.dart';
 
@@ -255,6 +259,121 @@ class UserRepository {
       await _apiService.put('/users/${user.id}', data: user.toMap());
       return user.id ?? 0;
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Updates user profile with support for multipart form data (file uploads).
+  /// 
+  /// Supports partial updates – only fields provided will be updated.
+  /// 
+  /// Parameters:
+  ///   - userId: User's ID
+  ///   - name: Full name (optional)
+  ///   - email: Email address (optional, unique validation on backend)
+  ///   - bio: User bio (optional)
+  ///   - location: Location string (optional)
+  ///   - phoneNumber: Phone number (optional)
+  ///   - websiteUrl: Website/portfolio URL (optional)
+  ///   - avatarFile: Profile image file to upload (optional)
+  ///   - resumeFile: Resume PDF file to upload (optional)
+  /// 
+  /// Returns: Updated UserModel with all fields from backend
+  /// 
+  /// Throws: Various ApiException subclasses on failure
+  ///   - ValidationException: If email already exists or validation fails (422)
+  ///   - UnauthorizedException: If token expired (401)
+  ///   - ServerException: If backend error (500+)
+  ///   - ApiException: Other HTTP errors
+  /// 
+  /// Side effects:
+  ///   - Uploads files to backend storage
+  ///   - Backend stores avatar in storage/avatars/
+  ///   - Backend stores resume in storage/resumes/
+  /// 
+  /// Example:
+  /// ```dart
+  /// final updatedUser = await userRepository.updateProfile(
+  ///   userId: 1,
+  ///   name: 'Jane Doe',
+  ///   bio: 'Software Engineer',
+  ///   avatarFile: File('/path/to/avatar.jpg'),
+  /// );
+  /// ```
+  Future<UserModel> updateProfile({
+    required int userId,
+    String? name,
+    String? email,
+    String? bio,
+    String? location,
+    String? phoneNumber,
+    String? websiteUrl,
+    File? avatarFile,
+    File? resumeFile,
+  }) async {
+    try {
+      final formData = FormData();
+
+      // Add text fields
+      if (name != null && name.trim().isNotEmpty) {
+        formData.fields.add(MapEntry('name', name.trim()));
+      }
+      if (email != null && email.trim().isNotEmpty) {
+        formData.fields.add(MapEntry('email', email.trim().toLowerCase()));
+      }
+      if (bio != null && bio.trim().isNotEmpty) {
+        formData.fields.add(MapEntry('bio', bio.trim()));
+      }
+      if (location != null && location.trim().isNotEmpty) {
+        formData.fields.add(MapEntry('location', location.trim()));
+      }
+      if (phoneNumber != null && phoneNumber.trim().isNotEmpty) {
+        formData.fields.add(MapEntry('phone_number', phoneNumber.trim()));
+      }
+      if (websiteUrl != null && websiteUrl.trim().isNotEmpty) {
+        formData.fields.add(MapEntry('website_url', websiteUrl.trim()));
+      }
+
+      // Add avatar file if provided
+      if (avatarFile != null && await avatarFile.exists()) {
+        formData.files.add(
+          MapEntry(
+            'avatar',
+            await MultipartFile.fromFile(
+              avatarFile.path,
+              filename: 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            ),
+          ),
+        );
+      }
+
+      // Add resume file if provided
+      if (resumeFile != null && await resumeFile.exists()) {
+        formData.files.add(
+          MapEntry(
+            'resume',
+            await MultipartFile.fromFile(
+              resumeFile.path,
+              filename: 'resume_${DateTime.now().millisecondsSinceEpoch}.pdf',
+            ),
+          ),
+        );
+      }
+
+      // Send multipart request
+      final response = await _apiService.multipart(
+        '/profile/update',
+        data: formData,
+      );
+
+      if (response is Map<String, dynamic>) {
+        debugPrint('[UserRepository] Profile updated successfully');
+        return UserModel.fromMap(response);
+      }
+
+      throw ApiException('Backend returned invalid profile update response: $response');
+    } catch (e) {
+      debugPrint('[UserRepository] Profile update failed: $e');
       rethrow;
     }
   }

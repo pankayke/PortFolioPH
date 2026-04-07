@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class JobDetailScreen extends StatefulWidget {
   final int jobId;
 
-  const JobDetailScreen({Key? key, required this.jobId}) : super(key: key);
+  const JobDetailScreen({super.key, required this.jobId});
 
   @override
   State<JobDetailScreen> createState() => _JobDetailScreenState();

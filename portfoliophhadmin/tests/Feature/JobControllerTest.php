@@ -267,6 +267,25 @@ class JobControllerTest extends TestCase
     }
 
     /**
+     * Test create job without auth (non-JSON request) still returns 401.
+     *
+     * Verifies:
+     * - API route does not redirect to login/home
+     * - Unauthenticated API access consistently fails with 401
+     */
+    public function test_create_job_without_auth_non_json_request_fails_with_401(): void
+    {
+        $response = $this->post('/api/jobs', [
+            'title' => 'Senior Laravel Developer',
+            'description' => 'Description',
+            'location' => 'Remote',
+        ]);
+
+        $response->assertStatus(401);
+        $this->assertFalse($response->isRedirection());
+    }
+
+    /**
      * Test create job with missing title fails
      * 
      * Verifies:

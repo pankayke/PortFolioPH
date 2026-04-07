@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/core/utils/validators.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
@@ -35,13 +36,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showForgotPasswordDialog() async {
     final emailController = TextEditingController(text: _emailController.text);
+    final tokenController = TextEditingController();
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
     final dialogFormKey = GlobalKey<FormState>();
     bool obscureNew = true;
     bool obscureConfirm = true;
+    bool requestingToken = false;
+    String? helperText;
 
-    final didSubmit = await showDialog<bool>(
+    final didSubmit = await showDialog<Map<String, String>?>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -67,6 +71,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         validator: AppValidators.validateEmail,
                       ),
+                      const SizedBox(height: AppConstants.spacingMd),
+                      TextFormField(
+                        controller: tokenController,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Reset Token',
+                          prefixIcon: Icon(Icons.password_outlined),
+                        ),
+                        validator: (v) => v == null || v.trim().isEmpty
+                            ? 'Reset token is required.'
+                            : null,
+                      ),
+                      if (helperText != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          helperText!,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                       const SizedBox(height: AppConstants.spacingMd),
                       TextFormField(
                         controller: newPasswordController,
@@ -112,7 +135,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onFieldSubmitted: (_) {
                           if (dialogFormKey.currentState?.validate() ?? false) {
-                            Navigator.of(dialogContext).pop(true);
+                            Navigator.of(dialogContext).pop({
+                              'email': emailController.text.trim(),
+                              'token': tokenController.text.trim(),
+                              'newPassword': newPasswordController.text,
+                            });
                           }
                         },
                       ),
@@ -122,13 +149,61 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  onPressed: () => Navigator.of(dialogContext).pop(null),
                   child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: requestingToken
+                      ? null
+                      : () async {
+                          final emailError = AppValidators.validateEmail(
+                            emailController.text,
+                          );
+                          if (emailError != null) {
+                            setDialogState(() => helperText = emailError);
+                            return;
+                          }
+
+                          setDialogState(() {
+                            requestingToken = true;
+                            helperText = null;
+                          });
+
+                          final auth = context.read<AuthProvider>();
+                          final token = await auth.requestPasswordReset(
+                            email: emailController.text.trim(),
+                          );
+
+                          if (!mounted) return;
+
+                          setDialogState(() {
+                            requestingToken = false;
+                            if (token != null && token.isNotEmpty) {
+                              tokenController.text = token;
+                              helperText =
+                                  'Reset token generated. Use it to confirm password reset.';
+                            } else {
+                              helperText =
+                                  'If the email exists, a reset token was issued.';
+                            }
+                          });
+                        },
+                  child: requestingToken
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Request Token'),
                 ),
                 FilledButton(
                   onPressed: () {
                     if (dialogFormKey.currentState?.validate() ?? false) {
-                      Navigator.of(dialogContext).pop(true);
+                      Navigator.of(dialogContext).pop({
+                        'email': emailController.text.trim(),
+                        'token': tokenController.text.trim(),
+                        'newPassword': newPasswordController.text,
+                      });
                     }
                   },
                   child: const Text('Reset Password'),
@@ -140,14 +215,15 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
 
-    if (didSubmit != true || !mounted) {
+    if (didSubmit == null || !mounted) {
       return;
     }
 
     final auth = context.read<AuthProvider>();
-    final success = await auth.resetPassword(
-      email: emailController.text.trim(),
-      newPassword: newPasswordController.text,
+    final success = await auth.confirmPasswordReset(
+      email: didSubmit['email'] ?? '',
+      token: didSubmit['token'] ?? '',
+      newPassword: didSubmit['newPassword'] ?? '',
     );
 
     if (!mounted) {
@@ -155,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (success) {
-      _emailController.text = emailController.text.trim();
+      _emailController.text = didSubmit['email'] ?? '';
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password updated successfully. You can now log in.'),
@@ -204,7 +280,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      context.go('/dashboard');
+      final role = auth.currentUser?.role;
+      context.go(
+        role == AppConstants.roleRecruiter
+            ? AppRoutes.recruiterDashboard
+            : AppRoutes.dashboard,
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

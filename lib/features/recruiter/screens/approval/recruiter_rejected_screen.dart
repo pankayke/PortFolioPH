@@ -11,7 +11,7 @@ import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class RecruiterRejectedScreen extends StatelessWidget {
-  const RecruiterRejectedScreen({Key? key}) : super(key: key);
+  const RecruiterRejectedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

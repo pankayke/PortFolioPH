@@ -7,17 +7,13 @@ class Job {
   final int id;
   final String title;
   final String description;
-  final String category;
   final String location;
   final double? salaryMin;
   final double? salaryMax;
-  final String employmentType;
-  final String experienceLevel;
-  final String companyName;
+  final String jobType;
   final List<String> requiredSkills;
-  final String? requiredQualifications;
   final String status;
-  final DateTime deadline;
+  final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int applicationCount;
@@ -26,17 +22,13 @@ class Job {
     required this.id,
     required this.title,
     required this.description,
-    required this.category,
     required this.location,
     this.salaryMin,
     this.salaryMax,
-    required this.employmentType,
-    required this.experienceLevel,
-    required this.companyName,
+    required this.jobType,
     required this.requiredSkills,
-    this.requiredQualifications,
     required this.status,
-    required this.deadline,
+    this.deadline,
     required this.createdAt,
     required this.updatedAt,
     this.applicationCount = 0,
@@ -46,7 +38,8 @@ class Job {
   bool get isClosed => status == 'closed';
   bool get isArchived => status == 'archived';
 
-  bool get isDeadlinePassed => DateTime.now().isAfter(deadline);
+  bool get isDeadlinePassed =>
+      deadline != null && DateTime.now().isAfter(deadline!);
 
   String get salaryDisplay {
     if (salaryMin == null && salaryMax == null) return 'Competitive';
@@ -60,24 +53,24 @@ class Job {
       id: json['id'] as int,
       title: json['title'] as String,
       description: json['description'] as String,
-      category: json['category'] as String,
       location: json['location'] as String,
       salaryMin: (json['salary_min'] as num?)?.toDouble(),
       salaryMax: (json['salary_max'] as num?)?.toDouble(),
-      employmentType: json['employment_type'] as String,
-      experienceLevel: json['experience_level'] as String,
-      companyName: json['company_name'] as String,
+        jobType: (json['job_type'] as String?) ?? 'full_time',
       requiredSkills:
           (json['required_skills'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      requiredQualifications: json['required_qualifications'] as String?,
-      status: json['status'] as String,
-      deadline: DateTime.parse(json['deadline'] as String),
+        status: (json['status'] as String?) ?? 'open',
+        deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'] as String)
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      applicationCount: json['application_count'] as int? ?? 0,
+        applicationCount: (json['applications_count'] as int?) ??
+          (json['application_count'] as int?) ??
+          0,
     );
   }
 
@@ -85,17 +78,13 @@ class Job {
     'id': id,
     'title': title,
     'description': description,
-    'category': category,
     'location': location,
     'salary_min': salaryMin,
     'salary_max': salaryMax,
-    'employment_type': employmentType,
-    'experience_level': experienceLevel,
-    'company_name': companyName,
+    'job_type': jobType,
     'required_skills': requiredSkills,
-    'required_qualifications': requiredQualifications,
     'status': status,
-    'deadline': deadline.toIso8601String(),
+    'deadline': deadline?.toIso8601String(),
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
   };
@@ -104,15 +93,11 @@ class Job {
     int? id,
     String? title,
     String? description,
-    String? category,
     String? location,
     double? salaryMin,
     double? salaryMax,
-    String? employmentType,
-    String? experienceLevel,
-    String? companyName,
+    String? jobType,
     List<String>? requiredSkills,
-    String? requiredQualifications,
     String? status,
     DateTime? deadline,
     DateTime? createdAt,
@@ -123,16 +108,11 @@ class Job {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
-      category: category ?? this.category,
       location: location ?? this.location,
       salaryMin: salaryMin ?? this.salaryMin,
       salaryMax: salaryMax ?? this.salaryMax,
-      employmentType: employmentType ?? this.employmentType,
-      experienceLevel: experienceLevel ?? this.experienceLevel,
-      companyName: companyName ?? this.companyName,
+        jobType: jobType ?? this.jobType,
       requiredSkills: requiredSkills ?? this.requiredSkills,
-      requiredQualifications:
-          requiredQualifications ?? this.requiredQualifications,
       status: status ?? this.status,
       deadline: deadline ?? this.deadline,
       createdAt: createdAt ?? this.createdAt,

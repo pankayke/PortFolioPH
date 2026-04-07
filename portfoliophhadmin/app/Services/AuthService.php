@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthService
 {
@@ -37,6 +40,91 @@ class AuthService
         }
 
         return null;
+    }
+
+    /**
+     * Reset password by email.
+     *
+     * @param string $email
+     * @param string $newPassword
+     * @return bool
+     */
+    public function resetPasswordByEmail(string $email, string $newPassword): bool
+    {
+        $user = User::whereRaw('LOWER(email) = ?', [mb_strtolower(trim($email))])->first();
+
+        if (!$user) {
+            return false;
+        }
+
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        return true;
+    }
+
+    /**
+     * Create a one-time reset token for a user email.
+     * Token is stored as hash and expires after 60 minutes.
+     */
+    public function createPasswordResetToken(string $email): ?string
+    {
+        $normalizedEmail = mb_strtolower(trim($email));
+        $user = User::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first();
+
+        if (!$user) {
+            return null;
+        }
+
+        $plainToken = Str::random(64);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $normalizedEmail],
+            [
+                'token' => Hash::make($plainToken),
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        return $plainToken;
+    }
+
+    /**
+     * Reset password using email + reset token.
+     */
+    public function resetPasswordWithToken(string $email, string $token, string $newPassword): bool
+    {
+        $normalizedEmail = mb_strtolower(trim($email));
+
+        $user = User::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first();
+        if (!$user) {
+            return false;
+        }
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $normalizedEmail)
+            ->first();
+
+        if (!$record || !is_string($record->token)) {
+            return false;
+        }
+
+        $createdAt = Carbon::parse($record->created_at);
+        if ($createdAt->lt(Carbon::now()->subMinutes(60))) {
+            DB::table('password_reset_tokens')->where('email', $normalizedEmail)->delete();
+            return false;
+        }
+
+        if (!Hash::check($token, $record->token)) {
+            return false;
+        }
+
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $normalizedEmail)->delete();
+
+        return true;
     }
 
     /**

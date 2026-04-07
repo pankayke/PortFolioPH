@@ -14,12 +14,12 @@ class SkeletonLoader extends StatefulWidget {
   final EdgeInsets margin;
 
   const SkeletonLoader({
-    Key? key,
+    super.key,
     this.width = double.infinity,
     this.height = 20,
     this.borderRadius = const BorderRadius.all(Radius.circular(4)),
     this.margin = EdgeInsets.zero,
-  }) : super(key: key);
+  });
 
   @override
   State<SkeletonLoader> createState() => _SkeletonLoaderState();
@@ -81,7 +81,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
 /// Pre-built skeleton for job list items
 class JobCardSkeleton extends StatelessWidget {
-  const JobCardSkeleton({Key? key}) : super(key: key);
+  const JobCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +139,9 @@ class JobListSkeleton extends StatelessWidget {
   final int itemCount;
 
   const JobListSkeleton({
-    Key? key,
+    super.key,
     this.itemCount = 5,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +154,7 @@ class JobListSkeleton extends StatelessWidget {
 
 /// Pre-built skeleton for user profile
 class ProfileSkeleton extends StatelessWidget {
-  const ProfileSkeleton({Key? key}) : super(key: key);
+  const ProfileSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +215,7 @@ class ProfileSkeleton extends StatelessWidget {
 
 /// Pre-built skeleton for detail view
 class DetailViewSkeleton extends StatelessWidget {
-  const DetailViewSkeleton({Key? key}) : super(key: key);
+  const DetailViewSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -287,11 +287,11 @@ class LoadingOverlay extends StatelessWidget {
   final String? message;
 
   const LoadingOverlay({
-    Key? key,
+    super.key,
     required this.child,
     required this.isLoading,
     this.message,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

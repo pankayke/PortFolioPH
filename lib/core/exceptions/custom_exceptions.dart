@@ -1,6 +1,7 @@
 /// Custom Exceptions
 ///
 /// Application-specific exception classes for error handling
+library;
 
 // ─── Base Exception ───────────────────────────────────────────────────────────
 class AppException implements Exception {

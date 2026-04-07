@@ -11,11 +11,11 @@ class SkeletonLoader extends StatefulWidget {
   final BorderRadius? borderRadius;
 
   const SkeletonLoader({
-    Key? key,
+    super.key,
     this.height = 16,
     this.width = double.infinity,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   State<SkeletonLoader> createState() => _SkeletonLoaderState();
@@ -73,7 +73,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
 /// Skeleton for a job card (list item)
 class JobCardSkeleton extends StatelessWidget {
-  const JobCardSkeleton({Key? key}) : super(key: key);
+  const JobCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +110,10 @@ class SkeletonList extends StatelessWidget {
   final Widget Function()? itemBuilder;
 
   const SkeletonList({
-    Key? key,
+    super.key,
     this.itemCount = 5,
     this.itemBuilder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

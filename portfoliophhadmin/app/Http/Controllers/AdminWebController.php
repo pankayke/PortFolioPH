@@ -31,9 +31,29 @@ class AdminWebController extends Controller
     }
 
     // Users Management: List all users
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::with(['jobs', 'applications'])->paginate(20);
+        $users = User::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim((string) $request->input('search'));
+
+                $query->where(function ($innerQuery) use ($search) {
+                    $innerQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('role'), function ($query) use ($request) {
+                $query->where('role', $request->input('role'));
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $isActive = $request->input('status') === 'active';
+                $query->where('active', $isActive);
+            })
+            ->withCount(['jobs', 'applications'])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
         return view('admin.users.index', compact('users'));
     }
 

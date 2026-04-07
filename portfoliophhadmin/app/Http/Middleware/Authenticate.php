@@ -2,22 +2,20 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Resources\ApiResponse;
-use Closure;
 use Illuminate\Auth\Middleware\Authenticate as BaseAuthenticate;
 use Illuminate\Http\Request;
 
 class Authenticate extends BaseAuthenticate
 {
     /**
-     * Handle an unauthenticated user by throwing an exception for JSON requests.
+     * Prevent redirects for API routes; always let auth failures resolve as 401.
      */
-    protected function unauthenticated($request, array $guards)
+    protected function redirectTo(Request $request): ?string
     {
-        if ($request->expectsJson() || $request->is('api/*')) {
-            return response()->json(ApiResponse::unauthorized('Unauthenticated')->getData(true), 401);
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return null;
         }
 
-        parent::unauthenticated($request, $guards);
+        return route('login');
     }
 }

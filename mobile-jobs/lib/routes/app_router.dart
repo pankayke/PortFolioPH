@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../presentation/providers/auth_provider.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
-import '../presentation/screens/auth/role_selection_screen.dart';
 import '../presentation/screens/jobs/job_list_screen.dart';
 import '../presentation/screens/jobs/job_detail_screen.dart';
 import '../presentation/screens/jobs/post_job_screen.dart';
@@ -22,7 +21,6 @@ class AppRouter {
       final isGoingToAuth =
           state.uri.path == '/login' ||
           state.uri.path == '/register' ||
-          state.uri.path == '/role-selection' ||
           state.uri.path == '/splash';
 
       if (isAuthenticated && isGoingToAuth) {
@@ -45,10 +43,6 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
-      ),
-      GoRoute(
-        path: '/role-selection',
-        builder: (context, state) => const RoleSelectionScreen(),
       ),
 
       // Job Routes
@@ -79,7 +73,7 @@ class AppRouter {
 
 // Splash Screen
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();

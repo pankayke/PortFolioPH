@@ -9,12 +9,12 @@ import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 
 class ApplicationStatus {
-  static const String applied = 'applied';
-  static const String reviewing = 'reviewing';
+  static const String applied = 'pending';
+  static const String reviewing = 'reviewed';
   static const String shortlisted = 'shortlisted';
   static const String rejected = 'rejected';
   static const String accepted = 'accepted';
-  static const String withdrawn = 'withdrawn';
+  static const String withdrawn = 'rejected';
 
   static const List<String> all = [
     applied,

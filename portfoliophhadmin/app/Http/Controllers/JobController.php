@@ -31,7 +31,12 @@ class JobController extends Controller
      */
     public function store(StoreJobRequest $request): JsonResponse
     {
-        $job = $this->jobService->createJob(auth()->user(), $request->validated());
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponse::unauthorized('Unauthenticated');
+        }
+
+        $job = $this->jobService->createJob($user, $request->validated());
 
         return ApiResponse::success(
             $job,
@@ -52,6 +57,23 @@ class JobController extends Controller
             'Job retrieved successfully',
             200
         );
+    }
+
+    /**
+     * Get jobs owned by current recruiter.
+     */
+    public function mine(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponse::unauthorized('Unauthenticated');
+        }
+
+        $filters = $request->only(['search', 'status']);
+        $perPage = $request->input('per_page', 15);
+        $jobs = $this->jobService->getRecruiterJobs($user, $filters, $perPage);
+
+        return ApiResponse::paginated($jobs, 'Recruiter jobs retrieved successfully', 200);
     }
 
     /**

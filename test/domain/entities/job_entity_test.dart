@@ -75,15 +75,63 @@ void main() {
     });
 
     test('should show negotiable for missing salary', () {
-      final noSalaryJob = testJob.copyWith(salaryMin: null, salaryMax: null);
+      final noSalaryJob = JobEntity(
+        id: testJob.id,
+        recruiterId: testJob.recruiterId,
+        title: testJob.title,
+        description: testJob.description,
+        location: testJob.location,
+        salaryMin: null,
+        salaryMax: null,
+        jobType: testJob.jobType,
+        status: testJob.status,
+        requiredSkills: testJob.requiredSkills,
+        deadline: testJob.deadline,
+        applicationCount: testJob.applicationCount,
+        createdAt: testJob.createdAt,
+        updatedAt: testJob.updatedAt,
+        recruiter: testJob.recruiter,
+      );
       expect(noSalaryJob.salaryRange, 'Negotiable');
     });
 
     test('should handle partial salary data', () {
-      final minOnlyJob = testJob.copyWith(salaryMax: null);
+      final minOnlyJob = JobEntity(
+        id: testJob.id,
+        recruiterId: testJob.recruiterId,
+        title: testJob.title,
+        description: testJob.description,
+        location: testJob.location,
+        salaryMin: testJob.salaryMin,
+        salaryMax: null,
+        jobType: testJob.jobType,
+        status: testJob.status,
+        requiredSkills: testJob.requiredSkills,
+        deadline: testJob.deadline,
+        applicationCount: testJob.applicationCount,
+        createdAt: testJob.createdAt,
+        updatedAt: testJob.updatedAt,
+        recruiter: testJob.recruiter,
+      );
       expect(minOnlyJob.salaryRange, 'Negotiable');
 
-      final maxOnlyJob = testJob.copyWith(salaryMin: null);
+      final maxOnlyJob = JobEntity(
+        id: testJob.id,
+        recruiterId: testJob.recruiterId,
+        title: testJob.title,
+        description: testJob.description,
+        location: testJob.location,
+        salaryMin: null,
+        salaryMax: testJob.salaryMax,
+        jobType: testJob.jobType,
+        status: testJob.status,
+        requiredSkills: testJob.requiredSkills,
+        deadline: testJob.deadline,
+        applicationCount: testJob.applicationCount,
+        createdAt: testJob.createdAt,
+        updatedAt: testJob.updatedAt,
+        recruiter: testJob.recruiter,
+      );
       expect(maxOnlyJob.salaryRange, 'Negotiable');
     });
 
@@ -159,10 +207,7 @@ void main() {
     });
 
     test('should track timestamps', () {
-      expect(
-        testJob.createdAt.isBefore(testJob.updatedAt),
-        testJob.createdAt != testJob.updatedAt || true,
-      );
+      expect(testJob.createdAt, testJob.updatedAt);
     });
   });
 }

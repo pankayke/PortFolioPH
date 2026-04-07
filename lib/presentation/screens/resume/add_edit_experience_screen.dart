@@ -154,20 +154,20 @@ class _AddEditExperienceScreenState extends State<AddEditExperienceScreen> {
       updatedAt: DateTime.now().toUtc().toIso8601String(),
     );
 
+    final experienceProvider = context.read<ExperienceProvider>();
     setState(() => _isSaving = true);
 
     final success = _isEdit
-        ? await context.read<ExperienceProvider>().updateExperience(experience)
-        : await context.read<ExperienceProvider>().addExperience(experience);
-
-    setState(() => _isSaving = false);
+      ? await experienceProvider.updateExperience(experience)
+      : await experienceProvider.addExperience(experience);
 
     if (!mounted) return;
+    setState(() => _isSaving = false);
 
     if (success) {
       Navigator.of(context).pop(true);
     } else {
-      final error = context.read<ExperienceProvider>().errorMessage;
+      final error = experienceProvider.errorMessage;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error ?? 'An error occurred.')));

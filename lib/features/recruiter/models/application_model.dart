@@ -37,7 +37,7 @@ class RecruiterApplication {
   });
 
   bool get isApplied => status == 'applied';
-  bool get isReviewing => status == 'reviewing';
+  bool get isReviewing => status == 'reviewed' || status == 'pending';
   bool get isShortlisted => status == 'shortlisted';
   bool get isRejected => status == 'rejected';
   bool get isAccepted => status == 'accepted';
@@ -47,14 +47,16 @@ class RecruiterApplication {
     switch (status) {
       case 'applied':
         return 'Applied';
-      case 'reviewing':
+      case 'pending':
         return 'Under Review';
+      case 'reviewed':
+        return 'Reviewed';
       case 'shortlisted':
         return 'Shortlisted';
-      case 'rejected':
-        return 'Rejected';
       case 'accepted':
         return 'Accepted';
+      case 'rejected':
+        return 'Rejected';
       case 'withdrawn':
         return 'Withdrawn';
       default:
@@ -67,14 +69,11 @@ class RecruiterApplication {
       id: json['id'] as int,
       jobId: json['job_id'] as int,
       userId: json['user_id'] as int,
-      applicantName:
-          json['applicant']?['name'] ?? json['applicant_name'] ?? 'N/A',
-      applicantEmail:
-          json['applicant']?['email'] ?? json['applicant_email'] ?? 'N/A',
-      applicantPhone:
-          json['applicant']?['phone'] ?? json['applicant_phone'] ?? '',
-      applicantLocation:
-          json['applicant']?['location'] ?? json['applicant_location'] ?? '',
+        applicantName: json['user']?['name'] ?? json['applicant_name'] ?? 'N/A',
+        applicantEmail:
+          json['user']?['email'] ?? json['applicant_email'] ?? 'N/A',
+        applicantPhone: json['user']?['phone_number'] ?? json['applicant_phone'] ?? '',
+        applicantLocation: json['user']?['location'] ?? json['applicant_location'] ?? '',
       status: json['status'] as String,
       resumeUrl: json['resume_url'] as String?,
       coverLetter: json['cover_letter'] as String?,

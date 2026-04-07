@@ -29,9 +29,16 @@ import 'package:portfolioph/data/models/project_model.dart';
 import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/profile_setup_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/register_screen.dart';
-import 'package:portfolioph/presentation/screens/auth/role_selection_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/placeholder_screens.dart';
+import 'package:portfolioph/features/recruiter/screens/approval/recruiter_pending_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/approval/recruiter_rejected_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_detail_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_edit_screen.dart';
 import 'package:portfolioph/presentation/screens/portfolio/add_edit_project_screen.dart';
 import 'package:portfolioph/presentation/screens/portfolio/project_detail_screen.dart';
+import 'package:portfolioph/presentation/screens/profile/edit_profile_screen.dart';
+import 'package:portfolioph/presentation/screens/profile/notification_settings_screen.dart';
 import 'package:portfolioph/presentation/screens/admin/filament_admin_screen.dart';
 import 'package:portfolioph/presentation/screens/main_scaffold.dart';
 import 'package:portfolioph/presentation/screens/settings/settings_screen.dart';
@@ -43,7 +50,6 @@ abstract final class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
-  static const String roleSelection = '/role-selection';
   static const String profileSetup = '/profile-setup';
   static const String dashboard = '/dashboard';
 
@@ -52,6 +58,7 @@ abstract final class AppRoutes {
   static const String recruiterJobCreate = '/recruiter/jobs/create';
   static const String recruiterJobsList = '/recruiter/jobs';
   static const String recruiterJobDetail = '/recruiter/jobs/:id';
+  static const String recruiterJobEdit = '/recruiter/jobs/:id/edit';
   static const String recruiterApplications = '/recruiter/applications';
   static const String recruiterPending = '/recruiter/pending';
   static const String recruiterRejected = '/recruiter/rejected';
@@ -64,6 +71,8 @@ abstract final class AppRoutes {
   static const String seekerProfile = '/seeker/profile';
 
   // ── Reserved for future sprints ────────────────────────────────────────────
+  static const String editProfile = '/profile/edit';
+  static const String notificationSettings = '/notifications/settings';
   static const String portfolioNew = '/portfolio/new';
   static const String portfolioDetail = '/portfolio/:id';
   static const String projectNew = '/project/new';
@@ -89,6 +98,7 @@ class AppRouter {
     redirect: (context, state) {
       final isAuthenticated = authProvider.isAuthenticated;
       final location = state.uri.path;
+      final role = authProvider.currentUser?.role;
 
       final isAuthRoute =
           location == AppRoutes.login || location == AppRoutes.register;
@@ -100,9 +110,31 @@ class AppRouter {
       // Unauthenticated user trying to access a protected route → login.
       if (!isAuthenticated && !isAuthRoute) return AppRoutes.login;
 
-      // Authenticated user trying to access login/register → go to dashboard.
-      // (Allows onboarding routes: role-selection, profile-setup)
-      if (isAuthenticated && isAuthRoute) return AppRoutes.dashboard;
+      // Authenticated user trying to access login/register → role-based home.
+      if (isAuthenticated && isAuthRoute) {
+        return role == AppConstants.roleRecruiter
+            ? AppRoutes.recruiterDashboard
+            : AppRoutes.dashboard;
+      }
+
+      if (isAuthenticated &&
+          role != AppConstants.roleRecruiter &&
+          location.startsWith('/recruiter')) {
+        return AppRoutes.dashboard;
+      }
+
+      // Recruiters use dedicated recruiter UI, not seeker dashboard shell.
+      if (isAuthenticated &&
+          role == AppConstants.roleRecruiter &&
+          location == AppRoutes.dashboard) {
+        return AppRoutes.recruiterDashboard;
+      }
+
+      if (isAuthenticated &&
+          role != AppConstants.roleRecruiter &&
+          location == AppRoutes.recruiterDashboard) {
+        return AppRoutes.dashboard;
+      }
 
       // All other cases allowed (including onboarding routes for authenticated users)
       return null;
@@ -126,18 +158,61 @@ class AppRouter {
         builder: (context, state) => const RegisterScreen(),
       ),
 
-      // ── Role selection (post-registration) ────────────────────────
-      GoRoute(
-        path: AppRoutes.roleSelection,
-        name: 'role-selection',
-        builder: (context, state) => const RoleSelectionScreen(),
-      ),
-
       // ── Profile setup (post-registration) ────────────────────────
       GoRoute(
         path: AppRoutes.profileSetup,
         name: 'profile-setup',
         builder: (context, state) => const ProfileSetupScreen(),
+      ),
+
+      // ── Recruiter home (separate UI) ─────────────────────────────
+      GoRoute(
+        path: AppRoutes.recruiterDashboard,
+        name: 'recruiter-dashboard',
+        builder: (context, state) => const RecruiterDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterJobCreate,
+        name: 'recruiter-job-create',
+        builder: (context, state) => const JobCreateScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterJobsList,
+        name: 'recruiter-jobs-list',
+        builder: (context, state) => const JobListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterJobDetail,
+        name: 'recruiter-job-detail',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) return const RecruiterDashboardScreen();
+          return RecruiterJobDetailScreen(jobId: id);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterJobEdit,
+        name: 'recruiter-job-edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) return const RecruiterDashboardScreen();
+          return RecruiterJobEditScreen(jobId: id);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterApplications,
+        name: 'recruiter-applications',
+        builder: (context, state) => const ApplicantsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterPending,
+        name: 'recruiter-pending',
+        builder: (context, state) => const RecruiterPendingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.recruiterRejected,
+        name: 'recruiter-rejected',
+        builder: (context, state) => const RecruiterRejectedScreen(),
       ),
 
       // ── Protected: dashboard shell ──────────────────────────────────────────
@@ -208,6 +283,16 @@ class AppRouter {
         path: AppRoutes.settings,
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        name: 'edit-profile',
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notificationSettings,
+        name: 'notification-settings',
+        builder: (context, state) => const NotificationSettingsScreen(),
       ),
       GoRoute(
         path: AppRoutes.adminDashboard,

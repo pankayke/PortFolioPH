@@ -13,17 +13,27 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
-        User::firstOrCreate(
-            ['email' => 'admin@portfolio.ph'],
-            [
-                'name' => 'Admin',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-                'active' => true,
-            ]
-        );
+        // Ensure at least one admin account is always available.
+        $adminAccounts = [
+            'admin@portfolio.ph',
+            'admin@portfolioph.com',
+        ];
 
-        echo "Admin user created/verified: admin@portfolio.ph\n";
+        foreach ($adminAccounts as $email) {
+            User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => 'Admin',
+                    'password' => Hash::make('password'),
+                    'role' => 'admin',
+                    'active' => true,
+                ]
+            );
+        }
+
+        echo "Admin users created/verified:\n";
+        echo "- admin@portfolio.ph\n";
+        echo "- admin@portfolioph.com\n";
+        echo "Password: password\n";
     }
 }

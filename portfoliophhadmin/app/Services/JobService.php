@@ -60,6 +60,36 @@ class JobService
     }
 
     /**
+     * Get jobs posted by a specific recruiter.
+     *
+     * @param User $recruiter
+     * @param array $filters
+     * @param int $perPage
+     * @return LengthAwarePaginator
+     */
+    public function getRecruiterJobs(User $recruiter, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = Job::query()
+            ->where('recruiter_id', $recruiter->id)
+            ->with('recruiter:id,name,email')
+            ->latest();
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%");
+            });
+        }
+
+        return $query->paginate($perPage);
+    }
+
+    /**
      * Update job
      *
      * @param Job $job

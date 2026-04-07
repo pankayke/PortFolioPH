@@ -1,59 +1,70 @@
 // lib/data/repositories/skill_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
+// API-First Repository: Skills stored on backend only
+// ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:sqflite/sqflite.dart';
-import 'package:portfolioph/data/datasources/local/database_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/skill_model.dart';
 
 class SkillRepository {
-  final DatabaseService _db;
+  final ApiService _apiService;
 
-  SkillRepository({DatabaseService? databaseService})
-    : _db = databaseService ?? DatabaseService();
+  SkillRepository({ApiService? apiService})
+    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
   Future<int> insert(SkillModel skill) async {
-    final db = await _db.getDatabase();
-    return db.insert(
-      'skills',
-      skill.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.abort,
-    );
+    try {
+      final response = await _apiService.post('/users/${skill.userId}/skills', data: skill.toMap());
+      if (response.statusCode == 201) return response.data['id'] as int;
+      throw Exception('Failed to create skill');
+    } catch (e) {
+      throw Exception('Failed to insert skill: $e');
+    }
   }
 
   Future<List<SkillModel>> findByUserId(int userId) async {
-    final db = await _db.getDatabase();
-    final rows = await db.query(
-      'skills',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'sort_order ASC, name ASC',
-    );
-    return rows.map(SkillModel.fromMap).toList();
+    try {
+      final response = await _apiService.get('/users/$userId/skills');
+      if (response.statusCode == 200) {
+        final data = response.data as List;
+        return data.map((json) => SkillModel.fromMap(json as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Failed to fetch skills: $e');
+    }
   }
 
   Future<List<SkillModel>> findByCategory(int userId, String category) async {
-    final db = await _db.getDatabase();
-    final rows = await db.query(
-      'skills',
-      where: 'user_id = ? AND category = ?',
-      whereArgs: [userId, category],
-      orderBy: 'sort_order ASC',
-    );
-    return rows.map(SkillModel.fromMap).toList();
+    try {
+      final response = await _apiService.get('/users/$userId/skills', queryParameters: {'category': category});
+      if (response.statusCode == 200) {
+        final data = response.data as List;
+        return data.map((json) => SkillModel.fromMap(json as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Failed to fetch skills by category: $e');
+    }
   }
 
   Future<int> update(SkillModel skill) async {
-    final db = await _db.getDatabase();
-    return db.update(
-      'skills',
-      skill.toMap(),
-      where: 'id = ?',
-      whereArgs: [skill.id],
-    );
+    try {
+      final response = await _apiService.put('/skills/${skill.id}', data: skill.toMap());
+      if (response.statusCode == 200) return 1;
+      throw Exception('Failed to update skill');
+    } catch (e) {
+      throw Exception('Failed to update skill: $e');
+    }
   }
-
   Future<int> delete(int id) async {
-    final db = await _db.getDatabase();
-    return db.delete('skills', where: 'id = ?', whereArgs: [id]);
+    try {
+      final response = await _apiService.delete('/skills/$id');
+      if (response.statusCode == 200 || response.statusCode == 204) return 1;
+      throw Exception('Failed to delete skill');
+    } catch (e) {
+      throw Exception('Failed to delete skill: $e');
+    }
   }
 }

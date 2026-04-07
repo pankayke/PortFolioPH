@@ -140,20 +140,20 @@ class _AddEditEducationScreenState extends State<AddEditEducationScreen> {
       updatedAt: DateTime.now().toUtc().toIso8601String(),
     );
 
+    final educationProvider = context.read<EducationProvider>();
     setState(() => _isSaving = true);
 
     final success = _isEdit
-        ? await context.read<EducationProvider>().updateEducation(education)
-        : await context.read<EducationProvider>().addEducation(education);
-
-    setState(() => _isSaving = false);
+      ? await educationProvider.updateEducation(education)
+      : await educationProvider.addEducation(education);
 
     if (!mounted) return;
+    setState(() => _isSaving = false);
 
     if (success) {
       Navigator.of(context).pop(true);
     } else {
-      final error = context.read<EducationProvider>().errorMessage;
+      final error = educationProvider.errorMessage;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error ?? 'An error occurred.')));

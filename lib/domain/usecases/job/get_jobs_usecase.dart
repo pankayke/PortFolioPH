@@ -1,7 +1,6 @@
 // lib/domain/usecases/job/get_jobs_usecase.dart
 
 import 'package:dartz/dartz.dart';
-import '../../entities/index.dart';
 import '../../failures/failures.dart';
 import '../../repositories/index.dart';
 

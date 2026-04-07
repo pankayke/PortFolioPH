@@ -1,37 +1,43 @@
 // lib/data/repositories/project_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
+// API-First Repository: Projects stored on backend only
+// ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:sqflite/sqflite.dart';
-import 'package:portfolioph/data/datasources/local/database_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/project_model.dart';
 
 class ProjectRepository {
-  final DatabaseService _db;
-  bool _schemaEnsured = false;
+  final ApiService _apiService;
 
-  ProjectRepository({DatabaseService? databaseService})
-    : _db = databaseService ?? DatabaseService();
+  ProjectRepository({ApiService? apiService})
+    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
   Future<int> insert(ProjectModel project) async {
-    await _ensureSchema();
-    final db = await _db.getDatabase();
-    return db.insert(
-      'projects',
-      project.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.abort,
-    );
+    try {
+      final response = await _apiService.post(
+        '/portfolios/${project.portfolioId}/projects',
+        data: project.toMap(),
+      );
+      if (response.statusCode == 201) {
+        return response.data['id'] as int;
+      }
+      throw Exception('Failed to create project');
+    } catch (e) {
+      throw Exception('Failed to insert project: $e');
+    }
   }
 
   Future<ProjectModel?> findById(int id) async {
-    await _ensureSchema();
-    final db = await _db.getDatabase();
-    final rows = await db.query(
-      'projects',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    return rows.isEmpty ? null : ProjectModel.fromMap(rows.first);
+    try {
+      final response = await _apiService.get('/projects/$id');
+      if (response.statusCode == 200) {
+        return ProjectModel.fromMap(response.data as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to fetch project: $e');
+    }
   }
 
   Future<List<ProjectModel>> findByPortfolioId(
@@ -40,78 +46,73 @@ class ProjectRepository {
     int? limit,
     int? offset,
   }) async {
-    await _ensureSchema();
-    final db = await _db.getDatabase();
-    final hasSearch = searchQuery != null && searchQuery.trim().isNotEmpty;
-    final trimmedQuery = searchQuery?.trim();
+    try {
+      final queryParams = <String, dynamic>{};
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        queryParams['search'] = searchQuery;
+      }
+      if (limit != null) queryParams['limit'] = limit;
+      if (offset != null) queryParams['offset'] = offset;
 
-    final rows = await db.query(
-      'projects',
-      where: hasSearch
-          ? '''
-            portfolio_id = ?
-            AND (
-              LOWER(title) LIKE LOWER(?)
-              OR LOWER(COALESCE(description, '')) LIKE LOWER(?)
-              OR LOWER(COALESCE(tech_stack, '')) LIKE LOWER(?)
-            )
-          '''
-          : 'portfolio_id = ?',
-      whereArgs: hasSearch
-          ? [
-              portfolioId,
-              '%$trimmedQuery%',
-              '%$trimmedQuery%',
-              '%$trimmedQuery%',
-            ]
-          : [portfolioId],
-      orderBy: 'sort_order ASC, created_at DESC',
-      limit: limit,
-      offset: offset,
-    );
-    return rows.map(ProjectModel.fromMap).toList();
+      final response = await _apiService.get(
+        '/portfolios/$portfolioId/projects',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as List;
+        return data
+            .map((json) => ProjectModel.fromMap(json as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Failed to fetch projects: $e');
+    }
   }
 
   Future<List<ProjectModel>> findFeaturedByUserId(int userId) async {
-    await _ensureSchema();
-    final db = await _db.getDatabase();
-    final rows = await db.query(
-      'projects',
-      where: 'user_id = ? AND is_featured = 1',
-      whereArgs: [userId],
-      orderBy: 'sort_order ASC',
-    );
-    return rows.map(ProjectModel.fromMap).toList();
+    try {
+      final response = await _apiService.get(
+        '/users/$userId/projects/featured',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as List;
+        return data
+            .map((json) => ProjectModel.fromMap(json as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Failed to fetch featured projects: $e');
+    }
   }
 
   Future<int> update(ProjectModel project) async {
-    await _ensureSchema();
-    final db = await _db.getDatabase();
-    return db.update(
-      'projects',
-      project.toMap(),
-      where: 'id = ?',
-      whereArgs: [project.id],
-    );
+    try {
+      final response = await _apiService.put(
+        '/projects/${project.id}',
+        data: project.toMap(),
+      );
+      if (response.statusCode == 200) {
+        return 1;
+      }
+      throw Exception('Failed to update project');
+    } catch (e) {
+      throw Exception('Failed to update project: $e');
+    }
   }
 
   Future<int> delete(int id) async {
-    await _ensureSchema();
-    final db = await _db.getDatabase();
-    return db.delete('projects', where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<void> _ensureSchema() async {
-    if (_schemaEnsured) return;
-
-    final db = await _db.getDatabase();
-    final columns = await db.rawQuery('PRAGMA table_info(projects)');
-    final hasImagePaths = columns.any((c) => c['name'] == 'image_paths');
-
-    if (!hasImagePaths) {
-      await db.execute('ALTER TABLE projects ADD COLUMN image_paths TEXT');
+    try {
+      final response = await _apiService.delete('/projects/$id');
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return 1;
+      }
+      throw Exception('Failed to delete project');
+    } catch (e) {
+      throw Exception('Failed to delete project: $e');
     }
-
-    _schemaEnsured = true;
   }
 }

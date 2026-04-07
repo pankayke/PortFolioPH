@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'package:portfolioph/core/config/app_config.dart';
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/core/services/toast_service.dart';
@@ -29,6 +30,10 @@ import 'package:portfolioph/presentation/providers/theme_provider.dart';
 void main() async {
   // Ensure binding is initialised before any plugin calls.
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize environment configuration (development if called directly)
+  // For production/staging, initialize via main_production.dart or main_staging.dart
+  AppConfig.initialize(Flavor.development);
 
   // Online-only architecture: no local SQLite
 

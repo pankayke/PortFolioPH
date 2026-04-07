@@ -11,7 +11,7 @@ import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
 class SeekerDashboardScreen extends StatefulWidget {
-  const SeekerDashboardScreen({Key? key}) : super(key: key);
+  const SeekerDashboardScreen({super.key});
 
   @override
   State<SeekerDashboardScreen> createState() => _SeekerDashboardScreenState();

@@ -12,7 +12,7 @@ void main() => runApp(
     );
 
 class JobPlatformApp extends StatelessWidget {
-  const JobPlatformApp({Key? key}) : super(key: key);
+  const JobPlatformApp({super.key});
 
   @override
   Widget build(BuildContext context) {

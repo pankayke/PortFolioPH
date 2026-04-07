@@ -1,0 +1,59 @@
+00:00 +0: loading C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart
+00:00 +0: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should create job entity with required fields
+00:00 +1: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should have equality based on all properties
+00:00 +2: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should differ when properties change
+00:00 +3: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should determine if job is open
+00:00 +4: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should determine if job is accepting applications
+00:00 +5: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should format salary range correctly
+00:00 +6: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should show negotiable for missing salary
+00:00 +7: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should handle partial salary data
+00:00 +8: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should support different job types
+00:00 +9: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should parse JobType from string
+00:00 +10: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should support different job statuses
+00:00 +11: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should parse JobStatus from string
+00:00 +12: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should track application count
+00:00 +13: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should include recruiter information
+00:00 +14: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should include required skills list
+00:00 +15: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should handle empty skills list
+00:00 +16: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should track timestamps
+00:00 +17: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService startPolling calls callback immediately
+[PollingService] Started polling: test_poll (0s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:00 +18: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService startPolling calls callback periodically
+[PollingService] Started polling: test_poll (0s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:00 +19: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService stopPolling stops the task
+[PollingService] Started polling: test_poll (0s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:01 +20: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService isPolling returns correct state
+[PollingService] Started polling: test_poll (1s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:01 +21: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService stopAll stops all tasks
+[PollingService] Started polling: poll_1 (0s)
+[PollingService] Started polling: poll_2 (0s)
+[PollingService] Stopped polling: poll_1
+[PollingService] Stopped polling: poll_2
+[PollingService] Stopped all polling tasks
+[PollingService] Stopped all polling tasks
+00:01 +22: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService handles failed callbacks gracefully
+[PollingService] Started polling: failing_poll (0s)
+[PollingService] Poll failed (1): failing_poll | Exception: Test error
+[PollingService] Poll failed (2): failing_poll | Exception: Test error
+[PollingService] Poll failed (3): failing_poll | Exception: Test error
+[PollingService] Max failures reached. Stopping: failing_poll
+[PollingService] Stopped polling: failing_poll
+[PollingService] Stopped all polling tasks
+00:01 +23: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService activeTaskCount reflects running tasks
+[PollingService] Started polling: poll_1 (1s)
+[PollingService] Started polling: poll_2 (1s)
+[PollingService] Stopped polling: poll_1
+[PollingService] Stopped polling: poll_2
+[PollingService] Stopped all polling tasks
+00:01 +24: C:/Users/USER/portfolioph/test/widget_test.dart: App widget mounts without exceptions
+Γ£à SUCCESS: ApiService initialized with http://localhost:8000/api
+Γ£à SUCCESS: ApiService initialized with http://localhost:8000/api
+00:02 +25: All tests passed!

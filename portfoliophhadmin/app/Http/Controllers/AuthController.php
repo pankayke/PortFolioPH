@@ -8,6 +8,7 @@ use App\Http\Resources\ApiResponse;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -52,6 +53,67 @@ class AuthController extends Controller
             'Login successful',
             200
         );
+    }
+
+    /**
+     * Request a password reset token.
+     */
+    public function requestPasswordReset(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email'],
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::validationError($validator->errors()->toArray());
+        }
+
+        $email = $request->string('email')->toString();
+        $token = $this->authService->createPasswordResetToken($email);
+
+        if ($token === null) {
+            // Avoid account enumeration.
+            return ApiResponse::success(null, 'If the email exists, a reset token has been issued.', 200);
+        }
+
+        // TODO: Replace with email delivery in production.
+        if (app()->environment(['local', 'development', 'testing'])) {
+            return ApiResponse::success(
+                ['reset_token' => $token],
+                'Use this reset token to confirm password reset.',
+                200
+            );
+        }
+
+        return ApiResponse::success(null, 'If the email exists, a reset token has been issued.', 200);
+    }
+
+    /**
+     * Confirm password reset using email + token + new password.
+     */
+    public function confirmPasswordReset(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string', 'min:32'],
+            'new_password' => ['required', 'string', 'min:8'],
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::validationError($validator->errors()->toArray());
+        }
+
+        $ok = $this->authService->resetPasswordWithToken(
+            $request->string('email')->toString(),
+            $request->string('token')->toString(),
+            $request->string('new_password')->toString(),
+        );
+
+        if (!$ok) {
+            return ApiResponse::error('Invalid or expired reset token.', 422);
+        }
+
+        return ApiResponse::success(null, 'Password reset successful', 200);
     }
 
     /**

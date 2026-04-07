@@ -1,5 +1,5 @@
 import 'package:provider/provider.dart';
-import 'package:flutter/material.dart';
+import 'package:provider/single_child_widget.dart';
 import '../../core/services/api_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/job_repository.dart';
@@ -7,7 +7,7 @@ import 'auth_provider.dart';
 import 'job_provider.dart';
 
 class AppProviders {
-  static List get providers {
+  static List<SingleChildWidget> get providers {
     // Create API Service
     final apiService = ApiService();
 
