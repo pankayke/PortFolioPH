@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
+import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 
 class RecruiterRejectedScreen extends StatelessWidget {
   const RecruiterRejectedScreen({super.key});
@@ -19,182 +21,189 @@ class RecruiterRejectedScreen extends StatelessWidget {
       builder: (context, authProvider, _) {
         final user = authProvider.currentUser;
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Account Status'),
-            automaticallyImplyLeading: false,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  authProvider.logout();
-                  context.go(AppRoutes.login);
-                },
-              ),
-            ],
-          ),
-          body: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Icon
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      shape: BoxShape.circle,
+        return PremiumAppBackground(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: const Text('Account Status'),
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.transparent,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    authProvider.logout();
+                    context.go(AppRoutes.login);
+                  },
+                ),
+              ],
+            ),
+            body: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 108,
+                      height: 108,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.red.withValues(alpha: 0.20),
+                            Colors.orange.withValues(alpha: 0.16),
+                          ],
+                        ),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withValues(alpha: 0.20),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Icon(Icons.cancel_rounded, size: 50, color: Colors.red.shade200),
                     ),
-                    child: Icon(Icons.cancel, size: 50, color: Colors.red[800]),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Title
-                  Text(
-                    'Account Not Approved',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Message
-                  Text(
-                    'Unfortunately, your recruiter account application was not approved.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Details
-                  Card(
-                    color: Colors.red[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
+                    const SizedBox(height: 28),
+                    Text(
+                      'Account Not Approved',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Unfortunately, your recruiter account application was not approved.',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.84),
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 22),
+                    RecruiterGlassCard(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.red.withValues(alpha: 0.16),
+                          Colors.white.withValues(alpha: 0.12),
+                        ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Rejection Information',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(color: Colors.red[800]),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                           const SizedBox(height: 16),
-                          _buildDetailRow(
-                            context,
-                            label: 'Name',
-                            value: user?.fullName ?? 'N/A',
-                          ),
+                          _buildDetailRow(context, label: 'Name', value: user?.fullName ?? 'N/A'),
                           const SizedBox(height: 8),
-                          _buildDetailRow(
-                            context,
-                            label: 'Email',
-                            value: user?.email ?? 'N/A',
-                          ),
+                          _buildDetailRow(context, label: 'Email', value: user?.email ?? 'N/A'),
                           const SizedBox(height: 8),
                           _buildDetailRow(
                             context,
                             label: 'Status',
                             value: 'Rejected',
-                            valueColor: Colors.red[800],
+                            valueColor: Colors.red.shade200,
                           ),
                         ],
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Reason card
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange[200]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.warning, color: Colors.orange[700]),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Possible Reasons',
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(color: Colors.orange[700]),
+                    const SizedBox(height: 20),
+                    RecruiterGlassCard(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.orange.withValues(alpha: 0.14),
+                          Colors.white.withValues(alpha: 0.12),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: Colors.orange.shade200),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Possible Reasons',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '• Incomplete or inaccurate company information\n'
-                          '• Non-compliance with platform policies\n'
-                          '• Suspicious or fraudulent activity\n'
-                          '• Policy violations\n'
-                          '• Other verification concerns',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '• Incomplete or inaccurate company information\n'
+                            '• Non-compliance with platform policies\n'
+                            '• Suspicious or fraudulent activity\n'
+                            '• Policy violations\n'
+                            '• Other verification concerns',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.84),
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Support info
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.help, color: Colors.blue[700]),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Need Help?',
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(color: Colors.blue[700]),
+                    const SizedBox(height: 20),
+                    RecruiterGlassCard(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withValues(alpha: 0.14),
+                          Colors.white.withValues(alpha: 0.12),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.help_outline_rounded, color: Colors.blue.shade200),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Need Help?',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'If you believe this is a mistake, please contact our support team at support@jobplatform.com',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'If you believe this is a mistake, please contact our support team at support@jobplatform.com',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.84),
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Action buttons
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        authProvider.logout();
-                        context.go(AppRoutes.login);
-                      },
-                      child: const Text('Back to Login'),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () {
+                          authProvider.logout();
+                          context.go(AppRoutes.login);
+                        },
+                        child: const Text('Back to Login'),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -212,12 +221,12 @@ class RecruiterRejectedScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: valueColor,
+            color: valueColor ?? Colors.white,
           ),
         ),
       ],

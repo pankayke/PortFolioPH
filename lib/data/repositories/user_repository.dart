@@ -204,9 +204,12 @@ class UserRepository {
       
       debugPrint('[UserRepository] Login failed - invalid response format');
       return null;
+    } on UnauthorizedException {
+      // Expected for invalid credentials from backend (401).
+      return null;
     } catch (e) {
       debugPrint('[UserRepository] Login failed: $e');
-      return null;
+      rethrow;
     }
   }
 

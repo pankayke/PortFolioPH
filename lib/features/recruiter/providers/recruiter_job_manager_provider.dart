@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/foundation.dart';
+import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
 import 'package:portfolioph/features/recruiter/models/job_model.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 
@@ -201,9 +202,10 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   // ─────── Private Methods ───────────────────────────────────────────────────
 
   String _handleError(dynamic error) {
+    if (error is ApiException) return error.message;
     if (error is String) return error;
     if (error is Exception) return error.toString();
-    return 'Unknown error occurred';
+    return error?.toString() ?? 'Unable to complete job action.';
   }
 
 }

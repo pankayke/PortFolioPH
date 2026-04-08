@@ -34,21 +34,44 @@ class UserModel {
   });
 
   // ── Serialisation ─────────────────────────────────────────────────────────────
-  factory UserModel.fromMap(Map<String, dynamic> map) => UserModel(
-    id: map['id'] as int?,
-    username: map['username'] as String,
-    email: map['email'] as String,
-    role: map['role'] as String? ?? 'user',
-    passwordHash: map['password_hash'] as String,
-    fullName: map['full_name'] as String?,
-    bio: map['bio'] as String?,
-    avatarPath: map['avatar_path'] as String?,
-    phoneNumber: map['phone_number'] as String?,
-    location: map['location'] as String?,
-    websiteUrl: map['website_url'] as String?,
-    createdAt: map['created_at'] as String,
-    updatedAt: map['updated_at'] as String,
-  );
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    final email = _asString(map['email']);
+    final name = _asString(map['name']);
+    final username = _asString(map['username']);
+
+    // Auth endpoints may return a minimal user payload (id/name/email/role only).
+    // Keep parsing resilient by falling back to available identity fields.
+    final resolvedUsername = username.isNotEmpty
+        ? username
+        : (name.isNotEmpty ? name : email);
+
+    return UserModel(
+      id: map['id'] as int?,
+      username: resolvedUsername,
+      email: email,
+      role: _asString(map['role']).isNotEmpty ? _asString(map['role']) : 'user',
+      passwordHash: _asString(map['password_hash']),
+      fullName: _asNullableString(map['full_name']) ?? _asNullableString(map['name']),
+      bio: _asNullableString(map['bio']),
+      avatarPath: _asNullableString(map['avatar_path']),
+      phoneNumber: _asNullableString(map['phone_number']),
+      location: _asNullableString(map['location']),
+      websiteUrl: _asNullableString(map['website_url']),
+      createdAt: _asString(map['created_at']),
+      updatedAt: _asString(map['updated_at']),
+    );
+  }
+
+  static String _asString(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
+  }
+
+  static String? _asNullableString(dynamic value) {
+    if (value == null) return null;
+    final result = value.toString();
+    return result.isEmpty ? null : result;
+  }
 
   Map<String, dynamic> toMap() => {
     if (id != null) 'id': id,

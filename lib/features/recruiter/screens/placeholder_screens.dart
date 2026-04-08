@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
+import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 
 // Job Create Screen
 class JobCreateScreen extends StatefulWidget {
@@ -81,87 +83,137 @@ class _JobCreateScreenState extends State<JobCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create Job')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Job Title'),
-                validator: (v) => (v == null || v.trim().length < 5)
-                    ? 'Title must be at least 5 characters.'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 4,
-                decoration: const InputDecoration(labelText: 'Description'),
-                validator: (v) => (v == null || v.trim().length < 20)
-                    ? 'Description must be at least 20 characters.'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Location'),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Location is required.'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _jobType,
-                decoration: const InputDecoration(labelText: 'Job Type'),
-                items: const [
-                  DropdownMenuItem(value: 'full_time', child: Text('Full Time')),
-                  DropdownMenuItem(value: 'part_time', child: Text('Part Time')),
-                  DropdownMenuItem(value: 'contract', child: Text('Contract')),
-                  DropdownMenuItem(value: 'freelance', child: Text('Freelance')),
+    return PremiumAppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(title: const Text('Create Job'), backgroundColor: Colors.transparent),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: RecruiterGlassCard(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  _glassField(
+                    controller: _titleController,
+                    label: 'Job Title',
+                    validator: (v) => (v == null || v.trim().length < 5)
+                        ? 'Title must be at least 5 characters.'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  _glassField(
+                    controller: _descriptionController,
+                    label: 'Description',
+                    maxLines: 5,
+                    validator: (v) => (v == null || v.trim().length < 20)
+                        ? 'Description must be at least 20 characters.'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  _glassField(
+                    controller: _locationController,
+                    label: 'Location',
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Location is required.'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: _jobType,
+                    decoration: _glassDecoration('Job Type'),
+                    dropdownColor: const Color(0xFF0F172A),
+                    items: const [
+                      DropdownMenuItem(value: 'full_time', child: Text('Full Time')),
+                      DropdownMenuItem(value: 'part_time', child: Text('Part Time')),
+                      DropdownMenuItem(value: 'contract', child: Text('Contract')),
+                      DropdownMenuItem(value: 'freelance', child: Text('Freelance')),
+                    ],
+                    onChanged: (value) => setState(() => _jobType = value ?? 'full_time'),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _glassField(
+                          controller: _salaryMinController,
+                          label: 'Salary Min (optional)',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _glassField(
+                          controller: _salaryMaxController,
+                          label: 'Salary Max (optional)',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _glassField(
+                    controller: _skillsController,
+                    label: 'Required Skills (comma-separated)',
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Post Job'),
+                    ),
+                  ),
                 ],
-                onChanged: (value) => setState(() => _jobType = value ?? 'full_time'),
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _salaryMinController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Salary Min (optional)'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _salaryMaxController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Salary Max (optional)'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _skillsController,
-                decoration: const InputDecoration(
-                  labelText: 'Required Skills (comma-separated)',
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Post Job'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _glassDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: 0.10),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.20)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide(color: const Color(0xFF38BDF8).withValues(alpha: 0.85)),
+      ),
+    );
+  }
+
+  Widget _glassField({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      validator: validator,
+      decoration: _glassDecoration(label),
     );
   }
 }
@@ -202,9 +254,10 @@ class _JobListScreenState extends State<JobListScreen> {
             return RefreshIndicator(
               onRefresh: _refresh,
               child: ListView(
+                padding: const EdgeInsets.all(16),
                 children: const [
-                  SizedBox(height: 220),
-                  Center(child: Text('No jobs posted yet.')),
+                  SizedBox(height: 120),
+                  RecruiterGlassCard(child: Center(child: Text('No jobs posted yet.'))),
                 ],
               ),
             );
@@ -216,29 +269,47 @@ class _JobListScreenState extends State<JobListScreen> {
               itemCount: provider.jobs.length,
               itemBuilder: (context, index) {
                 final job = provider.jobs[index];
-                return ListTile(
-                  onTap: () => context.push('/recruiter/jobs/${job.id}'),
-                  title: Text(job.title),
-                  subtitle: Text(
-                    '${job.location} • ${job.status} • ${job.applicationCount} applicants',
-                  ),
-                  trailing: Wrap(
-                    spacing: 8,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () => context.push('/recruiter/jobs/${job.id}/edit'),
-                      ),
-                      if (job.status != 'closed')
-                        IconButton(
-                          icon: const Icon(Icons.pause_circle_outline),
-                          onPressed: () => provider.closeJob(job.id),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: RecruiterGlassCard(
+                    onTap: () => context.push('/recruiter/jobs/${job.id}'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(job.title, style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        Text('${job.location} • ${job.applicationCount} applicants'),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            RecruiterGlowChip(label: job.status.toUpperCase()),
+                            RecruiterGlowChip(label: job.salaryDisplay),
+                          ],
                         ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => provider.deleteJob(job.id),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            TextButton.icon(
+                              icon: const Icon(Icons.edit_outlined),
+                              onPressed: () => context.push('/recruiter/jobs/${job.id}/edit'),
+                              label: const Text('Edit'),
+                            ),
+                            if (job.status != 'closed')
+                              TextButton.icon(
+                                icon: const Icon(Icons.pause_circle_outline),
+                                onPressed: () => provider.closeJob(job.id),
+                                label: const Text('Close'),
+                              ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => provider.deleteJob(job.id),
+                              label: const Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -323,7 +394,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       OutlinedButton(
                         onPressed: () async {
                           await _updateStatus(app.id, 'reviewed');
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
                         child: const Text('Mark Reviewed'),
@@ -331,7 +402,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       OutlinedButton(
                         onPressed: () async {
                           await _updateStatus(app.id, 'shortlisted');
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
                         child: const Text('Shortlist'),
@@ -339,7 +410,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       OutlinedButton(
                         onPressed: () async {
                           await _updateStatus(app.id, 'accepted');
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
                         child: const Text('Accept'),
@@ -347,7 +418,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       OutlinedButton(
                         onPressed: () async {
                           await _updateStatus(app.id, 'rejected');
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
                         child: const Text('Reject'),
@@ -381,10 +452,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             itemCount: provider.applications.length,
             itemBuilder: (context, index) {
               final app = provider.applications[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: RecruiterGlassCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -392,8 +462,8 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       const SizedBox(height: 4),
                       Text(app.applicantEmail),
                       const SizedBox(height: 6),
-                      Text('Status: ${app.statusDisplay}'),
-                      const SizedBox(height: 4),
+                      RecruiterGlowChip(label: app.statusDisplay),
+                      const SizedBox(height: 8),
                       TextButton.icon(
                         onPressed: () => _openReviewModal(app),
                         icon: const Icon(Icons.visibility_outlined),

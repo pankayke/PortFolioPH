@@ -35,11 +35,26 @@ class AuthService
      */
     public function authenticate(array $credentials): ?User
     {
-        if (Auth::attempt($credentials)) {
-            return Auth::user();
+        $email = mb_strtolower(trim((string) ($credentials['email'] ?? '')));
+        $password = (string) ($credentials['password'] ?? '');
+
+        if ($email === '' || $password === '') {
+            return null;
         }
 
-        return null;
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+        if (!$user) {
+            return null;
+        }
+
+        if (!Hash::check($password, $user->password)) {
+            return null;
+        }
+
+        // Keep Laravel auth state aligned for downstream middleware/guards.
+        Auth::login($user);
+
+        return $user;
     }
 
     /**
