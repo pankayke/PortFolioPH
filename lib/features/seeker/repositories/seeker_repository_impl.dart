@@ -24,13 +24,15 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
     String? experienceLevel,
   }) async {
     try {
-      final queryParams = {
+      final queryParams = <String, dynamic>{
         'page': page,
-        'search': ?search,
-        'category': ?category,
-        'location': ?location,
-        'employment_type': ?employmentType,
-        'experience_level': ?experienceLevel,
+        if (search != null && search.isNotEmpty) 'search': search,
+        if (category != null && category.isNotEmpty) 'category': category,
+        if (location != null && location.isNotEmpty) 'location': location,
+        if (employmentType != null && employmentType.isNotEmpty)
+          'employment_type': employmentType,
+        if (experienceLevel != null && experienceLevel.isNotEmpty)
+          'experience_level': experienceLevel,
       };
 
       final response = await _apiService.get(
@@ -111,10 +113,10 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
     String sortBy = 'applied_at',
   }) async {
     try {
-      final queryParams = {
+      final queryParams = <String, dynamic>{
         'page': page,
         'sort_by': sortBy,
-        'status': ?status,
+        if (status != null && status.isNotEmpty) 'status': status,
       };
 
       final response = await _apiService.get(

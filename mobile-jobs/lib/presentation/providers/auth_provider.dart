@@ -107,6 +107,15 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Clears local auth state without making a network call.
+  void forceLogout() {
+    _user = null;
+    _token = null;
+    _error = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
   // Get current user
   Future<void> getMe() async {
     try {

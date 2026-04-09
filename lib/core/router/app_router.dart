@@ -24,26 +24,29 @@
 import 'package:go_router/go_router.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/data/models/project_model.dart';
+import 'package:portfolioph/features/recruiter/screens/approval/recruiter_pending_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/approval/recruiter_rejected_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_detail_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_edit_screen.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/screens/admin/filament_admin_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/profile_setup_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/register_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/approval/recruiter_pending_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/approval/recruiter_rejected_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_detail_screen.dart';
-import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_edit_screen.dart';
+import 'package:portfolioph/presentation/screens/main_scaffold.dart';
 import 'package:portfolioph/presentation/screens/portfolio/add_edit_project_screen.dart';
+import 'package:portfolioph/presentation/screens/portfolio/portfolio_screen.dart';
 import 'package:portfolioph/presentation/screens/portfolio/project_detail_screen.dart';
 import 'package:portfolioph/presentation/screens/profile/edit_profile_screen.dart';
 import 'package:portfolioph/presentation/screens/profile/notification_settings_screen.dart';
-import 'package:portfolioph/presentation/screens/admin/filament_admin_screen.dart';
-import 'package:portfolioph/presentation/screens/main_scaffold.dart';
+import 'package:portfolioph/presentation/screens/resume/add_edit_education_screen.dart';
+import 'package:portfolioph/presentation/screens/resume/add_edit_experience_screen.dart';
 import 'package:portfolioph/presentation/screens/settings/settings_screen.dart';
 import 'package:portfolioph/presentation/screens/splash/splash_screen.dart';
-import 'package:portfolioph/presentation/screens/teacher_dashboard_screen.dart';
+import 'package:portfolioph/presentation/screens/teacher/teacher_dashboard_screen.dart';
 
 // ── Named route constants ──────────────────────────────────────────────────────
 abstract final class AppRoutes {
@@ -224,16 +227,16 @@ class AppRouter {
         builder: (context, state) => const MainScaffold(),
       ),
 
-      // ── Future sprint routes (placeholders) ───────────────────────────────
+      // ── Future sprint routes ───────────────────────────────────────────────
       GoRoute(
         path: AppRoutes.portfolioNew,
         name: 'portfolio-new',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 3
+        builder: (context, state) => const PortfolioScreen(),
       ),
       GoRoute(
         path: AppRoutes.portfolioDetail,
         name: 'portfolio-detail',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 3
+        builder: (context, state) => const PortfolioScreen(),
       ),
       GoRoute(
         path: AppRoutes.projectNew,
@@ -274,12 +277,20 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.resumeEducationNew,
         name: 'resume-education-new',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 4
+        builder: (context, state) {
+          final userId = authProvider.currentUser?.id;
+          if (userId == null) return const MainScaffold();
+          return AddEditEducationScreen(userId: userId);
+        },
       ),
       GoRoute(
         path: AppRoutes.resumeExperienceNew,
         name: 'resume-experience-new',
-        builder: (context, state) => const MainScaffold(), // TODO Sprint 4
+        builder: (context, state) {
+          final userId = authProvider.currentUser?.id;
+          if (userId == null) return const MainScaffold();
+          return AddEditExperienceScreen(userId: userId);
+        },
       ),
       GoRoute(
         path: AppRoutes.settings,

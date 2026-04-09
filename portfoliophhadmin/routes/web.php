@@ -71,6 +71,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{user}/edit', [AdminWebController::class, 'editUser'])->name('edit');
         Route::put('/{user}', [AdminWebController::class, 'updateUser'])->name('update');
         Route::post('/{user}/suspend', [AdminWebController::class, 'suspendUser'])->name('suspend');
+        Route::post('/{user}/unsuspend', [AdminWebController::class, 'unsuspendUser'])->name('unsuspend');
         Route::delete('/{user}', [AdminWebController::class, 'deleteUser'])->name('delete');
     });
     
@@ -85,6 +86,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Applications Analytics
     Route::get('/applications', [AdminWebController::class, 'applications'])->name('applications.index');
+
+    // Settings
+    Route::get('/settings', [AdminWebController::class, 'settings'])->name('settings');
+    Route::put('/settings', [AdminWebController::class, 'updateSettings'])->name('settings.update');
     
     // Audit Log
     Route::get('/audit', [AdminWebController::class, 'auditLog'])->name('audit');

@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:portfolioph/core/config/app_config.dart';
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/core/services/telemetry_service.dart';
 import 'package:portfolioph/core/services/toast_service.dart';
 import 'package:portfolioph/core/theme/app_theme.dart';
 import 'package:portfolioph/presentation/providers/app_providers.dart';
@@ -31,9 +32,13 @@ void main() async {
   // Ensure binding is initialised before any plugin calls.
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize environment configuration (development if called directly)
-  // For production/staging, initialize via main_production.dart or main_staging.dart
-  AppConfig.initialize(Flavor.development);
+  // Initialize environment configuration only when this entrypoint is used directly.
+  if (!AppConfig.isInitialized) {
+    AppConfig.initialize(Flavor.development);
+  }
+
+  // Initialize telemetry if Sentry DSN is provided.
+  await TelemetryService.initialize();
 
   // Online-only architecture: no local SQLite
 

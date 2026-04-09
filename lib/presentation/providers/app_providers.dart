@@ -91,6 +91,11 @@ class AppProviderRegistry {
       update: (_, apiService, previous) => RecruiterRepositoryImpl(apiService),
     ),
 
+    /// Recruiter Application Repository — Application tracking for recruiters
+    ProxyProvider<ApiService, ApplicationRepositoryImpl>(
+      update: (_, apiService, previous) => ApplicationRepositoryImpl(apiService),
+    ),
+
     /// Seeker Repository — Job search and application management
     ProxyProvider<ApiService, SeekerRepositoryImpl>(
       update: (_, apiService, previous) => SeekerRepositoryImpl(apiService),
@@ -111,26 +116,22 @@ class AppProviderRegistry {
       RecruiterRepositoryImpl,
       RecruiterJobManagerProvider
     >(
-      create: (_) => RecruiterJobManagerProvider(
-        RecruiterRepositoryImpl(ApiService(const FlutterSecureStorage())),
-      ),
+      create: (context) =>
+          RecruiterJobManagerProvider(context.read<RecruiterRepositoryImpl>()),
       update: (_, repo, previous) =>
           previous ?? RecruiterJobManagerProvider(repo),
     ),
 
     /// Recruiter Application Manager — handles application viewing and updates
     ChangeNotifierProxyProvider<
-      RecruiterRepositoryImpl,
+      ApplicationRepositoryImpl,
       RecruiterApplicationManagerProvider
     >(
-      create: (_) => RecruiterApplicationManagerProvider(
-        ApplicationRepositoryImpl(ApiService(const FlutterSecureStorage())),
+      create: (context) => RecruiterApplicationManagerProvider(
+        context.read<ApplicationRepositoryImpl>(),
       ),
       update: (_, repo, previous) =>
-          previous ??
-          RecruiterApplicationManagerProvider(
-            ApplicationRepositoryImpl(ApiService(const FlutterSecureStorage())),
-          ),
+          previous ?? RecruiterApplicationManagerProvider(repo),
     ),
 
     // ────────────────────────────────────────────────────────────────────────
@@ -139,9 +140,8 @@ class AppProviderRegistry {
 
     /// Seeker Job List Provider — search, filter, and browse available jobs
     ChangeNotifierProxyProvider<SeekerRepositoryImpl, SeekerJobListProvider>(
-      create: (_) => SeekerJobListProvider(
-        SeekerRepositoryImpl(ApiService(const FlutterSecureStorage())),
-      ),
+      create: (context) =>
+          SeekerJobListProvider(context.read<SeekerRepositoryImpl>()),
       update: (_, repo, previous) => previous ?? SeekerJobListProvider(repo),
     ),
 
@@ -150,10 +150,8 @@ class AppProviderRegistry {
       SeekerApplicationRepositoryImpl,
       SeekerApplicationProvider
     >(
-      create: (_) => SeekerApplicationProvider(
-        SeekerApplicationRepositoryImpl(
-          ApiService(const FlutterSecureStorage()),
-        ),
+      create: (context) => SeekerApplicationProvider(
+        context.read<SeekerApplicationRepositoryImpl>(),
       ),
       update: (_, repo, previous) =>
           previous ?? SeekerApplicationProvider(repo),

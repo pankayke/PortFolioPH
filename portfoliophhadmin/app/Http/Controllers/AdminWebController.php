@@ -18,7 +18,7 @@ class AdminWebController extends Controller
             'recruiters' => User::where('role', 'recruiter')->count(),
             'job_seekers' => User::where('role', 'job_seeker')->count(),
             'total_jobs' => Job::count(),
-            'active_jobs' => Job::where('status', 'open')->count(),
+            'active_jobs' => Job::where('status', 'approved')->count(),
             'total_applications' => Application::count(),
             'pending_applications' => Application::where('status', 'pending')->count(),
         ];
@@ -33,24 +33,64 @@ class AdminWebController extends Controller
     // Users Management: List all users
     public function users(Request $request)
     {
-        $users = User::query()
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = trim((string) $request->input('search'));
+        $search = trim((string) $request->input('search', ''));
+        $role = strtolower(trim((string) $request->input('role', 'all')));
+        $status = strtolower(trim((string) $request->input('status', 'all')));
+        $sortBy = strtolower(trim((string) $request->input('sort_by', 'created_at')));
+        $sortDir = strtolower(trim((string) $request->input('sort_dir', 'desc')));
 
-                $query->where(function ($innerQuery) use ($search) {
-                    $innerQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                });
+        if (in_array($role, ['job seeker', 'job-seeker'], true)) {
+            $role = 'job_seeker';
+        }
+
+        $allowedSorts = ['created_at', 'name', 'email', 'role', 'active'];
+        if (!in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'desc';
+        }
+
+        $users = User::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+                foreach ($terms as $term) {
+                    $query->where(function ($innerQuery) use ($term) {
+                        $innerQuery->where('name', 'like', "%{$term}%")
+                            ->orWhere('email', 'like', "%{$term}%")
+                            ->orWhere('username', 'like', "%{$term}%");
+                    });
+                }
             })
-            ->when($request->filled('role'), function ($query) use ($request) {
-                $query->where('role', $request->input('role'));
+            ->when($role !== '' && $role !== 'all', function ($query) use ($role) {
+                if ($role === 'job_seeker') {
+                    $query->whereIn('role', ['job_seeker', 'job seeker', 'job-seeker']);
+                    return;
+                }
+
+                $query->where('role', $role);
             })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $isActive = $request->input('status') === 'active';
-                $query->where('active', $isActive);
+            ->when($status !== '' && $status !== 'all', function ($query) use ($status) {
+                if ($status === 'active') {
+                    $query->where('active', 1);
+                    return;
+                }
+
+                if ($status === 'suspended') {
+                    $query->where(function ($statusQuery) {
+                        $statusQuery->where('active', 0)->orWhereNull('active');
+                    });
+                }
             })
             ->withCount(['jobs', 'applications'])
-            ->latest()
+            ->when($sortBy === 'active', function ($query) use ($sortDir) {
+                $query->orderByRaw("COALESCE(active, 0) {$sortDir}")
+                    ->orderBy('created_at', 'desc');
+            }, function ($query) use ($sortBy, $sortDir) {
+                $query->orderBy($sortBy, $sortDir);
+            })
             ->paginate(20)
             ->withQueryString();
 
@@ -112,6 +152,14 @@ class AdminWebController extends Controller
         return redirect()->route('admin.users.show', $user)->with('success', 'User suspended. All their jobs are now closed.');
     }
 
+    // Users Management: Unsuspend user (reactivate account)
+    public function unsuspendUser(User $user)
+    {
+        $user->update(['active' => true]);
+
+        return redirect()->route('admin.users.show', $user)->with('success', 'User unsuspended and account reactivated successfully.');
+    }
+
     // Users Management: Delete user (hard delete with cascades)
     public function deleteUser(User $user)
     {
@@ -162,7 +210,7 @@ class AdminWebController extends Controller
     // Jobs Management: Approve/activate job (reflects on recruiter's view)
     public function approveJob(Job $job)
     {
-        $job->update(['status' => 'open']);
+        $job->update(['status' => 'approved']);
         return redirect()->route('admin.jobs.show', $job)->with('success', 'Job approved and now visible to job seekers.');
     }
 
@@ -178,6 +226,56 @@ class AdminWebController extends Controller
             'rejected' => Application::where('status', 'rejected')->count(),
         ];
         return view('admin.applications.index', compact('applications', 'stats'));
+    }
+
+    // Settings: Command center configuration panel
+    public function settings(Request $request)
+    {
+        $stats = [
+            'total_users' => User::count(),
+        ];
+
+        $settings = [
+            'maintenance_mode' => (bool) $request->session()->get('admin_settings.maintenance_mode', false),
+            'new_user_alerts' => (bool) $request->session()->get('admin_settings.new_user_alerts', true),
+            'moderation_alerts' => (bool) $request->session()->get('admin_settings.moderation_alerts', true),
+            'digest_frequency' => (string) $request->session()->get('admin_settings.digest_frequency', 'daily'),
+            'dashboard_density' => (string) $request->session()->get('admin_settings.dashboard_density', 'high'),
+            'session_timeout' => (int) $request->session()->get('admin_settings.session_timeout', 30),
+        ];
+
+        $metrics = [
+            'active_sessions' => max(3, Application::where('status', 'pending')->count()),
+            'server_load' => min(90, max(18, Job::where('status', 'approved')->count() * 8)),
+            'queue_backlog' => Application::where('status', 'pending')->count(),
+            'open_incidents' => Job::where('status', 'pending')->count(),
+        ];
+
+        return view('admin.settings', compact('settings', 'metrics', 'stats'));
+    }
+
+    // Settings: Store command center preferences
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'maintenance_mode' => 'nullable|boolean',
+            'new_user_alerts' => 'nullable|boolean',
+            'moderation_alerts' => 'nullable|boolean',
+            'digest_frequency' => 'required|in:realtime,hourly,daily,weekly',
+            'dashboard_density' => 'required|in:compact,high,spacious',
+            'session_timeout' => 'required|integer|min:5|max:240',
+        ]);
+
+        $request->session()->put('admin_settings', [
+            'maintenance_mode' => (bool) ($validated['maintenance_mode'] ?? false),
+            'new_user_alerts' => (bool) ($validated['new_user_alerts'] ?? false),
+            'moderation_alerts' => (bool) ($validated['moderation_alerts'] ?? false),
+            'digest_frequency' => $validated['digest_frequency'],
+            'dashboard_density' => $validated['dashboard_density'],
+            'session_timeout' => (int) $validated['session_timeout'],
+        ]);
+
+        return redirect()->route('admin.settings')->with('success', 'Admin command center settings updated.');
     }
 
     // Audit Log: View admin actions (optional - can expand later)

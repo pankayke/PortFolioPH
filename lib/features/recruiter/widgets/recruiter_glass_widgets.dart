@@ -44,7 +44,7 @@ class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final Gradient? gradient;
-  final BorderRadiusGeometry borderRadius;
+  final BorderRadius borderRadius;
   final VoidCallback? onTap;
   final double blurSigma;
 

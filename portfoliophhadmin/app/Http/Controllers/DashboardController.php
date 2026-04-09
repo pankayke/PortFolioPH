@@ -12,9 +12,13 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($user->role === 'recruiter') {
             $totalJobs = Job::where('recruiter_id', $user->id)->count();
-            $openJobs = Job::where('recruiter_id', $user->id)->where('status', 'open')->count();
+            $openJobs = Job::where('recruiter_id', $user->id)->where('status', 'approved')->count();
             $totalApplications = Application::whereHas('job', function ($query) use ($user) {
                 $query->where('recruiter_id', $user->id);
             })->count();

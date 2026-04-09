@@ -9,7 +9,10 @@ import 'job_provider.dart';
 class AppProviders {
   static List<SingleChildWidget> get providers {
     // Create API Service
-    final apiService = ApiService();
+    late AuthProvider authProvider;
+    final apiService = ApiService(
+      onUnauthorized: () => authProvider.forceLogout(),
+    );
 
     return [
       // Services
@@ -21,7 +24,10 @@ class AppProviders {
 
       // Providers
       ChangeNotifierProvider<AuthProvider>(
-        create: (context) => AuthProvider(context.read<AuthRepository>()),
+        create: (context) {
+          authProvider = AuthProvider(context.read<AuthRepository>());
+          return authProvider;
+        },
       ),
       ChangeNotifierProvider<JobProvider>(
         create: (context) => JobProvider(context.read<JobRepository>()),

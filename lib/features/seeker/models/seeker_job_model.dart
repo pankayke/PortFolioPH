@@ -129,8 +129,86 @@ class SeekerJob {
     );
   }
 
-  factory SeekerJob.fromJson(Map<String, dynamic> json) =>
-      _$SeekerJobFromJson(json);
+  static int _asInt(dynamic value, {int fallback = 0}) {
+    if (value == null) return fallback;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsedInt = int.tryParse(value.trim());
+      if (parsedInt != null) return parsedInt;
+      final parsedDouble = double.tryParse(value.trim());
+      if (parsedDouble != null) return parsedDouble.toInt();
+    }
+    return fallback;
+  }
+
+  static double? _asDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value.trim());
+    return double.tryParse(value.toString());
+  }
+
+  static DateTime _asDateTime(dynamic value) {
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.parse(value);
+    return DateTime.now();
+  }
+
+  static dynamic _pick(Map<String, dynamic> json, String camel, String snake) {
+    return json.containsKey(camel) ? json[camel] : json[snake];
+  }
+
+  factory SeekerJob.fromJson(Map<String, dynamic> json) {
+    final requiredSkillsRaw =
+        _pick(json, 'requiredSkills', 'required_skills') as List<dynamic>?;
+
+    final normalized = <String, dynamic>{
+      ...json,
+      'id': _asInt(_pick(json, 'id', 'id')),
+      'recruiterId': _asInt(_pick(json, 'recruiterId', 'recruiter_id')),
+      'recruiterName':
+          (_pick(json, 'recruiterName', 'recruiter_name') ?? '').toString(),
+      'recruiterLogo':
+          (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '').toString(),
+      'title': (_pick(json, 'title', 'title') ?? '').toString(),
+      'description':
+          (_pick(json, 'description', 'description') ?? '').toString(),
+      'category': (_pick(json, 'category', 'category') ?? 'General').toString(),
+      'location': (_pick(json, 'location', 'location') ?? 'Remote').toString(),
+      'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min')),
+      'salaryMax': _asDouble(_pick(json, 'salaryMax', 'salary_max')),
+      'employmentType':
+          (_pick(json, 'employmentType', 'employment_type') ?? 'full_time')
+              .toString(),
+      'experienceLevel':
+          (_pick(json, 'experienceLevel', 'experience_level') ?? 'entry')
+              .toString(),
+      'requiredSkills':
+          (requiredSkillsRaw ?? const <dynamic>[]).map((e) => '$e').toList(),
+      'requiredQualifications': _pick(
+        json,
+        'requiredQualifications',
+        'required_qualifications',
+      ),
+      'deadline': _asDateTime(_pick(json, 'deadline', 'deadline'))
+          .toIso8601String(),
+      'totalApplications':
+          _asInt(_pick(json, 'totalApplications', 'total_applications')),
+      'createdAt': _asDateTime(_pick(json, 'createdAt', 'created_at'))
+          .toIso8601String(),
+      'updatedAt': _asDateTime(_pick(json, 'updatedAt', 'updated_at'))
+          .toIso8601String(),
+      'applicationStatus':
+          (_pick(json, 'applicationStatus', 'application_status') ?? 'none')
+              .toString(),
+      'isSaved':
+          (_pick(json, 'isSaved', 'is_saved') == true) ||
+          (_pick(json, 'isSaved', 'is_saved')?.toString() == '1'),
+    };
+
+    return _$SeekerJobFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$SeekerJobToJson(this);
 

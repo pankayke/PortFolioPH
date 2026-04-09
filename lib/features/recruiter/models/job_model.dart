@@ -48,14 +48,34 @@ class Job {
     return '\$${salaryMin?.toStringAsFixed(0)} - \$${salaryMax?.toStringAsFixed(0)}';
   }
 
+  static double? _asDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value.trim());
+    return double.tryParse(value.toString());
+  }
+
+  static int _asInt(dynamic value, {int fallback = 0}) {
+    if (value == null) return fallback;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsedInt = int.tryParse(value.trim());
+      if (parsedInt != null) return parsedInt;
+      final parsedDouble = double.tryParse(value.trim());
+      if (parsedDouble != null) return parsedDouble.toInt();
+    }
+    return fallback;
+  }
+
   factory Job.fromJson(Map<String, dynamic> json) {
     return Job(
-      id: json['id'] as int,
+      id: _asInt(json['id']),
       title: json['title'] as String,
       description: json['description'] as String,
       location: json['location'] as String,
-      salaryMin: (json['salary_min'] as num?)?.toDouble(),
-      salaryMax: (json['salary_max'] as num?)?.toDouble(),
+      salaryMin: _asDouble(json['salary_min']),
+      salaryMax: _asDouble(json['salary_max']),
         jobType: (json['job_type'] as String?) ?? 'full_time',
       requiredSkills:
           (json['required_skills'] as List<dynamic>?)
@@ -68,9 +88,10 @@ class Job {
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-        applicationCount: (json['applications_count'] as int?) ??
-          (json['application_count'] as int?) ??
-          0,
+        applicationCount:
+            _asInt(json['applications_count'], fallback: -1) >= 0
+                ? _asInt(json['applications_count'])
+                : _asInt(json['application_count']),
     );
   }
 

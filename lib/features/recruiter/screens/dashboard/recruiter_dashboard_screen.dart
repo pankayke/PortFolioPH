@@ -11,8 +11,8 @@ import 'package:portfolioph/features/recruiter/repositories/recruiter_repository
 import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
-import 'package:portfolioph/presentation/providers/theme_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
+import 'package:portfolioph/presentation/widgets/premium_titan_mobile_header.dart';
 
 class RecruiterDashboardScreen extends StatefulWidget {
   final int initialTab;
@@ -54,6 +54,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   ];
 
   late int _selectedIndex;
+  bool _compactHeader = false;
 
   @override
   void initState() {
@@ -71,66 +72,46 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isPostTab = _selectedIndex == 3;
+    final user = context.watch<AuthProvider>().currentUser;
+    final userName = user?.fullName ?? user?.username ?? 'Recruiter';
     return PremiumAppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0A66C2), Color(0xFF38BDF8)],
-                  ),
-                ),
-                child: const Icon(Icons.apartment_rounded, size: 18),
-              ),
-              const SizedBox(width: 10),
-              Text(_tabs[_selectedIndex].label),
-            ],
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          actions: [
-            Consumer<ThemeProvider>(
-              builder: (context, themeProvider, _) {
-                final isDark = themeProvider.themeMode == ThemeMode.dark;
-                return IconButton(
-                  onPressed: () => themeProvider.toggleDarkMode(),
-                  icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
-                  tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
-                );
-              },
-            ),
-            IconButton(
-              onPressed: () => context.push(AppRoutes.notificationSettings),
-              icon: const Icon(Icons.notifications_outlined),
-              tooltip: 'Notifications',
-            ),
-            IconButton(
-              onPressed: () => _logout(context),
-              icon: const Icon(Icons.logout),
-              tooltip: 'Logout',
-            ),
-          ],
+        appBar: PremiumTitanMobileHeader(
+          title: _tabs[_selectedIndex].label,
+          greeting: 'Recruiter Dashboard',
+          userName: userName,
+          compact: _compactHeader,
+          onSearchTap: () => _goToTab(1),
+          onSearchSubmitted: (_) => _goToTab(1),
+          onNotificationTap: () => context.push(AppRoutes.notificationSettings),
+          onProfileTap: () => _goToTab(4),
+          onLogoutTap: () => _logout(context),
         ),
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 260),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          child: IndexedStack(
-            key: ValueKey(_selectedIndex),
-            index: _selectedIndex,
-            children: [
-              _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
-              const _RecruiterJobsTab(),
-              const ApplicantTrackingScreen(compactMode: true),
-              _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
-              const _RecruiterCompanyProfileTab(),
-            ],
+        body: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.axis != Axis.vertical) return false;
+            final shouldCompact = notification.metrics.pixels > 18;
+            if (shouldCompact != _compactHeader) {
+              setState(() => _compactHeader = shouldCompact);
+            }
+            return false;
+          },
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: IndexedStack(
+              key: ValueKey(_selectedIndex),
+              index: _selectedIndex,
+              children: [
+                _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
+                const _RecruiterJobsTab(),
+                const ApplicantTrackingScreen(compactMode: true),
+                _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+                const _RecruiterCompanyProfileTab(),
+              ],
+            ),
           ),
         ),
         floatingActionButton: isPostTab

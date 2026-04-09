@@ -1,16 +1,16 @@
 // lib/core/config/app_config.dart
 // ─────────────────────────────────────────────────────────────────────────────
 // Environment-aware configuration for Development, Staging, and Production.
-// 
+//
 // Usage:
 //   - Access via: AppConfig.apiBaseUrl, AppConfig.enableDebugLogs, etc.
 //   - Initialize in main.dart: AppConfig.initialize(Flavor.production)
-// 
+//
 // Flavor Strategy:
 //   • Development: localhost:8000, debug logs enabled, verbose error messages
 //   • Staging: staging.portfolioph.dev, minimal logs, production-like behavior
 //   • Production: api.portfolioph.dev, no logs, security hardened
-// 
+//
 // Building with Flavors:
 //   flutter build apk --flavor production -t lib/main_production.dart
 //   flutter build apk --flavor staging -t lib/main_staging.dart
@@ -22,6 +22,7 @@ import 'package:flutter/foundation.dart';
 enum Flavor { development, staging, production }
 
 class AppConfig {
+  static bool _isInitialized = false;
   static late Flavor _currentFlavor;
   static late String _apiBaseUrl;
   static late bool _enableDebugLogs;
@@ -42,19 +43,23 @@ class AppConfig {
         _enableAnalytics = false;
         break;
       case Flavor.staging:
-        // TODO: Update to your staging domain
+        // Configuration note: replace with your staging domain if different.
         _apiBaseUrl = 'https://staging-api.portfolioph.dev/api';
         _enableDebugLogs = false;
         _enableAnalytics = true;
         break;
       case Flavor.production:
-        // TODO: Update to your production domain
+        // Configuration note: replace with your production domain if different.
         _apiBaseUrl = 'https://api.portfolioph.dev/api';
         _enableDebugLogs = false;
         _enableAnalytics = true;
         break;
     }
+
+    _isInitialized = true;
   }
+
+  static bool get isInitialized => _isInitialized;
 
   /// Get the current flavor
   static Flavor get currentFlavor => _currentFlavor;

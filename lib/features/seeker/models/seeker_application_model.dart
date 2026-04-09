@@ -137,8 +137,77 @@ class SeekerApplication {
     );
   }
 
-  factory SeekerApplication.fromJson(Map<String, dynamic> json) =>
-      _$SeekerApplicationFromJson(json);
+  static int _asInt(dynamic value, {int fallback = 0}) {
+    if (value == null) return fallback;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsedInt = int.tryParse(value.trim());
+      if (parsedInt != null) return parsedInt;
+      final parsedDouble = double.tryParse(value.trim());
+      if (parsedDouble != null) return parsedDouble.toInt();
+    }
+    return fallback;
+  }
+
+  static double? _asDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value.trim());
+    return double.tryParse(value.toString());
+  }
+
+  static dynamic _pick(Map<String, dynamic> json, String camel, String snake) {
+    return json.containsKey(camel) ? json[camel] : json[snake];
+  }
+
+  static DateTime _asDateTime(dynamic value) {
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.parse(value);
+    return DateTime.now();
+  }
+
+  static DateTime? _asNullableDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.parse(value);
+    return null;
+  }
+
+  factory SeekerApplication.fromJson(Map<String, dynamic> json) {
+    final normalized = <String, dynamic>{
+      ...json,
+      'id': _asInt(_pick(json, 'id', 'id')),
+      'jobId': _asInt(_pick(json, 'jobId', 'job_id')),
+      'jobTitle': (_pick(json, 'jobTitle', 'job_title') ?? 'Untitled Job')
+          .toString(),
+      'recruiterName':
+          (_pick(json, 'recruiterName', 'recruiter_name') ?? '').toString(),
+      'recruiterLogo':
+          (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '').toString(),
+      'jobLocation': (_pick(json, 'jobLocation', 'job_location'))?.toString(),
+      'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min')),
+      'salaryMax': _asDouble(_pick(json, 'salaryMax', 'salary_max')),
+      'status': (_pick(json, 'status', 'status') ?? 'applied').toString(),
+      'notes': (_pick(json, 'notes', 'notes'))?.toString(),
+      'interviewDate': _asNullableDateTime(
+        _pick(json, 'interviewDate', 'interview_date'),
+      )?.toIso8601String(),
+      'interviewLocation':
+          (_pick(json, 'interviewLocation', 'interview_location'))?.toString(),
+      'videoInterviewLink': (_pick(
+        json,
+        'videoInterviewLink',
+        'video_interview_link',
+      ))?.toString(),
+      'appliedAt': _asDateTime(_pick(json, 'appliedAt', 'applied_at'))
+          .toIso8601String(),
+      'updatedAt': _asNullableDateTime(_pick(json, 'updatedAt', 'updated_at'))
+          ?.toIso8601String(),
+    };
+
+    return _$SeekerApplicationFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$SeekerApplicationToJson(this);
 

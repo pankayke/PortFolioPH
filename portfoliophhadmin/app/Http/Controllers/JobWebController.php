@@ -18,7 +18,7 @@ class JobWebController extends Controller
                 ->paginate(12);
         } else {
             // Show all jobs for job seekers
-            $jobs = Job::where('status', 'open')
+            $jobs = Job::where('status', 'approved')
                 ->with('recruiter')
                 ->paginate(12);
         }
@@ -82,7 +82,7 @@ class JobWebController extends Controller
             'salary_max' => 'nullable|numeric|min:0',
             'deadline' => 'nullable|date|after:now',
             'required_skills' => 'nullable|string',
-            'status' => 'required|in:open,closed',
+            'status' => 'required|in:approved,closed',
         ]);
 
         $validated['required_skills'] = $validated['required_skills']
@@ -109,7 +109,7 @@ class JobWebController extends Controller
         Gate::authorize('update', $job);
 
         $validated = $request->validate([
-            'status' => 'required|in:open,closed',
+            'status' => 'required|in:approved,closed',
         ]);
 
         $job->update($validated);
@@ -121,7 +121,7 @@ class JobWebController extends Controller
     public function list()
     {
         // For job seekers to browse all jobs
-        $jobs = Job::where('status', 'open')
+        $jobs = Job::where('status', 'approved')
             ->with('recruiter')
             ->paginate(12);
 

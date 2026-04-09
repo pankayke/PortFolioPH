@@ -172,23 +172,44 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         return;
       }
 
-      // TODO: Implement profile update logic with all fields
-      // Build profile update with all new fields
       final schoolInfo = [
         _schoolController.text.trim(),
         _courseController.text.trim(),
         _selectedYearLevel ?? '',
       ].where((s) => s.isNotEmpty).join(' · ');
 
+      final profileSummary = [
+        _professionController.text.trim(),
+        if (schoolInfo.isNotEmpty) schoolInfo,
+        if (_selectedExperience?.trim().isNotEmpty ?? false) _selectedExperience!,
+        if (_selectedAvailability?.trim().isNotEmpty ?? false)
+          _selectedAvailability!,
+        if (_skillsController.text.trim().isNotEmpty)
+          'Skills: ${_skillsController.text.trim()}',
+        if (_experienceController.text.trim().isNotEmpty)
+          'Experience: ${_experienceController.text.trim()}',
+        if (_salaryExpectationController.text.trim().isNotEmpty)
+          'Salary expectation: ${_salaryExpectationController.text.trim()}',
+      ].where((item) => item.isNotEmpty).join(' | ');
+
       final updated = user.copyWith(
         avatarPath: _avatarPath ?? user.avatarPath,
         fullName: _fullNameController.text.trim(),
-        bio: _bioController.text.trim().isEmpty
+        phoneNumber: _phoneController.text.trim().isEmpty
             ? null
-            : _bioController.text.trim(),
+            : _phoneController.text.trim(),
+        bio: _bioController.text.trim().isEmpty
+            ? (profileSummary.isEmpty ? null : profileSummary)
+            : [
+                _bioController.text.trim(),
+                if (profileSummary.isNotEmpty) profileSummary,
+              ].join('\n\n'),
         location: _locationController.text.trim().isEmpty
             ? schoolInfo
             : _locationController.text.trim(),
+        websiteUrl: _portfolioUrlController.text.trim().isEmpty
+            ? null
+            : _portfolioUrlController.text.trim(),
       );
 
       final saved = await _profileService.updateProfile(updated);

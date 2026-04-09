@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/presentation/providers/theme_provider.dart';
 
 /// Auth Screen
 ///
-/// Authentication and login screen
-class AuthScreen extends StatefulWidget {
+/// Authentication landing screen with login/register entry points.
+class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
-
-  @override
-  State<AuthScreen> createState() => _AuthScreenState();
-}
-
-class _AuthScreenState extends State<AuthScreen> {
-  bool _isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -94,36 +89,37 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
           ),
-          // Theme toggle button (top-right)
           Positioned(
             top: 16,
             right: 16,
-            child: GestureDetector(
-              onTap: () {
-                setState(() => _isDarkMode = !_isDarkMode);
-                // TODO: Integrate with actual theme provider
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surface.withAlpha(204),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(51),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+            child: Consumer<ThemeProvider>(
+              builder: (context, themeProvider, _) {
+                final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+                return GestureDetector(
+                  onTap: () => context.read<ThemeProvider>().toggleDarkMode(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface.withAlpha(204),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(51),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  _isDarkMode
-                      ? Icons.dark_mode_rounded
-                      : Icons.light_mode_rounded,
-                  color: colorScheme.primary,
-                  size: 24,
-                ),
-              ),
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      isDarkMode
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded,
+                      color: colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],

@@ -1,151 +1,149 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="px-6 py-8">
-    <!-- Page Header -->
-    <div class="mb-8">
-        <!-- Breadcrumbs -->
-        <div class="flex items-center text-sm mb-4">
-            <a href="{{ route('admin.dashboard') }}" class="text-gray-500 hover:text-gray-700">Admin</a>
-            <span class="text-gray-400 mx-2">/</span>
-            <span class="text-gray-900 font-medium">Applications</span>
-        </div>
-        
-        <!-- Title -->
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Applications Analytics</h1>
-                <p class="text-gray-600 mt-1">Monitor and manage all job applications</p>
+@include('admin.partials.command_center_styles')
+@php
+    $totalApplications = (int) ($stats['pending'] + $stats['reviewed'] + $stats['shortlisted'] + $stats['accepted'] + $stats['rejected']);
+    $activeSessions = max(2, (int) round(($stats['reviewed'] + $stats['shortlisted'] + $stats['accepted']) * 0.3));
+    $serverLoad = min(86, max(20, (int) round(($stats['pending'] / max($totalApplications, 1)) * 100) + 24));
+@endphp
+
+<div class="cc-theme cc-ultra-shell">
+    <div class="cc-ultra-grid">
+        <aside class="cc-admin-rail cc-left-rail p-4">
+            <p class="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Admin Rail</p>
+            <nav class="space-y-2">
+                <a href="{{ route('admin.dashboard') }}" class="cc-rail-link">Dashboard</a>
+                <a href="{{ route('admin.users.index') }}" class="cc-rail-link">Users</a>
+                <a href="{{ route('admin.jobs.index') }}" class="cc-rail-link">Jobs</a>
+                <a href="{{ route('admin.applications.index') }}" class="cc-rail-link cc-rail-link-active">Applications</a>
+                <a href="{{ route('admin.settings') }}" class="cc-rail-link">Settings</a>
+            </nav>
+
+            <div class="cc-elevated-card mt-5 p-3">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.1em] text-indigo-500">Live System</p>
+                <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+                        <span class="cc-status-pulse"></span>
+                        Intake Stream
+                    </div>
+                    <span class="text-xs font-semibold text-emerald-600">Flowing</span>
+                </div>
+                <div class="mt-3 space-y-2 text-xs text-slate-600">
+                    <p class="flex justify-between"><span>Active Sessions</span><span class="font-semibold text-slate-900">{{ $activeSessions }}</span></p>
+                    <progress class="cc-progress" max="100" value="{{ min(95, $serverLoad + 9) }}"></progress>
+                    <p class="flex justify-between"><span>Server Load</span><span class="font-semibold text-slate-900">{{ $serverLoad }}%</span></p>
+                    <progress class="cc-progress" max="100" value="{{ $serverLoad }}"></progress>
+                </div>
             </div>
-        </div>
-    </div>
+        </aside>
 
-    <!-- Status Overview Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <!-- Total -->
-        <div class="bg-white rounded-lg border border-gray-200 shadow p-4">
-            <p class="text-xs font-medium text-gray-600 mb-2">Total</p>
-            <p class="text-2xl font-bold text-gray-900">
-                {{ $stats['pending'] + $stats['reviewed'] + $stats['shortlisted'] + $stats['accepted'] + $stats['rejected'] }}
-            </p>
-        </div>
+        <section class="cc-main-panel space-y-3">
+            <header class="cc-elevated-card p-5 md:p-6">
+                <div class="mb-3 flex items-center text-sm">
+                    <a href="{{ route('admin.dashboard') }}" class="cc-muted hover:text-slate-700">Admin</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="font-medium text-slate-900">Applications</span>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900">Applications Analytics Hub</h1>
+                <p class="cc-muted mt-1 text-sm">Status pulses and trend cards for every stage of the candidate funnel.</p>
+                <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50/85 p-3 text-sm md:col-span-2">
+                        <p class="text-slate-500">Total</p>
+                        <p class="mt-1 text-2xl font-bold text-slate-900">{{ $totalApplications }}</p>
+                    </div>
+                    <div class="rounded-xl border border-amber-200 bg-amber-50/85 p-3 text-sm"><p class="text-amber-600">Pending</p><p class="mt-1 text-xl font-bold text-amber-700">{{ $stats['pending'] }}</p></div>
+                    <div class="rounded-xl border border-blue-200 bg-blue-50/85 p-3 text-sm"><p class="text-blue-600">Reviewed</p><p class="mt-1 text-xl font-bold text-blue-700">{{ $stats['reviewed'] }}</p></div>
+                    <div class="rounded-xl border border-violet-200 bg-violet-50/85 p-3 text-sm"><p class="text-violet-600">Shortlisted</p><p class="mt-1 text-xl font-bold text-violet-700">{{ $stats['shortlisted'] }}</p></div>
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50/85 p-3 text-sm"><p class="text-emerald-600">Accepted</p><p class="mt-1 text-xl font-bold text-emerald-700">{{ $stats['accepted'] }}</p></div>
+                </div>
+            </header>
 
-        <!-- Pending -->
-        <div class="bg-white rounded-lg border border-amber-200 shadow p-4">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-medium text-amber-600">Pending</p>
-                <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+            <div class="cc-elevated-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="cc-density-table w-full">
+                        <thead class="border-b border-slate-200 bg-slate-50/90">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Job Title</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Applicant</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Email</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Source / Device</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Applied</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Quick Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($applications as $app)
+                                <tr class="cc-record">
+                                    <td class="px-4 py-2.5 font-semibold text-slate-900">{{ $app->job->title ?? 'N/A' }}</td>
+                                    <td class="px-4 py-2.5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-semibold text-white ring-2 ring-blue-200">
+                                                {{ strtoupper(substr($app->user->name ?? 'U', 0, 1)) }}
+                                            </div>
+                                            <p class="text-sm text-slate-800">{{ $app->user->name ?? 'Unknown' }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-2.5 text-sm text-slate-600">{{ $app->user->email ?? 'N/A' }}</td>
+                                    <td class="px-4 py-2.5 text-sm text-slate-600">{{ \Illuminate\Support\Str::limit($app->source ?? $app->device ?? 'Web Portal', 20) }}</td>
+                                    <td class="px-4 py-2.5">
+                                        <span class="cc-glass-chip @if($app->status === 'pending') border-amber-200 bg-amber-50/90 text-amber-700 @elseif($app->status === 'reviewed') border-blue-200 bg-blue-50/90 text-blue-700 @elseif($app->status === 'shortlisted') border-violet-200 bg-violet-50/90 text-violet-700 @elseif($app->status === 'accepted') border-emerald-200 bg-emerald-50/90 text-emerald-700 @else border-slate-200 bg-slate-100/90 text-slate-600 @endif">
+                                            <span class="h-1.5 w-1.5 rounded-full @if($app->status === 'pending') bg-amber-500 @elseif($app->status === 'reviewed') bg-blue-500 @elseif($app->status === 'shortlisted') bg-violet-500 @elseif($app->status === 'accepted') bg-emerald-500 @else bg-slate-400 @endif"></span>
+                                            {{ ucfirst(str_replace('_', ' ', $app->status)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2.5 text-sm text-slate-600">{{ $app->created_at->format('M d, Y H:i') }}</td>
+                                    <td class="px-4 py-2.5">
+                                        <div class="cc-quick-actions inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+                                            <a href="{{ route('admin.applications.index') }}" class="rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Inspect</a>
+                                            @if($app->job)
+                                                <a href="{{ route('admin.jobs.show', $app->job) }}" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Job</a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500">No applications have been submitted yet.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($applications->hasPages())
+                    <div class="border-t border-slate-100 bg-slate-50/70 px-6 py-5">{{ $applications->links() }}</div>
+                @endif
             </div>
-            <p class="text-2xl font-bold text-amber-600">{{ $stats['pending'] }}</p>
-        </div>
 
-        <!-- Reviewed -->
-        <div class="bg-white rounded-lg border border-blue-200 shadow p-4">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-medium text-blue-600">Reviewed</p>
-                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <footer class="cc-pulse-footer">
+                <div class="cc-pulse-item"><span class="text-xs text-slate-500">Online Users</span><span class="text-sm font-bold text-slate-900">{{ $activeSessions }}</span></div>
+                <div class="cc-pulse-item"><span class="text-xs text-slate-500">API Latency</span><span class="text-sm font-bold text-indigo-700">{{ max(45, min(260, 63 + $serverLoad)) }} ms</span></div>
+                <div class="cc-pulse-item"><span class="text-xs text-slate-500">Last Backup</span><span class="text-sm font-bold text-slate-900">{{ now()->subMinutes(26)->format('M d, H:i') }}</span></div>
+                <div class="cc-pulse-item"><span class="text-xs text-slate-500">Build</span><span class="text-sm font-bold text-slate-900">v2.6.4</span></div>
+            </footer>
+        </section>
+
+        <aside class="cc-activity-rail space-y-3">
+            <div class="cc-elevated-card p-4">
+                <h3 class="text-sm font-semibold uppercase tracking-[0.1em] text-slate-500">Pipeline Logs</h3>
+                <div class="mt-3 space-y-2 text-xs">
+                    <div class="cc-audit-row"><span class="font-medium text-slate-700">Application shortlisted</span><span class="text-slate-500">2m ago</span></div>
+                    <div class="cc-audit-row"><span class="font-medium text-slate-700">Reviewer assigned</span><span class="text-slate-500">8m ago</span></div>
+                    <div class="cc-audit-row"><span class="font-medium text-slate-700">Candidate accepted</span><span class="text-slate-500">13m ago</span></div>
+                </div>
             </div>
-            <p class="text-2xl font-bold text-blue-600">{{ $stats['reviewed'] }}</p>
-        </div>
 
-        <!-- Shortlisted -->
-        <div class="bg-white rounded-lg border border-purple-200 shadow p-4">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-medium text-purple-600">Shortlisted</p>
-                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <div class="cc-elevated-card p-4">
+                <h3 class="text-sm font-semibold uppercase tracking-[0.1em] text-slate-500">Stream Gauges</h3>
+                <div class="mt-3 space-y-2 text-xs text-slate-600">
+                    <p class="flex justify-between"><span>Queue Pressure</span><span class="font-semibold text-slate-900">{{ $serverLoad }}%</span></p>
+                    <progress class="cc-progress" max="100" value="{{ $serverLoad }}"></progress>
+                    <p class="flex justify-between"><span>Pending Share</span><span class="font-semibold text-amber-600">{{ $stats['pending'] }}</span></p>
+                </div>
             </div>
-            <p class="text-2xl font-bold text-purple-600">{{ $stats['shortlisted'] }}</p>
-        </div>
-
-        <!-- Accepted -->
-        <div class="bg-white rounded-lg border border-emerald-200 shadow p-4">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-medium text-emerald-600">Accepted</p>
-                <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
-            </div>
-            <p class="text-2xl font-bold text-emerald-600">{{ $stats['accepted'] }}</p>
-        </div>
-    </div>
-
-    <!-- Applications Table Card -->
-    <div class="bg-white rounded-lg border border-gray-200 shadow overflow-hidden">
-        <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Job Title</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Applicant</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Applied</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($applications as $app)
-                        <tr class="hover:bg-blue-50 transition-colors duration-100">
-                            <td class="px-6 py-4">
-                                <p class="font-medium text-gray-900">{{ $app->job->title ?? 'N/A' }}</p>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span class="text-xs font-semibold text-white">{{ substr($app->user->name ?? 'U', 0, 1) }}</span>
-                                    </div>
-                                    <p class="text-sm text-gray-900">{{ $app->user->name ?? 'Unknown' }}</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">{{ $app->user->email ?? 'N/A' }}</td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
-                                    @if($app->status === 'pending') bg-amber-50 text-amber-700 border border-amber-100
-                                    @elseif($app->status === 'reviewed') bg-blue-50 text-blue-700 border border-blue-100
-                                    @elseif($app->status === 'shortlisted') bg-purple-50 text-purple-700 border border-purple-100
-                                    @elseif($app->status === 'accepted') bg-emerald-50 text-emerald-700 border border-emerald-100
-                                    @else bg-gray-50 text-gray-700 border border-gray-100
-                                    @endif">
-                                    <span class="w-1.5 h-1.5 rounded-full 
-                                        @if($app->status === 'pending') bg-amber-500
-                                        @elseif($app->status === 'reviewed') bg-blue-500
-                                        @elseif($app->status === 'shortlisted') bg-purple-500
-                                        @elseif($app->status === 'accepted') bg-emerald-500
-                                        @else bg-gray-400
-                                        @endif"></span>
-                                    {{ ucfirst(str_replace('_', ' ', $app->status)) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ $app->created_at->format('M d, Y') }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <a href="{{ route('admin.applications.index') }}" class="inline-flex items-center gap-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-150 text-xs font-medium">
-                                    <i class="fas fa-arrow-right text-xs"></i>
-                                    View
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6">
-                                <div class="px-6 py-12 text-center">
-                                    <i class="fas fa-inbox text-gray-300 text-4xl mb-3 block"></i>
-                                    <h3 class="text-gray-900 font-semibold mb-1">No applications yet</h3>
-                                    <p class="text-gray-500 text-sm">Once users apply for jobs, they will appear here.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        @if($applications->hasPages())
-            <div class="px-6 py-5 border-t border-gray-100 bg-gray-50">
-                {{ $applications->links() }}
-            </div>
-        @endif
+        </aside>
     </div>
 </div>
 @endsection

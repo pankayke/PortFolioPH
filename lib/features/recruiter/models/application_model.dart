@@ -64,11 +64,24 @@ class RecruiterApplication {
     }
   }
 
+  static int _asInt(dynamic value, {int fallback = 0}) {
+    if (value == null) return fallback;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsedInt = int.tryParse(value.trim());
+      if (parsedInt != null) return parsedInt;
+      final parsedDouble = double.tryParse(value.trim());
+      if (parsedDouble != null) return parsedDouble.toInt();
+    }
+    return fallback;
+  }
+
   factory RecruiterApplication.fromJson(Map<String, dynamic> json) {
     return RecruiterApplication(
-      id: json['id'] as int,
-      jobId: json['job_id'] as int,
-      userId: json['user_id'] as int,
+      id: _asInt(json['id']),
+      jobId: _asInt(json['job_id']),
+      userId: _asInt(json['user_id']),
         applicantName: json['user']?['name'] ?? json['applicant_name'] ?? 'N/A',
         applicantEmail:
           json['user']?['email'] ?? json['applicant_email'] ?? 'N/A',

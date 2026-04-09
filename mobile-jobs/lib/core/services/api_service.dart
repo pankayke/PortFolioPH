@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
@@ -6,8 +7,9 @@ class ApiService {
   late Dio _dio;
   late FlutterSecureStorage _secureStorage;
   static const String _tokenKey = 'auth_token';
+  final VoidCallback? onUnauthorized;
 
-  ApiService() {
+  ApiService({this.onUnauthorized}) {
     _secureStorage = const FlutterSecureStorage();
     _dio = Dio(
       BaseOptions(
@@ -35,7 +37,7 @@ class ApiService {
           // Handle 401 - token expired
           if (error.response?.statusCode == 401) {
             clearToken();
-            // TODO: Navigate to login
+            onUnauthorized?.call();
           }
           return handler.next(error);
         },

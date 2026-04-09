@@ -1,7 +1,7 @@
 // lib/presentation/providers/portfolio_provider.dart
 // ─────────────────────────────────────────────────────────────────────────────
 // Manages the active user's portfolios and their nested data.
-// TODO (Sprint 2+): populate with full CRUD logic as screens are built.
+// NOTE (Sprint 2+ roadmap): expand with full CRUD logic as screens are built.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/foundation.dart';

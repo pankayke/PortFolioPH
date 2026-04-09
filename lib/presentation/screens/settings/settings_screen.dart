@@ -371,8 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   title: const Text('Help Center'),
                   subtitle: const Text('Browse FAQs and guides'),
                   trailing: const Icon(Icons.chevron_right_outlined),
-                  onTap: () =>
-                      _showSnackBar('Opening Help Center (Coming Soon)'),
+                  onTap: () => _showHelpCenterDialog(context),
                 ),
                 ListTile(
                   leading: const Icon(Icons.bug_report_outlined),
@@ -718,6 +717,38 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _showHelpCenterDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Help Center'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('• Reset your password from the login screen.'),
+              SizedBox(height: 8),
+              Text('• Use the dashboard tabs to switch roles and workflows.'),
+              SizedBox(height: 8),
+              Text(
+                '• If a screen fails to load, pull to refresh or log out/in.',
+              ),
+              SizedBox(height: 8),
+              Text('• For support, file a bug report from this screen.'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 
