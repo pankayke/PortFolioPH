@@ -123,6 +123,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
@@ -150,7 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       'Select your role to get started',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                     ),
                   ],
@@ -338,7 +340,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextSpan(
                         text: 'Log in',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).primaryColor,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                         recognizer: null, // TODO: Add gesture recognizer
@@ -356,7 +358,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Text(
                       'Log in here',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).primaryColor,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
                           ),
@@ -380,7 +382,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required IconData icon,
   }) {
     final isSelected = _selectedRole == role;
-    final primary = Theme.of(context).primaryColor;
+    final primary = Theme.of(context).colorScheme.primary;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
@@ -390,11 +393,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? primary : Colors.grey.shade300,
+              color: isSelected ? primary : colorScheme.outlineVariant,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
-            color: isSelected ? primary.withValues(alpha: 0.1) : Colors.transparent,
+            color: isSelected
+                ? primary.withValues(alpha: 0.1)
+                : Colors.transparent,
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
@@ -403,14 +408,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Icon(
                 icon,
                 size: 32,
-                color: isSelected ? primary : Colors.grey,
+                color: isSelected ? primary : colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: 8),
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? primary : Colors.grey,
+                      color:
+                          isSelected ? primary : colorScheme.onSurfaceVariant,
                     ),
               ),
             ],

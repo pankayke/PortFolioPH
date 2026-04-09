@@ -63,23 +63,6 @@ class AuthService {
       );
     }
 
-    // ── Uniqueness checks ───────────────────────────────────────────────────
-    final existingEmail = await _userRepository.findByEmail(email);
-    if (existingEmail != null) {
-      throw const AuthException(
-        'An account with this email already exists.',
-        code: 'email_taken',
-      );
-    }
-
-    final existingUsername = await _userRepository.findByUsername(username);
-    if (existingUsername != null) {
-      throw const AuthException(
-        'This username is already taken.',
-        code: 'username_taken',
-      );
-    }
-
     // ── Build and persist model ─────────────────────────────────────────────
     final now = AppHelpers.nowIso();
     final userRole = role ?? AppConstants.roleSeeker;
@@ -107,6 +90,8 @@ class AuthService {
       );
 
       return _ensureAdminBootstrap(newUser);
+    } on AuthException {
+      rethrow;
     } catch (e) {
       throw AuthException('Registration failed: $e', code: 'insert_failed');
     }
@@ -342,7 +327,7 @@ class AuthService {
   }
 
   // ── Token Management (NEW - Sanctum Integration) ────────────────────────────
-  
+
   /// Check if a token exists in secure storage
   Future<bool> hasToken() async {
     return _apiService.hasToken();
@@ -369,7 +354,7 @@ class AuthService {
       // Even if backend logout fails, we should clear local token
       AppLogger.warning('[AuthService] Backend logout error: $e');
     }
-    
+
     // Clear token from local storage
     await _apiService.clearToken();
   }
@@ -380,7 +365,7 @@ class AuthService {
   Future<UserModel?> getCurrentUser() async {
     try {
       final response = await _apiService.get('/auth/me');
-      
+
       if (response is Map<String, dynamic>) {
         return UserModel.fromMap(response);
       }

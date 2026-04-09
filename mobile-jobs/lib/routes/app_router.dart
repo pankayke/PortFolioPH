@@ -18,8 +18,7 @@ class AppRouter {
     redirect: (context, state) async {
       final authProvider = context.read<AuthProvider>();
       final isAuthenticated = authProvider.isAuthenticated;
-      final isGoingToAuth =
-          state.uri.path == '/login' ||
+      final isGoingToAuth = state.uri.path == '/login' ||
           state.uri.path == '/register' ||
           state.uri.path == '/splash';
 
@@ -95,8 +94,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: colorScheme.primary,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -105,24 +106,27 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.onPrimary,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.work, size: 50, color: Colors.blue),
+              child: Icon(Icons.work, size: 50, color: colorScheme.primary),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Job Platform',
               style: TextStyle(
-                color: Colors.white,
+                color: colorScheme.onPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Find Your Dream Job',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+              style: TextStyle(
+                color: colorScheme.onPrimary.withValues(alpha: 0.76),
+                fontSize: 16,
+              ),
             ),
           ],
         ),

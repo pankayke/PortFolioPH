@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 
 abstract final class AppConstants {
   // ── App metadata ────────────────────────────────────────────────────────────
@@ -48,14 +49,14 @@ abstract final class AppConstants {
   static const String localCoordinatorFullName = 'PortFolioPH Coordinator';
 
   // ── Brand colours (raw ARGB – used by AppTheme) ─────────────────────────────
-  static const Color primaryColor = Color(0xFF0D47A1); // Deep Blue
-  static const Color accentColor = Color(0xFFFF9800); // Orange
-  static const Color errorColor = Color(0xFFD32F2F);
+  static const Color primaryColor = DesignTokens.accentBlue;
+  static const Color accentColor = DesignTokens.accentPurple;
+  static const Color errorColor = DesignTokens.accentPhilippineRed;
   static const Color successColor = Color(0xFF388E3C);
   static const Color warningColor = Color(0xFFF57C00);
-  static const Color surfaceColor = Color(0xFFF5F5F5);
+  static const Color surfaceColor = DesignTokens.lightBase;
   static const Color onPrimaryColor = Color(0xFFFFFFFF);
-  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textPrimary = DesignTokens.darkBaseA;
   static const Color textSecondary = Color(0xFF64748B);
 
   // ── Typography scale (sp) ────────────────────────────────────────────────────
@@ -104,16 +105,14 @@ abstract final class AppConstants {
   static const int navIndexProfile = 4;
 
   // ── Theme Background Colors (Dark Mode) ──────────────────────────────────────
-  static const Color darkBg1 = Color(0xFF0F172A); // Primary dark background
-  static const Color darkBg2 = Color(0xFF1E293B); // Secondary dark background
-  static const Color darkBg3 = Color(0xFF111827); // Tertiary dark background
+  static const Color darkBg1 = DesignTokens.darkBaseA;
+  static const Color darkBg2 = DesignTokens.darkSurface;
+  static const Color darkBg3 = DesignTokens.darkBaseC;
 
   // ── Theme Background Colors (Light Mode) ─────────────────────────────────────
-  static const Color lightBg1 = Color(0xFFF8FAFC); // Primary light background
-  static const Color lightBg2 = Color(0xFFF1F5F9); // Secondary light background
-  static const Color lightBg3 = Color(
-    0xFFE0F2FE,
-  ); // Tertiary light background (blue tint)
+  static const Color lightBg1 = DesignTokens.lightBase;
+  static const Color lightBg2 = DesignTokens.lightSurfaceSoft;
+  static const Color lightBg3 = DesignTokens.lightSurfaceTint;
 
   // ── Glassmorphism Colors ─────────────────────────────────────────────────────
   static const Color glassBorderDark = Color(

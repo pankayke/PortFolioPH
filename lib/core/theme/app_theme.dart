@@ -24,15 +24,15 @@ abstract final class AppTheme {
 
     final colorScheme = baseScheme.copyWith(
       primary: isDark ? DesignTokens.accentBlueBright : DesignTokens.accentBlue,
-      secondary: isDark ? DesignTokens.accentPurple : AppConstants.accentColor,
+      secondary: DesignTokens.accentPurple,
       error: AppConstants.errorColor,
       surface: isDark ? DesignTokens.darkBaseB : DesignTokens.lightBase,
       surfaceContainerHighest: isDark
-          ? const Color(0xFF1E293B)
-          : const Color(0xFFEAF0FF),
+          ? DesignTokens.darkSurface
+          : DesignTokens.lightSurface,
       outlineVariant: isDark
-          ? const Color(0xFF334155)
-          : const Color(0xFFD2DBF3),
+          ? DesignTokens.outlineDark
+          : DesignTokens.outlineLight,
     );
 
     final textTheme = _buildTextTheme(brightness);
@@ -54,7 +54,7 @@ abstract final class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: isDark
-            ? const Color(0x66304159)
+            ? DesignTokens.darkSurface.withValues(alpha: 0.40)
             : Colors.white.withValues(alpha: 0.76),
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -79,7 +79,7 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark
-            ? const Color(0x66304159)
+            ? DesignTokens.darkSurface.withValues(alpha: 0.40)
             : Colors.white.withValues(alpha: 0.75),
         hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),

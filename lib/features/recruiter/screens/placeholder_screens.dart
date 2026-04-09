@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
+import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 // Job Create Screen
 class JobCreateScreen extends StatefulWidget {
@@ -67,9 +67,9 @@ class _JobCreateScreenState extends State<JobCreateScreen> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Job posted successfully.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Job posted successfully.')));
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
@@ -83,15 +83,23 @@ class _JobCreateScreenState extends State<JobCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return PremiumAppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(title: const Text('Create Job'), backgroundColor: Colors.transparent),
+        appBar: AppBar(
+          title: const Text('Create Job'),
+          backgroundColor: Colors.transparent,
+        ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: RecruiterGlassCard(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.surface.withValues(alpha: 0.18),
+                colorScheme.primary.withValues(alpha: 0.10),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -126,15 +134,28 @@ class _JobCreateScreenState extends State<JobCreateScreen> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _jobType,
-                    decoration: _glassDecoration('Job Type'),
-                    dropdownColor: const Color(0xFF0F172A),
+                    decoration: _glassDecoration(context, 'Job Type'),
+                    dropdownColor: colorScheme.surface,
                     items: const [
-                      DropdownMenuItem(value: 'full_time', child: Text('Full Time')),
-                      DropdownMenuItem(value: 'part_time', child: Text('Part Time')),
-                      DropdownMenuItem(value: 'contract', child: Text('Contract')),
-                      DropdownMenuItem(value: 'freelance', child: Text('Freelance')),
+                      DropdownMenuItem(
+                        value: 'full_time',
+                        child: Text('Full Time'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'part_time',
+                        child: Text('Part Time'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'contract',
+                        child: Text('Contract'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'freelance',
+                        child: Text('Freelance'),
+                      ),
                     ],
-                    onChanged: (value) => setState(() => _jobType = value ?? 'full_time'),
+                    onChanged: (value) =>
+                        setState(() => _jobType = value ?? 'full_time'),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -184,19 +205,24 @@ class _JobCreateScreenState extends State<JobCreateScreen> {
     );
   }
 
-  InputDecoration _glassDecoration(String label) {
+  InputDecoration _glassDecoration(BuildContext context, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.10),
+      fillColor: colorScheme.surface.withValues(alpha: 0.15),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.20)),
+        borderSide: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.50),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: const Color(0xFF38BDF8).withValues(alpha: 0.85)),
+        borderSide: BorderSide(
+          color: colorScheme.primary.withValues(alpha: 0.85),
+        ),
       ),
     );
   }
@@ -213,7 +239,7 @@ class _JobCreateScreenState extends State<JobCreateScreen> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
-      decoration: _glassDecoration(label),
+      decoration: _glassDecoration(context, label),
     );
   }
 }
@@ -242,80 +268,100 @@ class _JobListScreenState extends State<JobListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Jobs')),
-      body: Consumer<RecruiterJobManagerProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && provider.jobs.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return PremiumAppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('My Jobs'),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Consumer<RecruiterJobManagerProvider>(
+          builder: (context, provider, _) {
+            if (provider.isLoading && provider.jobs.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (provider.jobs.isEmpty) {
+            if (provider.jobs.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: const [
+                    SizedBox(height: 120),
+                    RecruiterGlassCard(
+                      child: Center(child: Text('No jobs posted yet.')),
+                    ),
+                  ],
+                ),
+              );
+            }
+
             return RefreshIndicator(
               onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: const [
-                  SizedBox(height: 120),
-                  RecruiterGlassCard(child: Center(child: Text('No jobs posted yet.'))),
-                ],
+              child: ListView.builder(
+                itemCount: provider.jobs.length,
+                itemBuilder: (context, index) {
+                  final job = provider.jobs[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: RecruiterGlassCard(
+                      onTap: () => context.push('/recruiter/jobs/${job.id}'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${job.location} • ${job.applicationCount} applicants',
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              RecruiterGlowChip(
+                                label: job.status.toUpperCase(),
+                              ),
+                              RecruiterGlowChip(label: job.salaryDisplay),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              TextButton.icon(
+                                icon: const Icon(Icons.edit_outlined),
+                                onPressed: () => context.push(
+                                  '/recruiter/jobs/${job.id}/edit',
+                                ),
+                                label: const Text('Edit'),
+                              ),
+                              if (job.status != 'closed')
+                                TextButton.icon(
+                                  icon: const Icon(Icons.pause_circle_outline),
+                                  onPressed: () => provider.closeJob(job.id),
+                                  label: const Text('Close'),
+                                ),
+                              TextButton.icon(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () => provider.deleteJob(job.id),
+                                label: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             );
-          }
-
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView.builder(
-              itemCount: provider.jobs.length,
-              itemBuilder: (context, index) {
-                final job = provider.jobs[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: RecruiterGlassCard(
-                    onTap: () => context.push('/recruiter/jobs/${job.id}'),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(job.title, style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 8),
-                        Text('${job.location} • ${job.applicationCount} applicants'),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            RecruiterGlowChip(label: job.status.toUpperCase()),
-                            RecruiterGlowChip(label: job.salaryDisplay),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            TextButton.icon(
-                              icon: const Icon(Icons.edit_outlined),
-                              onPressed: () => context.push('/recruiter/jobs/${job.id}/edit'),
-                              label: const Text('Edit'),
-                            ),
-                            if (job.status != 'closed')
-                              TextButton.icon(
-                                icon: const Icon(Icons.pause_circle_outline),
-                                onPressed: () => provider.closeJob(job.id),
-                                label: const Text('Close'),
-                              ),
-                            TextButton.icon(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () => provider.deleteJob(job.id),
-                              label: const Text('Delete'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -336,16 +382,15 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<RecruiterApplicationManagerProvider>().loadApplications(
-            refresh: true,
-          );
+        refresh: true,
+      );
     });
   }
 
   Future<void> _updateStatus(int applicationId, String status) async {
-    await context.read<RecruiterApplicationManagerProvider>().updateApplicationStatus(
-          applicationId,
-          status,
-        );
+    await context
+        .read<RecruiterApplicationManagerProvider>()
+        .updateApplicationStatus(applicationId, status);
   }
 
   Future<void> _openReviewModal(RecruiterApplication app) async {
@@ -376,16 +421,19 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   const SizedBox(height: 8),
                   Text(app.applicantEmail),
                   if (app.applicantPhone.isNotEmpty) Text(app.applicantPhone),
-                  if (app.applicantLocation.isNotEmpty) Text(app.applicantLocation),
+                  if (app.applicantLocation.isNotEmpty)
+                    Text(app.applicantLocation),
                   const SizedBox(height: 16),
                   Text(
                     'Cover Letter',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text(app.coverLetter?.trim().isNotEmpty == true
-                      ? app.coverLetter!
-                      : 'No cover letter provided.'),
+                  Text(
+                    app.coverLetter?.trim().isNotEmpty == true
+                        ? app.coverLetter!
+                        : 'No cover letter provided.',
+                  ),
                   const SizedBox(height: 16),
                   Wrap(
                     spacing: 8,
@@ -436,72 +484,79 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Applicants')),
-      body: Consumer<RecruiterApplicationManagerProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && provider.applications.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return PremiumAppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Applicants'),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Consumer<RecruiterApplicationManagerProvider>(
+          builder: (context, provider, _) {
+            if (provider.isLoading && provider.applications.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (provider.applications.isEmpty) {
-            return const Center(child: Text('No applications yet.'));
-          }
+            if (provider.applications.isEmpty) {
+              return RefreshIndicator(
+                onRefresh: () => provider.loadApplications(refresh: true),
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: const [
+                    SizedBox(height: 120),
+                    RecruiterGlassCard(
+                      child: Center(child: Text('No candidates yet.')),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-          return ListView.builder(
-            itemCount: provider.applications.length,
-            itemBuilder: (context, index) {
-              final app = provider.applications[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                child: RecruiterGlassCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(app.applicantName, style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 4),
-                      Text(app.applicantEmail),
-                      const SizedBox(height: 6),
-                      RecruiterGlowChip(label: app.statusDisplay),
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: () => _openReviewModal(app),
-                        icon: const Icon(Icons.visibility_outlined),
-                        label: const Text('Review Application'),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
+            return RefreshIndicator(
+              onRefresh: () => provider.loadApplications(refresh: true),
+              child: ListView.builder(
+                itemCount: provider.applications.length,
+                itemBuilder: (context, index) {
+                  final app = provider.applications[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: RecruiterGlassCard(
+                      onTap: () => _openReviewModal(app),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          OutlinedButton(
-                            onPressed: () => _updateStatus(app.id, 'pending'),
-                            child: const Text('Pending'),
+                          Text(
+                            app.applicantName,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          OutlinedButton(
-                            onPressed: () => _updateStatus(app.id, 'reviewed'),
-                            child: const Text('Reviewed'),
-                          ),
-                          OutlinedButton(
-                            onPressed: () => _updateStatus(app.id, 'shortlisted'),
-                            child: const Text('Shortlist'),
-                          ),
-                          OutlinedButton(
-                            onPressed: () => _updateStatus(app.id, 'accepted'),
-                            child: const Text('Accept'),
-                          ),
-                          OutlinedButton(
-                            onPressed: () => _updateStatus(app.id, 'rejected'),
-                            child: const Text('Reject'),
+                          const SizedBox(height: 4),
+                          Text(app.applicantEmail),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              RecruiterGlowChip(label: app.statusDisplay),
+                              if (app.applicantLocation.isNotEmpty)
+                                RecruiterGlowChip(
+                                  label: app.applicantLocation,
+                                  glowColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

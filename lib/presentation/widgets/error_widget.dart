@@ -5,10 +5,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import '../../core/exceptions/custom_exceptions.dart';
 
 /// Displays error message with optional retry button
-/// 
+///
 /// Features:
 /// - Shows error icon + message + action button
 /// - Detects if error is retryable (network/server errors)
@@ -65,7 +67,7 @@ class ApiErrorWidget extends StatelessWidget {
                 error.message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[700],
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   height: 1.5,
                 ),
               ),
@@ -99,7 +101,7 @@ class ApiErrorWidget extends StatelessWidget {
                     'Error code: ${error.code ?? "UNKNOWN"}',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[500],
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -123,11 +125,11 @@ class ApiErrorWidget extends StatelessWidget {
   /// Get color for error type
   Color _getErrorColor(BuildContext context) {
     if (error.isNetworkError) {
-      return Colors.orange;
+      return DesignTokens.accentTeal;
     } else if (error.isServerError) {
-      return Colors.red;
+      return DesignTokens.accentPhilippineRed;
     }
-    return Colors.red;
+    return DesignTokens.accentPhilippineRed;
   }
 }
 
@@ -136,11 +138,7 @@ class CompactErrorWidget extends StatelessWidget {
   final ApiException error;
   final VoidCallback? onRetry;
 
-  const CompactErrorWidget({
-    super.key,
-    required this.error,
-    this.onRetry,
-  });
+  const CompactErrorWidget({super.key, required this.error, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -149,15 +147,17 @@ class CompactErrorWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        color: DesignTokens.accentPhilippineRed.withValues(alpha: 0.1),
+        border: Border.all(
+          color: DesignTokens.accentPhilippineRed.withValues(alpha: 0.3),
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
           Icon(
             Icons.error_outline,
-            color: Colors.red,
+            color: DesignTokens.accentPhilippineRed,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -165,7 +165,7 @@ class CompactErrorWidget extends StatelessWidget {
             child: Text(
               error.message,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.red,
+                color: DesignTokens.accentPhilippineRed,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -177,7 +177,7 @@ class CompactErrorWidget extends StatelessWidget {
               onTap: onRetry,
               child: Icon(
                 Icons.refresh,
-                color: Colors.blue,
+                color: DesignTokens.accentBlue,
                 size: 18,
               ),
             ),
@@ -196,11 +196,13 @@ void showErrorSnackbar(
   Duration duration = const Duration(seconds: 4),
 }) {
   final messenger = ScaffoldMessenger.of(context);
-  
+
   messenger.showSnackBar(
     SnackBar(
       content: Text(error.message),
-      backgroundColor: error.isNetworkError ? Colors.orange : Colors.red,
+      backgroundColor: error.isNetworkError
+          ? DesignTokens.accentTeal
+          : DesignTokens.accentPhilippineRed,
       duration: duration,
       action: error.isRetryable && onRetry != null
           ? SnackBarAction(

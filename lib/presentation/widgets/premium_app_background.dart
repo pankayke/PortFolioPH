@@ -24,13 +24,13 @@ class PremiumAppBackground extends StatelessWidget {
               colors: isDark
                   ? [
                       DesignTokens.darkBaseA,
-                      const Color(0xFF1E293B),
+                      DesignTokens.darkSurface,
                       DesignTokens.darkBaseC,
                     ]
                   : [
                       DesignTokens.lightBase,
-                      const Color(0xFFF1F5F9),
-                      const Color(0xFFE0F2FE),
+                      DesignTokens.lightSurfaceSoft,
+                      DesignTokens.lightSurfaceTint,
                     ],
             ),
           ),
@@ -90,7 +90,7 @@ class _BokehBackgroundPainter extends CustomPainter {
     final linePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.1
-      ..color = (isDark ? Colors.white : const Color(0xFF0A66C2)).withAlpha(
+      ..color = (isDark ? Colors.white : DesignTokens.accentBlue).withAlpha(
         isDark ? 14 : 20,
       );
 
@@ -116,8 +116,8 @@ class _BokehBackgroundPainter extends CustomPainter {
       final yOffset = (i % 2 == 0) ? offset : -offset;
 
       paint.color = isDark
-          ? const Color(0xFF0A66C2).withAlpha(30)
-          : const Color(0xFF0A66C2).withAlpha(15);
+          ? DesignTokens.accentBlue.withAlpha(30)
+          : DesignTokens.accentBlue.withAlpha(15);
 
       canvas.drawCircle(
         Offset(circle.dx, circle.dy + yOffset),
@@ -130,8 +130,15 @@ class _BokehBackgroundPainter extends CustomPainter {
     for (var i = 0; i < circles.length - 1; i++) {
       final c1 = circles[i];
       final c2 = circles[i + 1];
-      final start = Offset(c1.dx, c1.dy + ((i % 2 == 0) ? animation.value * 8 : -animation.value * 8));
-      final end = Offset(c2.dx, c2.dy + (((i + 1) % 2 == 0) ? animation.value * 8 : -animation.value * 8));
+      final start = Offset(
+        c1.dx,
+        c1.dy + ((i % 2 == 0) ? animation.value * 8 : -animation.value * 8),
+      );
+      final end = Offset(
+        c2.dx,
+        c2.dy +
+            (((i + 1) % 2 == 0) ? animation.value * 8 : -animation.value * 8),
+      );
       canvas.drawLine(start, end, linePaint);
     }
   }

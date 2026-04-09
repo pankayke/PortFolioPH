@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +8,7 @@ import 'package:portfolioph/features/recruiter/models/job_model.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
+import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
@@ -128,7 +127,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
             children: [
               _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
               const _RecruiterJobsTab(),
-              const _RecruiterAtsTab(),
+              const ApplicantTrackingScreen(compactMode: true),
               _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
               const _RecruiterCompanyProfileTab(),
             ],
@@ -1103,28 +1102,12 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
+    return GlassCard(
+      padding: padding,
+      gradient: gradient,
       borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            gradient: gradient,
-            color: gradient == null ? Colors.white.withValues(alpha: 0.16) : null,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.10),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: child,
-        ),
-      ),
+      blurSigma: 20,
+      child: child,
     );
   }
 }
@@ -1142,14 +1125,15 @@ class _StatusFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return ChoiceChip(
       label: Text(label),
       selected: selected,
       onSelected: (_) => onTap(),
-      selectedColor: const Color(0xFF0A66C2).withValues(alpha: 0.22),
-      backgroundColor: Colors.white.withValues(alpha: 0.38),
+      selectedColor: colorScheme.primary.withValues(alpha: 0.22),
+      backgroundColor: colorScheme.surface.withValues(alpha: 0.38),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      side: BorderSide(color: Colors.white.withValues(alpha: 0.42)),
+      side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.72)),
     );
   }
 }
@@ -1209,6 +1193,7 @@ class _ApplicantPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final initials = app.applicantName.isNotEmpty
         ? app.applicantName
             .trim()
@@ -1227,11 +1212,11 @@ class _ApplicantPreviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: Colors.white.withValues(alpha: 0.16),
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.16),
                 child: Text(
                   initials,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
+                        color: colorScheme.primary,
                         fontWeight: FontWeight.w800,
                       ),
                 ),
@@ -1262,10 +1247,10 @@ class _ApplicantPreviewCard extends StatelessWidget {
               RecruiterGlowChip(
                 label: app.statusDisplay,
                 glowColor: app.isAccepted
-                    ? const Color(0xFF34D399)
+                    ? colorScheme.tertiary
                     : app.isRejected
-                        ? Colors.redAccent
-                        : const Color(0xFF38BDF8),
+                        ? colorScheme.error
+                        : colorScheme.primary,
               ),
             ],
           ),
@@ -1285,8 +1270,8 @@ class _ApplicantPreviewCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: _matchScore(app),
                   minHeight: 6,
-                  backgroundColor: Colors.white.withValues(alpha: 0.12),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+                  backgroundColor: colorScheme.surface.withValues(alpha: 0.12),
+                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),

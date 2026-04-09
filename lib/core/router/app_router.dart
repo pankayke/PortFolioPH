@@ -30,6 +30,7 @@ import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/profile_setup_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/register_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/approval/recruiter_pending_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/approval/recruiter_rejected_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_detail_screen.dart';
@@ -173,12 +174,14 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.recruiterJobCreate,
         name: 'recruiter-job-create',
-        builder: (context, state) => const RecruiterDashboardScreen(initialTab: 3),
+        builder: (context, state) =>
+            const RecruiterDashboardScreen(initialTab: 3),
       ),
       GoRoute(
         path: AppRoutes.recruiterJobsList,
         name: 'recruiter-jobs-list',
-        builder: (context, state) => const RecruiterDashboardScreen(initialTab: 1),
+        builder: (context, state) =>
+            const RecruiterDashboardScreen(initialTab: 1),
       ),
       GoRoute(
         path: AppRoutes.recruiterJobDetail,
@@ -201,7 +204,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.recruiterApplications,
         name: 'recruiter-applications',
-        builder: (context, state) => const RecruiterDashboardScreen(initialTab: 2),
+        builder: (context, state) => const ApplicantTrackingScreen(),
       ),
       GoRoute(
         path: AppRoutes.recruiterPending,

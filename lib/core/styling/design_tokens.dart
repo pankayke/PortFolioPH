@@ -5,7 +5,13 @@ abstract final class DesignTokens {
   static const Color darkBaseA = Color(0xFF0F172A);
   static const Color darkBaseB = Color(0xFF0A0F1A);
   static const Color darkBaseC = Color(0xFF111827);
+  static const Color darkSurface = Color(0xFF1E293B);
   static const Color lightBase = Color(0xFFF8FAFC);
+  static const Color lightSurface = Color(0xFFEAF0FF);
+  static const Color lightSurfaceSoft = Color(0xFFF1F5F9);
+  static const Color lightSurfaceTint = Color(0xFFE0F2FE);
+  static const Color outlineDark = Color(0xFF334155);
+  static const Color outlineLight = Color(0xFFD2DBF3);
 
   static const Color accentBlue = Color(0xFF0A66C2);
   static const Color accentBlueBright = Color(0xFF3B82F6);
@@ -30,4 +36,3 @@ abstract final class DesignTokens {
   static const double borderWidth = 1.5;
   static const double hoverScale = 1.04;
 }
-
