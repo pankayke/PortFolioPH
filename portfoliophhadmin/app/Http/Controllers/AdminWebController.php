@@ -6,21 +6,39 @@ use App\Models\User;
 use App\Models\Job;
 use App\Models\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminWebController extends Controller
 {
     // Dashboard: Platform-wide analytics
     public function dashboard()
     {
+        $userCounts = User::query()
+            ->selectRaw('COUNT(*) as total_users')
+            ->selectRaw("SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admins")
+            ->selectRaw("SUM(CASE WHEN role = 'recruiter' THEN 1 ELSE 0 END) as recruiters")
+            ->selectRaw("SUM(CASE WHEN role = 'job_seeker' THEN 1 ELSE 0 END) as job_seekers")
+            ->first();
+
+        $jobCounts = Job::query()
+            ->selectRaw('COUNT(*) as total_jobs')
+            ->selectRaw("SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as active_jobs")
+            ->first();
+
+        $applicationCounts = Application::query()
+            ->selectRaw('COUNT(*) as total_applications')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_applications")
+            ->first();
+
         $stats = [
-            'total_users' => User::count(),
-            'admins' => User::where('role', 'admin')->count(),
-            'recruiters' => User::where('role', 'recruiter')->count(),
-            'job_seekers' => User::where('role', 'job_seeker')->count(),
-            'total_jobs' => Job::count(),
-            'active_jobs' => Job::where('status', 'approved')->count(),
-            'total_applications' => Application::count(),
-            'pending_applications' => Application::where('status', 'pending')->count(),
+            'total_users' => (int) ($userCounts->total_users ?? 0),
+            'admins' => (int) ($userCounts->admins ?? 0),
+            'recruiters' => (int) ($userCounts->recruiters ?? 0),
+            'job_seekers' => (int) ($userCounts->job_seekers ?? 0),
+            'total_jobs' => (int) ($jobCounts->total_jobs ?? 0),
+            'active_jobs' => (int) ($jobCounts->active_jobs ?? 0),
+            'total_applications' => (int) ($applicationCounts->total_applications ?? 0),
+            'pending_applications' => (int) ($applicationCounts->pending_applications ?? 0),
         ];
 
         $recentUsers = User::latest()->limit(10)->get();
@@ -94,15 +112,61 @@ class AdminWebController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.users.index', compact('users'));
+        $activeUsers = (int) User::query()
+            ->where(function ($query) use ($role, $status) {
+                if ($role !== '' && $role !== 'all') {
+                    $query->where('role', $role);
+                }
+
+                if ($status !== '' && $status !== 'all') {
+                    if ($status === 'active') {
+                        $query->where('active', 1);
+                    } elseif ($status === 'suspended') {
+                        $query->where(function ($statusQuery) {
+                            $statusQuery->where('active', 0)->orWhereNull('active');
+                        });
+                    }
+                }
+            })
+            ->where('active', true)
+            ->count();
+
+        $totalUsers = max((int) User::query()
+            ->where(function ($query) use ($role, $status) {
+                if ($role !== '' && $role !== 'all') {
+                    $query->where('role', $role);
+                }
+
+                if ($status !== '' && $status !== 'all') {
+                    if ($status === 'active') {
+                        $query->where('active', 1);
+                    } elseif ($status === 'suspended') {
+                        $query->where(function ($statusQuery) {
+                            $statusQuery->where('active', 0)->orWhereNull('active');
+                        });
+                    }
+                }
+            })
+            ->count(), 1);
+        $activeSessions = max((int) round($activeUsers * 0.64), 1);
+        $serverLoad = min(88, max(22, (int) round(($activeUsers / $totalUsers) * 100)));
+
+        return view('admin.users.index', compact('users', 'activeUsers', 'activeSessions', 'serverLoad'));
     }
 
     // Users Management: Show user detail
     public function showUser(User $user)
     {
-        $user->load(['jobs', 'applications']);
-        $jobs = $user->jobs()->paginate(10);
-        $applications = $user->applications()->paginate(10);
+        $jobs = $user->jobs()
+            ->withCount('applications')
+            ->latest()
+            ->paginate(10);
+
+        $applications = $user->applications()
+            ->with('job:id,title')
+            ->latest()
+            ->paginate(10);
+
         return view('admin.users.show', compact('user', 'jobs', 'applications'));
     }
 
@@ -164,28 +228,63 @@ class AdminWebController extends Controller
     public function deleteUser(User $user)
     {
         $userName = $user->name;
-        
-        // Cascade delete: Remove applications, then jobs, then user
-        $user->applications()->delete();
-        $user->jobs()->delete();
-        $user->delete();
 
-        return redirect()->route('admin.users')->with('success', "User '{$userName}' and all related data deleted.");
+        DB::transaction(function () use ($user) {
+            // Cascade delete: Remove applications, then jobs, then user
+            $user->applications()->delete();
+            $user->jobs()->delete();
+            $user->delete();
+        });
+
+        return redirect()->route('admin.users.index')->with('success', "User '{$userName}' and all related data deleted.");
     }
 
     // Jobs Management: List all jobs
     public function jobs()
     {
-        $jobs = Job::with('recruiter')->paginate(20);
-        return view('admin.jobs.index', compact('jobs'));
+        $jobs = Job::with('recruiter:id,name,email')
+            ->withCount('applications')
+            ->latest()
+            ->paginate(20);
+
+        $statusCounts = Job::query()
+            ->selectRaw("SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_count")
+            ->selectRaw("SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) as closed_count")
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count")
+            ->selectRaw("SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft_count")
+            ->first();
+
+        $approvedCount = (int) ($statusCounts->approved_count ?? 0);
+        $closedCount = (int) ($statusCounts->closed_count ?? 0);
+        $pendingCount = (int) ($statusCounts->pending_count ?? 0);
+        $draftCount = (int) ($statusCounts->draft_count ?? 0);
+        $activeSessions = max(2, (int) round($jobs->total() * 0.33));
+        $serverLoad = min(87, max(18, (int) round(($approvedCount / max((int) $jobs->total(), 1)) * 100)));
+
+        return view('admin.jobs.index', compact(
+            'jobs',
+            'approvedCount',
+            'closedCount',
+            'pendingCount',
+            'draftCount',
+            'activeSessions',
+            'serverLoad'
+        ));
     }
 
     // Jobs Management: Show job detail
     public function showJob(Job $job)
     {
-        $job->load(['recruiter', 'applications']);
-        $applications = $job->applications()->paginate(15);
-        return view('admin.jobs.show', compact('job', 'applications'));
+        $job->load('recruiter:id,name,email');
+
+        $applications = $job->applications()
+            ->with('user:id,name,email')
+            ->latest()
+            ->paginate(15);
+
+        $applicationCount = (int) $applications->total();
+
+        return view('admin.jobs.show', compact('job', 'applications', 'applicationCount'));
     }
 
     // Jobs Management: Suspend/close job (reflects on recruiter's view)
@@ -199,12 +298,14 @@ class AdminWebController extends Controller
     public function deleteJob(Job $job)
     {
         $jobTitle = $job->title;
-        
-        // Cascade delete: Remove applications first, then job
-        $job->applications()->delete();
-        $job->delete();
 
-        return redirect()->route('admin.jobs')->with('success', "Job '{$jobTitle}' and all applications removed.");
+        DB::transaction(function () use ($job) {
+            // Cascade delete: Remove applications first, then job
+            $job->applications()->delete();
+            $job->delete();
+        });
+
+        return redirect()->route('admin.jobs.index')->with('success', "Job '{$jobTitle}' and all applications removed.");
     }
 
     // Jobs Management: Approve/activate job (reflects on recruiter's view)
@@ -218,12 +319,21 @@ class AdminWebController extends Controller
     public function applications()
     {
         $applications = Application::with(['job', 'user'])->paginate(20);
+
+        $statusCounts = Application::query()
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending")
+            ->selectRaw("SUM(CASE WHEN status = 'reviewed' THEN 1 ELSE 0 END) as reviewed")
+            ->selectRaw("SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END) as shortlisted")
+            ->selectRaw("SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted")
+            ->selectRaw("SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected")
+            ->first();
+
         $stats = [
-            'pending' => Application::where('status', 'pending')->count(),
-            'reviewed' => Application::where('status', 'reviewed')->count(),
-            'shortlisted' => Application::where('status', 'shortlisted')->count(),
-            'accepted' => Application::where('status', 'accepted')->count(),
-            'rejected' => Application::where('status', 'rejected')->count(),
+            'pending' => (int) ($statusCounts->pending ?? 0),
+            'reviewed' => (int) ($statusCounts->reviewed ?? 0),
+            'shortlisted' => (int) ($statusCounts->shortlisted ?? 0),
+            'accepted' => (int) ($statusCounts->accepted ?? 0),
+            'rejected' => (int) ($statusCounts->rejected ?? 0),
         ];
         return view('admin.applications.index', compact('applications', 'stats'));
     }
@@ -231,6 +341,16 @@ class AdminWebController extends Controller
     // Settings: Command center configuration panel
     public function settings(Request $request)
     {
+        $pendingApplications = (int) Application::where('status', 'pending')->count();
+
+        $jobStatusCounts = Job::query()
+            ->selectRaw("SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_jobs")
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_jobs")
+            ->first();
+
+        $approvedJobs = (int) ($jobStatusCounts->approved_jobs ?? 0);
+        $pendingJobs = (int) ($jobStatusCounts->pending_jobs ?? 0);
+
         $stats = [
             'total_users' => User::count(),
         ];
@@ -245,10 +365,10 @@ class AdminWebController extends Controller
         ];
 
         $metrics = [
-            'active_sessions' => max(3, Application::where('status', 'pending')->count()),
-            'server_load' => min(90, max(18, Job::where('status', 'approved')->count() * 8)),
-            'queue_backlog' => Application::where('status', 'pending')->count(),
-            'open_incidents' => Job::where('status', 'pending')->count(),
+            'active_sessions' => max(3, $pendingApplications),
+            'server_load' => min(90, max(18, $approvedJobs * 8)),
+            'queue_backlog' => $pendingApplications,
+            'open_incidents' => $pendingJobs,
         ];
 
         return view('admin.settings', compact('settings', 'metrics', 'stats'));
@@ -285,9 +405,29 @@ class AdminWebController extends Controller
         // For now, shows activity via timestamps
         $recentActions = [
             'User edits' => User::latest()->limit(5)->get(),
-            'Job changes' => Job::latest()->limit(5)->get(),
-            'Application updates' => Application::latest()->limit(5)->get(),
+            'Job changes' => Job::query()
+                ->with('recruiter:id,name')
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'Application updates' => Application::query()
+                ->with([
+                    'job:id,title,recruiter_id',
+                    'user:id,name',
+                ])
+                ->latest()
+                ->limit(5)
+                ->get(),
         ];
-        return view('admin.audit', compact('recentActions'));
+
+        $activeSessions = max(
+            3,
+            $recentActions['User edits']->count()
+                + $recentActions['Job changes']->count()
+                + $recentActions['Application updates']->count()
+        );
+        $serverLoad = min(84, max(26, (int) round($activeSessions * 7.5)));
+
+        return view('admin.audit', compact('recentActions', 'activeSessions', 'serverLoad'));
     }
 }

@@ -2,10 +2,6 @@
 
 @section('content')
 @include('admin.partials.command_center_styles')
-@php
-    $activeSessions = max(3, count($recentActions['User edits']) + count($recentActions['Job changes']) + count($recentActions['Application updates']));
-    $serverLoad = min(84, max(26, (int) round($activeSessions * 7.5)));
-@endphp
 
 <div class="cc-theme cc-ultra-shell">
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-[250px_minmax(0,1fr)]">

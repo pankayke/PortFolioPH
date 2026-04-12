@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Job;
+use App\Models\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -114,6 +115,87 @@ class JobControllerTest extends TestCase
         $response = $this->getJson('/api/jobs');
 
         $response->assertStatus(200);
+    }
+
+    public function test_show_job_exposes_applications_count_without_loading_full_relation(): void
+    {
+        $recruiter = User::factory()->create();
+        $job = Job::factory()->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
+        Application::factory()->count(3)->create([
+            'job_id' => $job->id,
+        ]);
+
+        $response = $this->getJson('/api/jobs/' . $job->id);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.id', $job->id)
+            ->assertJsonPath('data.applications_count', 3);
+    }
+
+    public function test_web_show_job_loads_paginated_applications_for_recruiter_view(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
+        $seekers = User::factory()->count(12)->create(['role' => 'job_seeker']);
+        foreach ($seekers as $seeker) {
+            Application::factory()->create([
+                'job_id' => $job->id,
+                'user_id' => $seeker->id,
+            ]);
+        }
+
+        $response = $this->actingAs($recruiter)->get(route('jobs.show', $job));
+
+        $response->assertOk();
+        $response->assertViewHas('applications', function ($applications): bool {
+            return $applications->count() === 10 && $applications->total() === 12;
+        });
+        $response->assertViewHas('applicationCount', 12);
+    }
+
+    public function test_list_jobs_per_page_is_capped_at_100(): void
+    {
+        $recruiter = User::factory()->create();
+        Job::factory()->count(130)->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/jobs?per_page=500');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(100, 'data');
+    }
+
+    public function test_recruiter_mine_per_page_is_capped_at_100(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $otherRecruiter = User::factory()->create(['role' => 'recruiter']);
+        $token = $recruiter->createToken('api-token')->plainTextToken;
+
+        Job::factory()->count(130)->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
+        Job::factory()->count(10)->create([
+            'recruiter_id' => $otherRecruiter->id,
+            'status' => 'approved',
+        ]);
+
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->getJson('/api/jobs/mine?per_page=500');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(100, 'data');
     }
 
     // ─────────────────────────────────────────────────────────────────────────

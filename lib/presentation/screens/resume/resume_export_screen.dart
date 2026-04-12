@@ -8,8 +8,6 @@
 //   • Download to device
 //
 // ─────────────────────────────────────────────────────────────────────────────
-// ignore_for_file: deprecated_member_use
-
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -181,76 +179,63 @@ class _ResumeExportScreenState extends State<ResumeExportScreen> {
             ),
             const SizedBox(height: 8),
 
-            // ── Academic Portfolio ───────────────────────────────────────────
-            Card(
-              child: RadioListTile<ExportFormat>(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                title: const Text('Academic Portfolio'),
-                subtitle: const Text(
-                  'Comprehensive portfolio with all sections (CHED/DOST aligned). '
-                  'Perfect for academic records.',
-                ),
-                value: ExportFormat.academicPortfolio,
-                groupValue: _selectedFormat,
-                onChanged: _isExporting
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          setState(() => _selectedFormat = value);
-                        }
-                      },
-              ),
-            ),
-            const SizedBox(height: 8),
+            RadioGroup<ExportFormat>(
+              groupValue: _selectedFormat,
+              onChanged: (value) {
+                if (_isExporting || value == null) return;
+                setState(() => _selectedFormat = value);
+              },
+              child: Column(
+                children: [
+                  // ── Academic Portfolio ─────────────────────────────────────
+                  Card(
+                    child: RadioListTile<ExportFormat>(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      title: const Text('Academic Portfolio'),
+                      subtitle: const Text(
+                        'Comprehensive portfolio with all sections (CHED/DOST aligned). '
+                        'Perfect for academic records.',
+                      ),
+                      value: ExportFormat.academicPortfolio,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
 
-            // ── Brief Resume ─────────────────────────────────────────────────
-            Card(
-              child: RadioListTile<ExportFormat>(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                title: const Text('Student Resume (Brief)'),
-                subtitle: const Text(
-                  '1-page resume with your key school and project highlights. '
-                  'Ideal for internship or entry-level applications.',
-                ),
-                value: ExportFormat.resumeBrief,
-                groupValue: _selectedFormat,
-                onChanged: _isExporting
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          setState(() => _selectedFormat = value);
-                        }
-                      },
-              ),
-            ),
-            const SizedBox(height: 8),
+                  // ── Brief Resume ───────────────────────────────────────────
+                  Card(
+                    child: RadioListTile<ExportFormat>(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      title: const Text('Student Resume (Brief)'),
+                      subtitle: const Text(
+                        '1-page resume with your key school and project highlights. '
+                        'Ideal for internship or entry-level applications.',
+                      ),
+                      value: ExportFormat.resumeBrief,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
 
-            // ── Detailed Resume ──────────────────────────────────────────────
-            Card(
-              child: RadioListTile<ExportFormat>(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                title: const Text('Student Resume (Detailed)'),
-                subtitle: const Text(
-                  'Multi-page resume with complete academic and portfolio details.',
-                ),
-                value: ExportFormat.resumeDetailed,
-                groupValue: _selectedFormat,
-                onChanged: _isExporting
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          setState(() => _selectedFormat = value);
-                        }
-                      },
+                  // ── Detailed Resume ────────────────────────────────────────
+                  Card(
+                    child: RadioListTile<ExportFormat>(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      title: const Text('Student Resume (Detailed)'),
+                      subtitle: const Text(
+                        'Multi-page resume with complete academic and portfolio details.',
+                      ),
+                      value: ExportFormat.resumeDetailed,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),

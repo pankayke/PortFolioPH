@@ -22,14 +22,16 @@ class JobService
             ->with('recruiter:id,name,email')
             ->where('status', 'approved');
 
-        if (isset($filters['search'])) {
-            $search = $filters['search'];
-            $query->where('title', 'like', "%$search%")
-                  ->orWhere('description', 'like', "%$search%");
+        if (!empty($filters['search'])) {
+            $search = trim((string) $filters['search']);
+            $query->where(function ($innerQuery) use ($search) {
+                $innerQuery->where('title', 'like', "%$search%")
+                    ->orWhere('description', 'like', "%$search%");
+            });
         }
 
-        if (isset($filters['location'])) {
-            $query->where('location', $filters['location']);
+        if (!empty($filters['location'])) {
+            $query->where('location', trim((string) $filters['location']));
         }
 
         return $query->paginate($perPage);
@@ -43,7 +45,8 @@ class JobService
      */
     public function getJob(Job $job): Job
     {
-        return $job->load('recruiter:id,name,email', 'applications');
+        return $job->load('recruiter:id,name,email')
+            ->loadCount('applications');
     }
 
     /**
@@ -69,17 +72,19 @@ class JobService
      */
     public function getRecruiterJobs(User $recruiter, array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
+        $status = strtolower(trim((string) ($filters['status'] ?? '')));
+        $search = trim((string) ($filters['search'] ?? ''));
+
         $query = Job::query()
             ->where('recruiter_id', $recruiter->id)
             ->with('recruiter:id,name,email')
             ->latest();
 
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+        if ($status !== '' && in_array($status, ['draft', 'pending', 'approved', 'closed'], true)) {
+            $query->where('status', $status);
         }
 
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%$search%")
                   ->orWhere('description', 'like', "%$search%");

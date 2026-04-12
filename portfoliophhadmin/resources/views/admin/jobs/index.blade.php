@@ -2,12 +2,6 @@
 
 @section('content')
 @include('admin.partials.command_center_styles')
-@php
-    $approvedCount = $jobs->where('status', 'approved')->count();
-    $closedCount = $jobs->where('status', 'closed')->count();
-    $activeSessions = max(2, (int) round($jobs->count() * 0.33));
-    $serverLoad = min(87, max(18, (int) round(($approvedCount / max($jobs->count(), 1)) * 100)));
-@endphp
 
 <div class="cc-theme cc-ultra-shell">
     <div class="cc-ultra-grid">
@@ -67,11 +61,11 @@
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-slate-50/85 p-3 text-sm">
                         <p class="text-slate-500">Pending</p>
-                        <p class="mt-1 text-xl font-bold text-amber-600">{{ $jobs->where('status', 'pending')->count() }}</p>
+                        <p class="mt-1 text-xl font-bold text-amber-600">{{ $pendingCount }}</p>
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-slate-50/85 p-3 text-sm">
                         <p class="text-slate-500">Draft</p>
-                        <p class="mt-1 text-xl font-bold text-indigo-600">{{ $jobs->where('status', 'draft')->count() }}</p>
+                        <p class="mt-1 text-xl font-bold text-indigo-600">{{ $draftCount }}</p>
                     </div>
                 </div>
             </header>
@@ -109,7 +103,7 @@
                                             {{ ucfirst($job->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2.5 text-sm text-slate-700">{{ $job->applications->count() }} applications</td>
+                                    <td class="px-4 py-2.5 text-sm text-slate-700">{{ $job->applications_count ?? 0 }} applications</td>
                                     <td class="px-4 py-2.5 text-sm text-slate-600">{{ $job->updated_at->diffForHumans() }}</td>
                                     <td class="px-4 py-2.5">
                                         <div class="cc-quick-actions inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">

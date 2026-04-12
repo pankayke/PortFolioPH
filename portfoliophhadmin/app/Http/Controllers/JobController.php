@@ -20,7 +20,7 @@ class JobController extends Controller
     public function index(Request $request): JsonResponse
     {
         $filters = $request->only(['search', 'location']);
-        $perPage = $request->input('per_page', 15);
+        $perPage = $this->resolvePerPage($request);
         $jobs = $this->jobService->getApprovedJobs($filters, $perPage);
 
         return ApiResponse::paginated($jobs, 'Jobs retrieved successfully', 200);
@@ -70,7 +70,7 @@ class JobController extends Controller
         }
 
         $filters = $request->only(['search', 'status']);
-        $perPage = $request->input('per_page', 15);
+        $perPage = $this->resolvePerPage($request);
         $jobs = $this->jobService->getRecruiterJobs($user, $filters, $perPage);
 
         return ApiResponse::paginated($jobs, 'Recruiter jobs retrieved successfully', 200);
@@ -105,5 +105,11 @@ class JobController extends Controller
             'Job deleted successfully',
             200
         );
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        $perPage = (int) $request->input('per_page', 15);
+        return max(1, min(100, $perPage));
     }
 }

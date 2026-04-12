@@ -24,7 +24,7 @@ Route::middleware('throttle:5,1')->prefix('auth')->group(function () {
 // Public job viewing routes (no auth required)
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/jobs', [JobController::class, 'index']);
-    Route::get('/jobs/{job}', [JobController::class, 'show']);
+    Route::get('/jobs/{job}', [JobController::class, 'show'])->whereNumber('job');
 });
 
 // Protected routes (standard rate limit)
@@ -41,22 +41,22 @@ Route::middleware([
     Route::get('/profile', [ProfileController::class, 'show']);
     
     // Users
-    Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::get('/users/{user}', [UserController::class, 'show'])->whereNumber('user');
     Route::get('/users/search', [UserController::class, 'search']);
     Route::get('/users/role', [UserController::class, 'hasRole']);
-    Route::put('/users/{user}', [UserController::class, 'update']);
+    Route::put('/users/{user}', [UserController::class, 'update'])->whereNumber('user');
     
     // Jobs (write operations only)
     Route::get('/jobs/mine', [JobController::class, 'mine']);
     Route::post('/jobs', [JobController::class, 'store'])->middleware('throttle:10,1');  // Stricter for writes
-    Route::put('/jobs/{job}', [JobController::class, 'update'])->middleware('throttle:10,1');
-    Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->middleware('throttle:10,1');
+    Route::put('/jobs/{job}', [JobController::class, 'update'])->whereNumber('job')->middleware('throttle:10,1');
+    Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->whereNumber('job')->middleware('throttle:10,1');
     
     // Applications
     Route::post('/applications', [ApplicationController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/applications', [ApplicationController::class, 'index']);
-    Route::get('/applications/{application}', [ApplicationController::class, 'show']);
-    Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->middleware('throttle:10,1');
+    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->whereNumber('application');
+    Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->whereNumber('application')->middleware('throttle:10,1');
 });
 
 // Health check (no rate limit)

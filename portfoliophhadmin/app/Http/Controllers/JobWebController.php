@@ -28,7 +28,16 @@ class JobWebController extends Controller
 
     public function show(Job $job)
     {
-        return view('jobs.show', compact('job'));
+        $job->load('recruiter:id,name,email');
+
+        $applications = $job->applications()
+            ->with('user:id,name,email')
+            ->latest()
+            ->paginate(10);
+
+        $applicationCount = (int) $applications->total();
+
+        return view('jobs.show', compact('job', 'applications', 'applicationCount'));
     }
 
     public function create()

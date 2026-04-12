@@ -2,6 +2,28 @@
 
 > Log every correction, failed attempt, or preventable defect.
 
+- Date: 2026-04-11
+- Task/Jira: Admin List Aggregate Count Cleanup
+- Mistake pattern (exact): Admin list summary cards still derived counts from paginated collection slices instead of query aggregates.
+- Root cause: The list pages were already optimized for eager loading, but the final metric derivation still used in-memory collection scans.
+- Prevention rules (min 3):
+  1. If the summary card is meant to represent the full filtered dataset, compute it with a query aggregate.
+  2. Reserve collection scans for small, intentional page-only summaries.
+  3. Re-run the test suite after replacing page metrics with aggregate queries, because the pagination shape can change subtly.
+- Validation on next similar task: Confirm controller aggregates and view counts still match the rendered moderation cards.
+- Outcome: Admin list pages now avoid in-memory summary counting as well.
+
+- Date: 2026-04-11
+- Task/Jira: Public Job Detail Payload Optimization
+- Mistake pattern (exact): The recruiter-facing public job detail page relied on the model's full applications relation even though only a paginated slice and total count were displayed.
+- Root cause: The controller passed a bare job model to the view, so the view fell back to lazy loading the entire hasMany relation.
+- Prevention rules (min 3):
+  1. When a page shows a subset of a large relation, pass a paginator instead of the raw relation.
+  2. Keep count totals separate from row collections so the UI can show both without loading everything.
+  3. Add a regression test that asserts the page is using the expected pagination shape.
+- Validation on next similar task: Confirm the view consumes the paginator and that `total()` still matches the relation count.
+- Outcome: Public recruiter job detail now avoids fetching unnecessary application rows.
+
 ## Entry Template
 - Date:
 - Task/Jira:
@@ -14,7 +36,139 @@
 - Validation on next similar task:
 - Outcome:
 
+- Date: 2026-04-11
+- Task/Jira: Audit Stream + Job Detail Payload Optimization
+- Mistake pattern (exact): The audit page was calculating live metrics in Blade while its controller only passed raw collections, and the public job-detail API was hydrating a full applications relation that the consumers did not use.
+- Root cause: View-layer logic drifted away from the controller contract, and the API response shape was carrying extra data without a consumer check.
+- Prevention rules (min 3):
+  1. Keep derived page metrics in controllers so templates remain display-only.
+  2. Use `loadCount(...)` for summary-only relationship data.
+  3. Check the actual downstream consumer before keeping a heavy relation in a read API.
+- Validation on next similar task: Verify related entities are eager loaded only where the view needs them, and confirm API consumers still deserialize the trimmed payload.
+- Outcome: Audit rendering is cheaper and the job detail endpoint sends less data.
+
 ---
+
+- Date: 2026-04-11
+- Task/Jira: QA Doc Sync for Latest API Safety Changes
+- Mistake pattern (exact): QA source and generated DOCX can drift from recent code changes if updates are made only in the codebase.
+- Root cause: Documentation treated as a one-off artifact instead of a living companion to code changes.
+- Prevention rules (min 3):
+  1. Update the DOCX source generator whenever endpoint behavior or guardrails change.
+  2. Regenerate the artifact from source instead of editing the DOCX directly.
+  3. Keep the latest test-case coverage aligned to actual regression targets such as pagination caps and route constraints.
+- Validation on next similar task: Updated PFVT-059/060 to match the latest API safety changes and regenerated the document.
+- Outcome: QA docs now track the code changes instead of lagging behind them.
+
+- Date: 2026-04-11
+- Task/Jira: API Route Safety + Pagination Guardrails + Composite Index Expansion
+- Mistake pattern (exact): Parameterized API routes could shadow static endpoints (for example, `jobs/{job}` intercepting `jobs/mine`), and unbounded `per_page` could invite oversized list queries.
+- Root cause: Route definition order + unconstrained model-binding segments + missing request guardrails on pagination inputs.
+- Prevention rules (min 3):
+  1. Add `whereNumber(...)` constraints to model-bound route segments when static sibling routes exist.
+  2. Enforce strict `per_page` bounds at controller entry points for all paginated endpoints.
+  3. Convert recurring filter-and-sort patterns into composite indexes that match where/order columns.
+- Validation on next similar task: Added two per-page cap tests, fixed route constraints, validated full backend and Flutter suites, and dry-ran migration SQL.
+- Outcome: Safer route resolution, bounded API payload size, and improved DB index coverage with regression safety.
+
+- Date: 2026-04-11
+- Task/Jira: Admin Controller Query Efficiency Pass (N+1 + Redundant Loads)
+- Mistake pattern (exact): Controller methods preloaded full relations and then re-queried paginated relations, while Blade tables used per-row relation counts.
+- Root cause: Mixed use of `load(...)` and paginated relation queries without a strict data-shaping contract for views.
+- Prevention rules (min 3):
+  1. Never `load()` large hasMany relations if the same data will be fetched through pagination.
+  2. Prefer `withCount(...)` for table counters instead of relation collection count calls inside loops.
+  3. Constrain eager loads to only required columns for list/detail admin screens.
+- Validation on next similar task: Applied to admin user/job detail/list flows and revalidated with full Laravel test suite.
+- Outcome: Lower query load on admin pages with unchanged behavior and green regression tests.
+
+- Date: 2026-04-11
+- Task/Jira: Full Optimization Pass + 10-Page QA Test Case Document (DOCX)
+- Mistake pattern (exact): Service-layer search query used ungrouped `orWhere`, which can silently widen result sets and bypass base constraints.
+- Root cause: Query condition chaining without explicit grouping in mixed `where`/`orWhere` search logic.
+- Prevention rules (min 3):
+  1. Wrap search disjunctions in closure groups whenever base constraints (e.g., status) must always apply.
+  2. Prefer aggregate count bundles in dashboard/controller metrics to reduce repeated queries.
+  3. For large QA deliverables, generate documents from structured source data to keep formatting consistent and scalable.
+- Validation on next similar task: Applied by patching grouped search and running full Laravel suite; generated `.docx` via scripted builder.
+- Outcome: Query correctness improved, backend tests remained green, and requested QA artifact delivered in docx format.
+
+- Date: 2026-04-11
+- Task/Jira: Admin Users List Filter/Sort Regression Coverage
+- Mistake pattern (exact): Users-list query behavior (role alias normalization, fallback sorting, suspended filter semantics) had no dedicated regression tests.
+- Root cause: Prior admin tests prioritized route access and mutation flows over list query semantics.
+- Prevention rules (min 3):
+  1. Add explicit test cases for each supported filter and alias mapping in list endpoints.
+  2. Add fallback-behavior tests for invalid query params (`sort_by`, `sort_dir`) to prevent unsafe regressions.
+  3. Include at least one deterministic ordering assertion for list sorting logic.
+- Validation on next similar task: Applied by adding five users-index tests and rerunning targeted/full suites.
+- Outcome: Admin users list query logic is now regression-protected.
+
+- Date: 2026-04-11
+- Task/Jira: Admin Edge-Case Test Expansion (Settings + Role Transitions)
+- Mistake pattern (exact): Key admin-side business rules (default settings and recruiter demotion side effects) lacked explicit regression tests despite being behavior-critical.
+- Root cause: Initial controller coverage focused on happy paths and core route access first.
+- Prevention rules (min 3):
+  1. Add at least one invalid-payload test per settings/validation endpoint.
+  2. Add business-rule side-effect assertions (status changes, cascade updates) for role transitions.
+  3. Include default-state/session-fallback tests for configuration endpoints.
+- Validation on next similar task: Applied by adding four edge-case tests and rerunning targeted/full Laravel suites.
+- Outcome: Admin behavior has explicit regression protection for validation, defaults, and transition side effects.
+
+- Date: 2026-04-11
+- Task/Jira: AdminWebController Feature Test Coverage
+- Mistake pattern (exact): Redirect assertions initially targeted undefined route aliases (`admin.users`, `admin.jobs`) that also existed in controller redirects.
+- Root cause: Controller and tests assumed shorthand route names that were not declared in route definitions.
+- Prevention rules (min 3):
+  1. Use route-name constants or verify route names against `routes/web.php` before writing redirects/assertions.
+  2. Add feature tests for admin web controllers to catch route wiring drift early.
+  3. Treat test failures in route assertions as potential production redirect bugs, not test-only issues.
+- Validation on next similar task: Applied by fixing controller redirects to `admin.users.index`/`admin.jobs.index` and rerunning full test suite.
+- Outcome: Admin controller route flows are now explicitly covered and validated.
+
+- Date: 2026-04-11
+- Task/Jira: AdminWebController Query Optimization + Safety Hardening
+- Mistake pattern (exact): Admin analytics and status cards were issuing multiple separate count queries per request.
+- Root cause: Incremental feature additions favored straightforward per-metric counts over aggregate query composition.
+- Prevention rules (min 3):
+  1. Prefer aggregate `CASE WHEN` count bundles for dashboard/status-card metrics.
+  2. Wrap manual cascade deletes in transactions to avoid partial-write states.
+  3. Validate backend controller optimizations with both lint and full feature tests.
+- Validation on next similar task: Applied by consolidating count queries and adding transactions in AdminWebController, then running `php artisan test`.
+- Outcome: Fewer DB round-trips in admin pages with unchanged test behavior.
+
+- Date: 2026-04-11
+- Task/Jira: RadioListTile Deprecation Cleanup (RadioGroup Migration)
+- Mistake pattern (exact): Initial RadioGroup migration used a nullable callback assignment pattern that violated the framework's non-null callback type contract.
+- Root cause: Assumed nullable callback parity with old `RadioListTile.onChanged` behavior.
+- Prevention rules (min 3):
+  1. Check exact callback signatures when migrating from deprecated to replacement widgets.
+  2. Keep disabled-state checks inside callback bodies when the new API requires non-null callbacks.
+  3. Run analyzer immediately after framework migration edits before test execution.
+- Validation on next similar task: Applied by switching to non-null callback with in-body guards, then rerunning analyze/tests.
+- Outcome: Deprecation suppressions removed and both analyzer/tests are green.
+
+- Date: 2026-04-11
+- Task/Jira: Repository Compatibility Cleanup + ApiService Smoke Test
+- Mistake pattern (exact): Seed-account creation path used `UserModel.passwordHash` through a legacy compatibility insert path, risking hashed-password registration payloads.
+- Root cause: Legacy compatibility wrapper masked password semantics after moving to API-only registration.
+- Prevention rules (min 3):
+  1. Avoid generic compatibility wrappers for auth-sensitive flows; keep plain vs hashed password semantics explicit.
+  2. Require explicit `plainPassword` in registration helper methods and call sites.
+  3. Add a small smoke test for shared auth/API primitives after refactoring repository contracts.
+- Validation on next similar task: Applied by removing insert wrapper, updating caller signatures, and adding ApiService token lifecycle smoke test.
+- Outcome: Cleaner repository contract with explicit registration semantics and green validation across both Flutter apps.
+
+- Date: 2026-04-11
+- Task/Jira: Codebase Scan and API Service Optimization
+- Mistake pattern (exact): Used `const Options(...)` in Dio request code where the package version only supports a non-const constructor.
+- Root cause: Assumed constructor constness during a small refactor without checking the installed API surface.
+- Prevention rules (min 3):
+  1. Check the exact package API when introducing `const` in third-party types.
+  2. Re-run analyzer immediately after refactors that touch framework or package constructors.
+  3. Prefer small validation loops for maintainability-only changes, even when behavior should not change.
+- Validation on next similar task: Applied by removing `const` and re-running root analyzer and tests.
+- Outcome: Refactor kept, compile issue resolved, validation returned clean.
 
 ## Weekly Metrics
 - Week of:

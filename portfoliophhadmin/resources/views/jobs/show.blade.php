@@ -91,14 +91,14 @@
         @if(auth()->user()->role === 'recruiter' && auth()->user()->id === $job->recruiter_id)
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">
-                    <i class="fas fa-file-alt mr-2 text-blue-600"></i>Applications ({{ $job->applications->count() }})
+                    <i class="fas fa-file-alt mr-2 text-blue-600"></i>Applications ({{ $applicationCount ?? $applications->total() }})
                 </h2>
 
-                @if($job->applications->isEmpty())
+                @if($applications->isEmpty())
                     <p class="text-gray-500 text-center py-8">No applications yet</p>
                 @else
                     <div class="space-y-4">
-                        @foreach($job->applications as $application)
+                        @foreach($applications as $application)
                             <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                                 <div class="flex justify-between items-start mb-2">
                                     <div>
@@ -128,6 +128,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+
+                    <div class="mt-6">
+                        {{ $applications->links() }}
                     </div>
                 @endif
             </div>
@@ -182,7 +186,7 @@
                 </div>
                 <div>
                     <p class="text-gray-600 text-sm">Applications</p>
-                    <p class="text-gray-900 font-medium">{{ $job->applications->count() }}</p>
+                    <p class="text-gray-900 font-medium">{{ $applicationCount ?? $applications->total() }}</p>
                 </div>
                 @if(auth()->user()->role === 'recruiter' && auth()->user()->id === $job->recruiter_id)
                     <div>

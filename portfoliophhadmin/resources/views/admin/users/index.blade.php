@@ -2,12 +2,6 @@
 
 @section('content')
 @include('admin.partials.command_center_styles')
-@php
-    $total = max((int) $users->total(), 1);
-    $activeUsers = (int) $users->where('active', true)->count();
-    $activeSessions = max((int) round($activeUsers * 0.64), 1);
-    $serverLoad = min(88, max(22, (int) round(($activeUsers / $total) * 100)));
-@endphp
 
 <div class="cc-theme cc-ultra-shell">
     <div class="cc-ultra-grid">
