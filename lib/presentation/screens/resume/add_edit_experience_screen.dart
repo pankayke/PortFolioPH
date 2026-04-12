@@ -158,8 +158,8 @@ class _AddEditExperienceScreenState extends State<AddEditExperienceScreen> {
     setState(() => _isSaving = true);
 
     final success = _isEdit
-      ? await experienceProvider.updateExperience(experience)
-      : await experienceProvider.addExperience(experience);
+        ? await experienceProvider.updateExperience(experience)
+        : await experienceProvider.addExperience(experience);
 
     if (!mounted) return;
     setState(() => _isSaving = false);

@@ -181,7 +181,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       final profileSummary = [
         _professionController.text.trim(),
         if (schoolInfo.isNotEmpty) schoolInfo,
-        if (_selectedExperience?.trim().isNotEmpty ?? false) _selectedExperience!,
+        if (_selectedExperience?.trim().isNotEmpty ?? false)
+          _selectedExperience!,
         if (_selectedAvailability?.trim().isNotEmpty ?? false)
           _selectedAvailability!,
         if (_skillsController.text.trim().isNotEmpty)

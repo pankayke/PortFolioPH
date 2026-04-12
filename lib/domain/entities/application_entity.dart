@@ -15,16 +15,19 @@ enum ApplicationStatus {
   final String value;
   const ApplicationStatus(this.value);
 
-  static ApplicationStatus fromString(String value) => ApplicationStatus.values
-      .firstWhere((s) => s.value == value, orElse: () => ApplicationStatus.pending);
+  static ApplicationStatus fromString(String value) =>
+      ApplicationStatus.values.firstWhere(
+        (s) => s.value == value,
+        orElse: () => ApplicationStatus.pending,
+      );
 
   /// DOMAIN RULE: Application can be updated if in certain states
-  bool get canUpdate => this == ApplicationStatus.pending ||
-      this == ApplicationStatus.reviewed;
+  bool get canUpdate =>
+      this == ApplicationStatus.pending || this == ApplicationStatus.reviewed;
 
   /// DOMAIN RULE: Is final decision made?
-  bool get isDecided => this == ApplicationStatus.accepted ||
-      this == ApplicationStatus.rejected;
+  bool get isDecided =>
+      this == ApplicationStatus.accepted || this == ApplicationStatus.rejected;
 }
 
 class ApplicationEntity extends Equatable {
@@ -54,6 +57,12 @@ class ApplicationEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, jobId, userId, coverLetter, status, appliedAt, updatedAt,
+    id,
+    jobId,
+    userId,
+    coverLetter,
+    status,
+    appliedAt,
+    updatedAt,
   ];
 }

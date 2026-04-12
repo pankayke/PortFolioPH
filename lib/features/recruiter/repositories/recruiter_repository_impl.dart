@@ -18,10 +18,7 @@ class RecruiterRepositoryImpl {
     String? search,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'per_page': 15,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'per_page': 15};
       if (status != null && status.isNotEmpty) queryParams['status'] = status;
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
@@ -53,10 +50,7 @@ class RecruiterRepositoryImpl {
 
   Future<Job> createJob(CreateJobRequest request) async {
     try {
-      final response = await _apiService.post(
-        '/jobs',
-        data: request.toJson(),
-      );
+      final response = await _apiService.post('/jobs', data: request.toJson());
       return Job.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -65,10 +59,7 @@ class RecruiterRepositoryImpl {
 
   Future<Job> updateJob(int jobId, Map<String, dynamic> data) async {
     try {
-      final response = await _apiService.put(
-        '/jobs/$jobId',
-        data: data,
-      );
+      final response = await _apiService.put('/jobs/$jobId', data: data);
       return Job.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -104,10 +95,7 @@ class ApplicationRepositoryImpl {
     String sortBy = 'created_at',
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'per_page': 15,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'per_page': 15};
       if (status != null && status.isNotEmpty) queryParams['status'] = status;
       if (jobId != null) queryParams['job_id'] = jobId;
       queryParams['sort_by'] = sortBy;
@@ -164,7 +152,10 @@ class ApplicationRepositoryImpl {
   ) async {
     try {
       for (final id in applicationIds) {
-        await _apiService.put('/applications/$id/status', data: {'status': status});
+        await _apiService.put(
+          '/applications/$id/status',
+          data: {'status': status},
+        );
       }
     } catch (e) {
       rethrow;

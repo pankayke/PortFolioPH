@@ -10,7 +10,10 @@ class SkillsRepository {
 
   Future<int> insert(SkillsModel skill) async {
     try {
-      final response = await _apiService.post('/users/${skill.userId}/skill-tracker', data: skill.toMap());
+      final response = await _apiService.post(
+        '/users/${skill.userId}/skill-tracker',
+        data: skill.toMap(),
+      );
       if (response.statusCode == 201) return response.data['id'] as int;
       throw Exception('Failed to create skill tracking');
     } catch (e) {
@@ -23,7 +26,9 @@ class SkillsRepository {
       final response = await _apiService.get('/users/$userId/skill-tracker');
       if (response.statusCode == 200) {
         final data = response.data as List;
-        return data.map((json) => SkillsModel.fromMap(json as Map<String, dynamic>)).toList();
+        return data
+            .map((json) => SkillsModel.fromMap(json as Map<String, dynamic>))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -33,7 +38,10 @@ class SkillsRepository {
 
   Future<int> update(SkillsModel skill) async {
     try {
-      final response = await _apiService.put('/skill-tracker/${skill.id}', data: skill.toMap());
+      final response = await _apiService.put(
+        '/skill-tracker/${skill.id}',
+        data: skill.toMap(),
+      );
       if (response.statusCode == 200) return 1;
       throw Exception('Failed to update skill');
     } catch (e) {

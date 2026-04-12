@@ -73,26 +73,26 @@ class JobModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'recruiter_id': recruiterId,
-    'title': title,
-    'description': description,
-    'requirements': requirements,
-    'job_type': jobType,
-    'salary_min': salaryMin,
-    'salary_max': salaryMax,
-    'currency': currency,
-    'location': location,
-    'remote_work': remoteWork,
-    'status': status,
-    'rejection_reason': rejectionReason,
-    'deadline_at': deadlineAt,
-    'approved_at': approvedAt,
-    'approved_by': approvedBy,
-    'views_count': viewsCount,
-    'applications_count': applicationsCount,
-    'created_at': createdAt,
-  };
+        'id': id,
+        'recruiter_id': recruiterId,
+        'title': title,
+        'description': description,
+        'requirements': requirements,
+        'job_type': jobType,
+        'salary_min': salaryMin,
+        'salary_max': salaryMax,
+        'currency': currency,
+        'location': location,
+        'remote_work': remoteWork,
+        'status': status,
+        'rejection_reason': rejectionReason,
+        'deadline_at': deadlineAt,
+        'approved_at': approvedAt,
+        'approved_by': approvedBy,
+        'views_count': viewsCount,
+        'applications_count': applicationsCount,
+        'created_at': createdAt,
+      };
 
   bool get isPending => status == 'pending';
   bool get isApproved => status == 'approved';

@@ -15,14 +15,14 @@ class StudentEssaysRepository {
   /// Fetch all essays for a specific student
   Future<List<StudentEssayModel>> findByStudentId(int studentId) async {
     try {
-      final response = await _apiService.get(
-        '/students/$studentId/essays',
-      );
+      final response = await _apiService.get('/students/$studentId/essays');
 
       if (response.statusCode == 200) {
         final data = response.data as List;
         return data
-            .map((json) => StudentEssayModel.fromMap(json as Map<String, dynamic>))
+            .map(
+              (json) => StudentEssayModel.fromMap(json as Map<String, dynamic>),
+            )
             .toList();
       }
 

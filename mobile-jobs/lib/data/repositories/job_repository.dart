@@ -22,8 +22,9 @@ class JobRepository {
       remote: remote,
     );
 
-    final jobs =
-        (response['data'] as List).map((job) => JobModel.fromJson(job)).toList();
+    final jobs = (response['data'] as List)
+        .map((job) => JobModel.fromJson(job))
+        .toList();
 
     return (jobs, response['pagination'] as Map<String, dynamic>? ?? {});
   }
@@ -107,16 +108,20 @@ class JobRepository {
   }
 
   Future<(List<ApplicationModel> applications, Map<String, dynamic> pagination)>
-  getMyApplications({int page = 1, int perPage = 15}) async {
+      getMyApplications({int page = 1, int perPage = 15}) async {
     final response = await apiService.getMyApplications(
       page: page,
       perPage: perPage,
     );
 
-    final applications =
-        (response['data'] as List).map((app) => ApplicationModel.fromJson(app)).toList();
+    final applications = (response['data'] as List)
+        .map((app) => ApplicationModel.fromJson(app))
+        .toList();
 
-    return (applications, response['pagination'] as Map<String, dynamic>? ?? {});
+    return (
+      applications,
+      response['pagination'] as Map<String, dynamic>? ?? {}
+    );
   }
 
   Future<void> withdrawApplication(int applicationId) async {

@@ -93,7 +93,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _selectedRole == null) return;
+    if (!(_formKey.currentState?.validate() ?? false) || _selectedRole == null)
+      return;
 
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
@@ -291,7 +292,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             _onFieldChanged();
                           }),
                           child: Container(
-                            padding: const EdgeInsets.all(AppConstants.spacingMd),
+                            padding: const EdgeInsets.all(
+                              AppConstants.spacingMd,
+                            ),
                             decoration: BoxDecoration(
                               color: _selectedRole == AppConstants.roleSeeker
                                   ? colorScheme.primary.withValues(alpha: 0.1)
@@ -300,7 +303,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 color: _selectedRole == AppConstants.roleSeeker
                                     ? colorScheme.primary
                                     : colorScheme.outlineVariant,
-                                width: _selectedRole == AppConstants.roleSeeker ? 2 : 1,
+                                width: _selectedRole == AppConstants.roleSeeker
+                                    ? 2
+                                    : 1,
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -308,29 +313,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               children: [
                                 Icon(
                                   Icons.search_rounded,
-                                  color: _selectedRole == AppConstants.roleSeeker
+                                  color:
+                                      _selectedRole == AppConstants.roleSeeker
                                       ? colorScheme.primary
                                       : colorScheme.outline,
                                 ),
                                 const SizedBox(width: AppConstants.spacingMd),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Job Seeker',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: _selectedRole == AppConstants.roleSeeker
-                                              ? colorScheme.primary
-                                              : null,
-                                        ),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  _selectedRole ==
+                                                      AppConstants.roleSeeker
+                                                  ? colorScheme.primary
+                                                  : null,
+                                            ),
                                       ),
                                       Text(
                                         'Apply for jobs & track applications',
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.outline,
-                                        ),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: colorScheme.outline,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -353,16 +364,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             _onFieldChanged();
                           }),
                           child: Container(
-                            padding: const EdgeInsets.all(AppConstants.spacingMd),
+                            padding: const EdgeInsets.all(
+                              AppConstants.spacingMd,
+                            ),
                             decoration: BoxDecoration(
                               color: _selectedRole == AppConstants.roleRecruiter
                                   ? colorScheme.primary.withValues(alpha: 0.1)
                                   : colorScheme.surface,
                               border: Border.all(
-                                color: _selectedRole == AppConstants.roleRecruiter
+                                color:
+                                    _selectedRole == AppConstants.roleRecruiter
                                     ? colorScheme.primary
                                     : colorScheme.outlineVariant,
-                                width: _selectedRole == AppConstants.roleRecruiter ? 2 : 1,
+                                width:
+                                    _selectedRole == AppConstants.roleRecruiter
+                                    ? 2
+                                    : 1,
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -370,29 +387,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               children: [
                                 Icon(
                                   Icons.business_rounded,
-                                  color: _selectedRole == AppConstants.roleRecruiter
+                                  color:
+                                      _selectedRole ==
+                                          AppConstants.roleRecruiter
                                       ? colorScheme.primary
                                       : colorScheme.outline,
                                 ),
                                 const SizedBox(width: AppConstants.spacingMd),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Recruiter',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: _selectedRole == AppConstants.roleRecruiter
-                                              ? colorScheme.primary
-                                              : null,
-                                        ),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  _selectedRole ==
+                                                      AppConstants.roleRecruiter
+                                                  ? colorScheme.primary
+                                                  : null,
+                                            ),
                                       ),
                                       Text(
                                         'Post jobs & manage candidates',
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.outline,
-                                        ),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: colorScheme.outline,
+                                            ),
                                       ),
                                     ],
                                   ),

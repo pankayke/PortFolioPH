@@ -144,8 +144,8 @@ class _AddEditEducationScreenState extends State<AddEditEducationScreen> {
     setState(() => _isSaving = true);
 
     final success = _isEdit
-      ? await educationProvider.updateEducation(education)
-      : await educationProvider.addEducation(education);
+        ? await educationProvider.updateEducation(education)
+        : await educationProvider.addEducation(education);
 
     if (!mounted) return;
     setState(() => _isSaving = false);

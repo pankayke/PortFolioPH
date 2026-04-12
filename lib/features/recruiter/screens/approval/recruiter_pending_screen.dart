@@ -54,7 +54,9 @@ class RecruiterPendingScreen extends StatelessWidget {
                             Colors.orange.withValues(alpha: 0.18),
                           ],
                         ),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.26),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.amber.withValues(alpha: 0.22),
@@ -72,7 +74,8 @@ class RecruiterPendingScreen extends StatelessWidget {
                     const SizedBox(height: 28),
                     Text(
                       'Account Under Review',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                           ),
@@ -82,14 +85,12 @@ class RecruiterPendingScreen extends StatelessWidget {
                     Text(
                       'Your recruiter account is currently under review by our admin team.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.84),
-                          ),
+                        color: Colors.white.withValues(alpha: 0.84),
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 22),
-                    const RecruiterGlassCard(
-                      child: _PendingContent(),
-                    ),
+                    const RecruiterGlassCard(child: _PendingContent()),
                     const SizedBox(height: 20),
                     RecruiterGlassCard(
                       gradient: LinearGradient(
@@ -103,12 +104,16 @@ class RecruiterPendingScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.info_outline, color: Colors.blue.shade200),
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.blue.shade200,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'What happens next?',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -122,7 +127,8 @@ class RecruiterPendingScreen extends StatelessWidget {
                             '• This usually takes 24-48 hours\n'
                             '• You will receive an email notification once approved\n'
                             '• You can then access all recruiter features',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.84),
                                 ),
                           ),
@@ -165,9 +171,9 @@ class _PendingContent extends StatelessWidget {
         Text(
           'Account Details',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         const SizedBox(height: 16),
         RecruiterDetailRow(label: 'Name', value: user?.fullName ?? 'N/A'),

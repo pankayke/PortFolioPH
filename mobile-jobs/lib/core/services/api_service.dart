@@ -72,7 +72,8 @@ class ApiService {
       if (phone != null) 'phone': phone,
     };
 
-    final response = await _request(() => _dio.post('/auth/register', data: data));
+    final response =
+        await _request(() => _dio.post('/auth/register', data: data));
     final token = response['token'];
     if (token is! String || token.isEmpty) {
       throw Exception(response['message'] ?? 'Registration failed');

@@ -207,5 +207,4 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
     if (error is Exception) return error.toString();
     return error?.toString() ?? 'Unable to complete job action.';
   }
-
 }

@@ -52,9 +52,9 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
       // Load more when reaching bottom
-      context
-          .read<SeekerApplicationProvider>()
-          .loadApplications(page: context.read<SeekerApplicationProvider>().currentPage + 1);
+      context.read<SeekerApplicationProvider>().loadApplications(
+        page: context.read<SeekerApplicationProvider>().currentPage + 1,
+      );
     }
   }
 
@@ -63,9 +63,9 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
       _selectedStatus = status;
     });
     context.read<SeekerApplicationProvider>().loadApplications(
-          status: status,
-          refresh: true,
-        );
+      status: status,
+      refresh: true,
+    );
   }
 
   Future<void> _withdrawApplication(SeekerApplication application) async {
@@ -93,9 +93,9 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
 
     if (mounted) {
       try {
-        await context
-            .read<SeekerApplicationProvider>()
-            .withdrawApplication(application.id);
+        await context.read<SeekerApplicationProvider>().withdrawApplication(
+          application.id,
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Application withdrawn')),
@@ -173,77 +173,71 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                   // ── Applications List ───────────────────────────────────────
                   Expanded(
                     child: provider.isLoading && provider.applications.isEmpty
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
+                        ? const Center(child: CircularProgressIndicator())
                         : provider.applications.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.inbox_outlined,
-                                      size: 64,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .outline
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No applications yet',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Start applying to jobs to see them here',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.inbox_outlined,
+                                  size: 64,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.5),
                                 ),
-                              )
-                            : ListView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.all(
-                                AppConstants.spacingMd),
-                                itemCount: provider.applications.length +
-                                    (provider.isLoading ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index == provider.applications.length) {
-                                    return Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Center(
-                                        child: SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No applications yet',
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Start applying to jobs to see them here',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(
+                              AppConstants.spacingMd,
+                            ),
+                            itemCount:
+                                provider.applications.length +
+                                (provider.isLoading ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == provider.applications.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
                                             ),
-                                          ),
-                                        ),
                                       ),
-                                    );
-                                  }
+                                    ),
+                                  ),
+                                );
+                              }
 
-                                  final application =
-                                      provider.applications[index];
-                                  return _buildApplicationCard(
-                                    application,
-                                    onWithdraw: () =>
-                                        _withdrawApplication(application),
-                                  );
-                                },
-                              ),
+                              final application = provider.applications[index];
+                              return _buildApplicationCard(
+                                application,
+                                onWithdraw: () =>
+                                    _withdrawApplication(application),
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),

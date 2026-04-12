@@ -109,11 +109,7 @@ class SkeletonList extends StatelessWidget {
   final int itemCount;
   final Widget Function()? itemBuilder;
 
-  const SkeletonList({
-    super.key,
-    this.itemCount = 5,
-    this.itemBuilder,
-  });
+  const SkeletonList({super.key, this.itemCount = 5, this.itemBuilder});
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,10 @@ class SkillRepository {
 
   Future<int> insert(SkillModel skill) async {
     try {
-      final response = await _apiService.post('/users/${skill.userId}/skills', data: skill.toMap());
+      final response = await _apiService.post(
+        '/users/${skill.userId}/skills',
+        data: skill.toMap(),
+      );
       if (response.statusCode == 201) return response.data['id'] as int;
       throw Exception('Failed to create skill');
     } catch (e) {
@@ -28,7 +31,9 @@ class SkillRepository {
       final response = await _apiService.get('/users/$userId/skills');
       if (response.statusCode == 200) {
         final data = response.data as List;
-        return data.map((json) => SkillModel.fromMap(json as Map<String, dynamic>)).toList();
+        return data
+            .map((json) => SkillModel.fromMap(json as Map<String, dynamic>))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -38,10 +43,15 @@ class SkillRepository {
 
   Future<List<SkillModel>> findByCategory(int userId, String category) async {
     try {
-      final response = await _apiService.get('/users/$userId/skills', queryParameters: {'category': category});
+      final response = await _apiService.get(
+        '/users/$userId/skills',
+        queryParameters: {'category': category},
+      );
       if (response.statusCode == 200) {
         final data = response.data as List;
-        return data.map((json) => SkillModel.fromMap(json as Map<String, dynamic>)).toList();
+        return data
+            .map((json) => SkillModel.fromMap(json as Map<String, dynamic>))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -51,13 +61,17 @@ class SkillRepository {
 
   Future<int> update(SkillModel skill) async {
     try {
-      final response = await _apiService.put('/skills/${skill.id}', data: skill.toMap());
+      final response = await _apiService.put(
+        '/skills/${skill.id}',
+        data: skill.toMap(),
+      );
       if (response.statusCode == 200) return 1;
       throw Exception('Failed to update skill');
     } catch (e) {
       throw Exception('Failed to update skill: $e');
     }
   }
+
   Future<int> delete(int id) async {
     try {
       final response = await _apiService.delete('/skills/$id');

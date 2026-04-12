@@ -33,7 +33,11 @@ class ExperienceRepository {
       final response = await _apiService.get('/users/$userId/experience');
       if (response.statusCode == 200) {
         final data = response.data as List;
-        return data.map((json) => ExperienceModel.fromMap(json as Map<String, dynamic>)).toList();
+        return data
+            .map(
+              (json) => ExperienceModel.fromMap(json as Map<String, dynamic>),
+            )
+            .toList();
       }
       return [];
     } catch (e) {

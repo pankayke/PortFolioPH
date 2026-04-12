@@ -56,7 +56,9 @@ class RecruiterRejectedScreen extends StatelessWidget {
                             Colors.orange.withValues(alpha: 0.16),
                           ],
                         ),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.26),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.red.withValues(alpha: 0.20),
@@ -65,12 +67,17 @@ class RecruiterRejectedScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Icon(Icons.cancel_rounded, size: 50, color: Colors.red.shade200),
+                      child: Icon(
+                        Icons.cancel_rounded,
+                        size: 50,
+                        color: Colors.red.shade200,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     Text(
                       'Account Not Approved',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                           ),
@@ -80,8 +87,8 @@ class RecruiterRejectedScreen extends StatelessWidget {
                     Text(
                       'Unfortunately, your recruiter account application was not approved.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.84),
-                          ),
+                        color: Colors.white.withValues(alpha: 0.84),
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 22),
@@ -97,15 +104,22 @@ class RecruiterRejectedScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Rejection Information',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
                           const SizedBox(height: 16),
-                          RecruiterDetailRow(label: 'Name', value: user?.fullName ?? 'N/A'),
+                          RecruiterDetailRow(
+                            label: 'Name',
+                            value: user?.fullName ?? 'N/A',
+                          ),
                           const SizedBox(height: 8),
-                          RecruiterDetailRow(label: 'Email', value: user?.email ?? 'N/A'),
+                          RecruiterDetailRow(
+                            label: 'Email',
+                            value: user?.email ?? 'N/A',
+                          ),
                           const SizedBox(height: 8),
                           RecruiterDetailRow(
                             label: 'Status',
@@ -128,12 +142,16 @@ class RecruiterRejectedScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.warning_amber_rounded, color: Colors.orange.shade200),
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.orange.shade200,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'Possible Reasons',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -148,7 +166,8 @@ class RecruiterRejectedScreen extends StatelessWidget {
                             '• Suspicious or fraudulent activity\n'
                             '• Policy violations\n'
                             '• Other verification concerns',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.84),
                                 ),
                           ),
@@ -168,12 +187,16 @@ class RecruiterRejectedScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.help_outline_rounded, color: Colors.blue.shade200),
+                              Icon(
+                                Icons.help_outline_rounded,
+                                color: Colors.blue.shade200,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'Need Help?',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -184,7 +207,8 @@ class RecruiterRejectedScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             'If you believe this is a mistake, please contact our support team at support@jobplatform.com',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.84),
                                 ),
                           ),

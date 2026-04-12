@@ -66,10 +66,18 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
-                padding: EdgeInsets.fromLTRB(12, 10, 12, widget.compact ? 10 : 12),
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  10,
+                  12,
+                  widget.compact ? 10 : 12,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    width: 1,
+                  ),
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -86,7 +94,9 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                       children: [
                         GestureDetector(
                           onTap: widget.onProfileTap,
-                          child: _LiveAvatar(initial: _initialFromName(widget.userName)),
+                          child: _LiveAvatar(
+                            initial: _initialFromName(widget.userName),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -143,7 +153,9 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFF22C55E).withValues(alpha: 0.7),
+                                        color: const Color(
+                                          0xFF22C55E,
+                                        ).withValues(alpha: 0.7),
                                         blurRadius: 8,
                                         spreadRadius: 1,
                                       ),
@@ -170,7 +182,9 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                         child: _searchExpanded
                             ? Container(
                                 key: const ValueKey('searchField'),
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.22),
                                   borderRadius: BorderRadius.circular(12),
@@ -194,8 +208,11 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                                         BlendMode.srcIn,
                                       ),
                                     ),
-                                    hintText: 'Search jobs, companies, skills...',
-                                    hintStyle: const TextStyle(color: Colors.white70),
+                                    hintText:
+                                        'Search jobs, companies, skills...',
+                                    hintStyle: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
                                     border: InputBorder.none,
                                   ),
                                 ),

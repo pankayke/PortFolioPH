@@ -56,7 +56,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     Text(provider.error!, textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     FilledButton(
-                      onPressed: () => provider.getJobDetail(widget.jobId, forceRefresh: true),
+                      onPressed: () => provider.getJobDetail(widget.jobId,
+                          forceRefresh: true),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -76,11 +77,13 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               const SizedBox(height: 8),
               Text('${job.location} • ${job.jobType} • ${job.salaryRange}'),
               const SizedBox(height: 16),
-              Text('Description', style: Theme.of(context).textTheme.titleMedium),
+              Text('Description',
+                  style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 6),
               Text(job.description),
               const SizedBox(height: 16),
-              Text('Requirements', style: Theme.of(context).textTheme.titleMedium),
+              Text('Requirements',
+                  style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 6),
               Text(job.requirements),
               const SizedBox(height: 24),
@@ -113,18 +116,21 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Submit Application', style: Theme.of(context).textTheme.titleLarge),
+              Text('Submit Application',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 12),
               TextField(
                 controller: _coverLetterController,
                 minLines: 3,
                 maxLines: 5,
-                decoration: const InputDecoration(labelText: 'Cover Letter (optional)'),
+                decoration:
+                    const InputDecoration(labelText: 'Cover Letter (optional)'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _resumeUrlController,
-                decoration: const InputDecoration(labelText: 'Resume URL (optional)'),
+                decoration:
+                    const InputDecoration(labelText: 'Resume URL (optional)'),
               ),
               const SizedBox(height: 16),
               Row(
@@ -170,7 +176,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Application submitted.' : (provider.error ?? 'Failed to apply.'),
+          success
+              ? 'Application submitted.'
+              : (provider.error ?? 'Failed to apply.'),
         ),
       ),
     );

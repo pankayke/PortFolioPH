@@ -7,10 +7,7 @@ import 'package:portfolioph/data/models/app_setting_model.dart';
 abstract class AppSettingRepository {
   Future<List<AppSettingModel>> getAllForUser(int userId);
 
-  Future<AppSettingModel?> getByKey({
-    required int userId,
-    required String key,
-  });
+  Future<AppSettingModel?> getByKey({required int userId, required String key});
 
   Future<AppSettingModel> upsert({
     required int userId,
@@ -18,10 +15,7 @@ abstract class AppSettingRepository {
     required String value,
   });
 
-  Future<void> deleteByKey({
-    required int userId,
-    required String key,
-  });
+  Future<void> deleteByKey({required int userId, required String key});
 
   Future<void> clearForUser(int userId);
 }
@@ -74,10 +68,7 @@ class AppSettingRepositoryImpl implements AppSettingRepository {
   }
 
   @override
-  Future<void> deleteByKey({
-    required int userId,
-    required String key,
-  }) {
+  Future<void> deleteByKey({required int userId, required String key}) {
     return _local.deleteItem(namespace: _namespace(userId), id: key);
   }
 

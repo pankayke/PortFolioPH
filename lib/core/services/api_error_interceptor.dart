@@ -13,7 +13,7 @@ import 'package:flutter/foundation.dart';
 import '../exceptions/custom_exceptions.dart';
 
 /// Intelligent error interceptor with retry logic
-/// 
+///
 /// Features:
 /// - Automatic retry on network errors (max 3 attempts)
 /// - Exponential backoff: 100ms → 200ms → 400ms
@@ -25,7 +25,7 @@ class ApiErrorInterceptor extends Interceptor {
   final Dio _retryDio;
 
   ApiErrorInterceptor(this._retryDio);
-  
+
   /// Retry delay strategy: exponential backoff
   /// Attempt 1: 100ms, Attempt 2: 200ms, Attempt 3: 400ms
   static int _getRetryDelay(int attemptNumber) {
@@ -48,8 +48,10 @@ class ApiErrorInterceptor extends Interceptor {
     if (shouldRetry && retryCount < _maxRetries) {
       // Wait with exponential backoff
       final delay = _getRetryDelay(retryCount + 1);
-      debugPrint('[ApiErrorInterceptor] Retrying in ${delay}ms (attempt ${retryCount + 1}/$_maxRetries)');
-      
+      debugPrint(
+        '[ApiErrorInterceptor] Retrying in ${delay}ms (attempt ${retryCount + 1}/$_maxRetries)',
+      );
+
       await Future.delayed(Duration(milliseconds: delay));
 
       // Increment retry count and retry the request
@@ -88,8 +90,7 @@ class ApiErrorInterceptor extends Interceptor {
     }
 
     // Retry on 5xx server errors
-    if (err.response?.statusCode != null && 
-        err.response!.statusCode! >= 500) {
+    if (err.response?.statusCode != null && err.response!.statusCode! >= 500) {
       return true;
     }
 
@@ -152,10 +153,7 @@ class ApiErrorInterceptor extends Interceptor {
 
     // Cancelled request
     if (err.type == DioExceptionType.cancel) {
-      return ApiException(
-        'Request was cancelled',
-        'REQUEST_CANCELLED',
-      );
+      return ApiException('Request was cancelled', 'REQUEST_CANCELLED');
     }
 
     // Default

@@ -69,9 +69,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _nameController = TextEditingController(text: currentUser.fullName ?? '');
       _emailController = TextEditingController(text: currentUser.email);
       _bioController = TextEditingController(text: currentUser.bio ?? '');
-      _locationController = TextEditingController(text: currentUser.location ?? '');
-      _websiteController = TextEditingController(text: currentUser.websiteUrl ?? '');
-      _phoneController = TextEditingController(text: currentUser.phoneNumber ?? '');
+      _locationController = TextEditingController(
+        text: currentUser.location ?? '',
+      );
+      _websiteController = TextEditingController(
+        text: currentUser.websiteUrl ?? '',
+      );
+      _phoneController = TextEditingController(
+        text: currentUser.phoneNumber ?? '',
+      );
     } else {
       _nameController = TextEditingController();
       _emailController = TextEditingController();
@@ -95,28 +101,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       AppLogger.error('Avatar picker error', error: e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
       }
     }
   }
 
   /// Picks a PDF resume file with validation.
-  /// 
+  ///
   /// Validates:
   /// - File must be PDF (.pdf extension)
   /// - File size must be < 5MB
   /// - Shows error message if validation fails
-  /// 
+  ///
   /// Production Implementation:
   /// Add `file_picker: ^5.3.0` to pubspec.yaml and uncomment FilePicker code below.
-  /// 
+  ///
   /// For MVP, demonstrates validation approach even without picker.
   Future<void> _pickResume() async {
     try {
       // Production: Uncomment when file_picker is added to pubspec.yaml
-      // 
+      //
       // const List<String> extensions = ['pdf'];
       // final result = await FilePicker.platform.pickFiles(
       //   type: FileType.custom,
@@ -146,21 +152,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       //     _selectedResume = file;
       //   });
       // }
-      
+
       // MVP: Show informational message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Resume: Add file_picker: ^5.3.0 to pubspec.yaml'),
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
+            content: const Text(
+              'Resume: Add file_picker: ^5.3.0 to pubspec.yaml',
             ),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(label: 'OK', onPressed: () {}),
           ),
         );
       }
-      
+
       debugPrint('''
       === RESUME UPLOAD GUIDE ===
       To enable PDF resume uploads in production:
@@ -182,9 +187,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       debugPrint('Error in resume picker: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -277,35 +282,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
                               image: _selectedAvatar != null
                                   ? DecorationImage(
                                       image: FileImage(_selectedAvatar!),
                                       fit: BoxFit.cover,
                                     )
                                   : (currentUser.avatarPath != null
-                                      ? DecorationImage(
-                                          image: CachedNetworkImageProvider(
-                                            '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${currentUser.avatarPath}',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null),
+                                        ? DecorationImage(
+                                            image: CachedNetworkImageProvider(
+                                              '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${currentUser.avatarPath}',
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null),
                             ),
-                            child: _selectedAvatar == null &&
+                            child:
+                                _selectedAvatar == null &&
                                     currentUser.avatarPath == null
                                 ? Icon(
                                     Icons.person_outline,
                                     size: 50,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   )
                                 : null,
                           ),
                           const SizedBox(height: 16),
                           FilledButton.tonal(
-                            onPressed:
-                                profileProvider.isLoading ? null : _pickAvatar,
+                            onPressed: profileProvider.isLoading
+                                ? null
+                                : _pickAvatar,
                             child: const Text('Change Avatar'),
                           ),
                         ],
@@ -342,8 +352,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           return 'Email is required';
                         }
                         if (!RegExp(
-                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-                            .hasMatch(value)) {
+                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                        ).hasMatch(value)) {
                           return 'Enter a valid email';
                         }
                         return null;
@@ -436,11 +446,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   children: [
                                     Text(
                                       _selectedResume != null
-                                          ? _selectedResume!.path.split('/').last
+                                          ? _selectedResume!.path
+                                                .split('/')
+                                                .last
                                           : 'No resume selected',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -451,9 +463,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           .textTheme
                                           .bodySmall
                                           ?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .outline,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.outline,
                                           ),
                                     ),
                                   ],
@@ -478,10 +490,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .errorContainer
-                              .withValues(alpha: 0.3),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.errorContainer.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.error,

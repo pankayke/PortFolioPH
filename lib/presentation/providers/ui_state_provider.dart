@@ -18,28 +18,18 @@ class UiState {
   final ApiException? error;
   final int? statusCode;
 
-  const UiState({
-    required this.type,
-    this.data,
-    this.error,
-    this.statusCode,
-  });
+  const UiState({required this.type, this.data, this.error, this.statusCode});
 
   // Factory constructors for convenience
   factory UiState.initial() => const UiState(type: UiStateType.initial);
 
   factory UiState.loading() => const UiState(type: UiStateType.loading);
 
-  factory UiState.success(dynamic data, {int? statusCode}) => UiState(
-    type: UiStateType.success,
-    data: data,
-    statusCode: statusCode,
-  );
+  factory UiState.success(dynamic data, {int? statusCode}) =>
+      UiState(type: UiStateType.success, data: data, statusCode: statusCode);
 
-  factory UiState.error(ApiException error) => UiState(
-    type: UiStateType.error,
-    error: error,
-  );
+  factory UiState.error(ApiException error) =>
+      UiState(type: UiStateType.error, error: error);
 
   // Convenience getters
   bool get isLoading => type == UiStateType.loading;

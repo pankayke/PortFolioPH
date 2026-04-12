@@ -32,32 +32,24 @@ class EmptyStateWidget extends StatelessWidget {
             if (icon != null)
               icon!
             else if (iconData != null)
-              Icon(
-                iconData,
-                size: 64,
-                color: Colors.grey.shade400,
-              )
+              Icon(iconData, size: 64, color: Colors.grey.shade400)
             else
-              Icon(
-                Icons.inbox_outlined,
-                size: 64,
-                color: Colors.grey.shade400,
-              ),
+              Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.grey.shade800,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(color: Colors.grey.shade800),
               textAlign: TextAlign.center,
             ),
             if (description != null) ...[
               const SizedBox(height: 8),
               Text(
                 description!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey.shade600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -75,4 +67,3 @@ class EmptyStateWidget extends StatelessWidget {
     );
   }
 }
-

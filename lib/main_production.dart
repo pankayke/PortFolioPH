@@ -1,12 +1,12 @@
 // lib/main_production.dart
 // ─────────────────────────────────────────────────────────────────────────────
 // Production flavor entry point with security hardening.
-// 
+//
 // - Debug logs disabled
 // - No sensitive data exposed
 // - Optimized performance
 // - Analytics enabled
-// 
+//
 // Build: flutter run -t lib/main_production.dart --release
 // Or: flutter build apk --flavor production -t lib/main_production.dart --release
 // Or: flutter build appbundle --flavor production -t lib/main_production.dart --release

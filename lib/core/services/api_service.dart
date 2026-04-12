@@ -1,10 +1,10 @@
 // lib/core/services/api_service.dart
 // ─────────────────────────────────────────────────────────────────────────────
 // HTTP client service using Dio with Sanctum auth interceptors.
-// 
+//
 // CRITICAL: This is the ONLY place that makes HTTP calls to Laravel.
 // NO MOCKS. NO FALLBACKS. REAL DATA ONLY.
-// 
+//
 // Features:
 //   • Initializes Dio with base URL and timeouts
 //   • Automatically injects Sanctum bearer token in all requests
@@ -173,7 +173,7 @@ class ApiService {
   }
 
   /// Multipart form data upload (for file uploads with additional fields).
-  /// 
+  ///
   /// Usage:
   /// ```dart
   /// final formData = FormData.fromMap({

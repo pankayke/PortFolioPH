@@ -7,11 +7,7 @@ class CacheManager {
   static final Map<String, _CacheEntry<dynamic>> _cache =
       <String, _CacheEntry<dynamic>>{};
 
-  static void set<T>(
-    String key,
-    T value, {
-    Duration? ttl,
-  }) {
+  static void set<T>(String key, T value, {Duration? ttl}) {
     _cache[key] = _CacheEntry<T>(
       value: value,
       expiresAt: ttl == null ? null : DateTime.now().add(ttl),
@@ -58,10 +54,7 @@ class CacheManager {
 }
 
 class _CacheEntry<T> {
-  const _CacheEntry({
-    required this.value,
-    required this.expiresAt,
-  });
+  const _CacheEntry({required this.value, required this.expiresAt});
 
   final T value;
   final DateTime? expiresAt;

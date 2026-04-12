@@ -12,8 +12,10 @@ class Strings {
   static const String save = 'Save';
 
   // Errors
-  static const String somethingWentWrong = 'Something went wrong. Please try again.';
-  static const String networkError = 'Network error. Please check your connection.';
+  static const String somethingWentWrong =
+      'Something went wrong. Please try again.';
+  static const String networkError =
+      'Network error. Please check your connection.';
   static const String unauthorized = 'Session expired. Please log in again.';
 
   // Feedback

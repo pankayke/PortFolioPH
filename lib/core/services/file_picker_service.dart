@@ -18,7 +18,12 @@ class FilePickerService {
 
   // ── Allowed Extensions ─────────────────────────────────────────────────────
   static const Set<String> allowedResumeExtensions = {'pdf'};
-  static const Set<String> allowedImageExtensions = {'jpg', 'jpeg', 'png', 'gif'};
+  static const Set<String> allowedImageExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+  };
 
   /// Validates if a file is a PDF with size < 5MB.
   ///
@@ -93,7 +98,7 @@ class FilePickerService {
   }
 
   /// Extracts file extension from a file path.
-  /// 
+  ///
   /// Example: "/path/to/file.pdf" → "pdf"
   static String _getFileExtension(String filePath) {
     final lastDot = filePath.lastIndexOf('.');

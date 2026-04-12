@@ -63,24 +63,31 @@ class _PostJobScreenState extends State<PostJobScreen> {
                   initialValue: _jobType,
                   decoration: const InputDecoration(labelText: 'Job type'),
                   items: const [
-                    DropdownMenuItem(value: 'full_time', child: Text('Full time')),
-                    DropdownMenuItem(value: 'part_time', child: Text('Part time')),
-                    DropdownMenuItem(value: 'contract', child: Text('Contract')),
-                    DropdownMenuItem(value: 'internship', child: Text('Internship')),
+                    DropdownMenuItem(
+                        value: 'full_time', child: Text('Full time')),
+                    DropdownMenuItem(
+                        value: 'part_time', child: Text('Part time')),
+                    DropdownMenuItem(
+                        value: 'contract', child: Text('Contract')),
+                    DropdownMenuItem(
+                        value: 'internship', child: Text('Internship')),
                   ],
-                  onChanged: (value) => setState(() => _jobType = value ?? 'full_time'),
+                  onChanged: (value) =>
+                      setState(() => _jobType = value ?? 'full_time'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _salaryMinController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Salary min (optional)'),
+                  decoration:
+                      const InputDecoration(labelText: 'Salary min (optional)'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _salaryMaxController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Salary max (optional)'),
+                  decoration:
+                      const InputDecoration(labelText: 'Salary max (optional)'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -126,7 +133,8 @@ class _PostJobScreenState extends State<PostJobScreen> {
                   const SizedBox(height: 12),
                   Text(
                     provider.error!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ],
               ],
@@ -177,7 +185,9 @@ class _PostJobScreenState extends State<PostJobScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Job posted successfully.' : (provider.error ?? 'Failed to post job.')),
+        content: Text(success
+            ? 'Job posted successfully.'
+            : (provider.error ?? 'Failed to post job.')),
       ),
     );
     if (success) Navigator.of(context).pop();

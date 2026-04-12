@@ -51,7 +51,8 @@ class UserModel {
       email: email,
       role: _asString(map['role']).isNotEmpty ? _asString(map['role']) : 'user',
       passwordHash: _asString(map['password_hash']),
-      fullName: _asNullableString(map['full_name']) ?? _asNullableString(map['name']),
+      fullName:
+          _asNullableString(map['full_name']) ?? _asNullableString(map['name']),
       bio: _asNullableString(map['bio']),
       avatarPath: _asNullableString(map['avatar_path']),
       phoneNumber: _asNullableString(map['phone_number']),

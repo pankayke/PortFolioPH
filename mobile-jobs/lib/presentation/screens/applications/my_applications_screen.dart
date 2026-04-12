@@ -63,8 +63,8 @@ class _MyApplicationsScreenState extends State<MyApplicationsScreen> {
               separatorBuilder: (_, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final app = provider.myApplications[index];
-                final jobTitle = (app.job?['title'] ?? 'Job #${app.jobId}')
-                    .toString();
+                final jobTitle =
+                    (app.job?['title'] ?? 'Job #${app.jobId}').toString();
 
                 return Card(
                   child: ListTile(
@@ -88,7 +88,7 @@ class _MyApplicationsScreenState extends State<MyApplicationsScreen> {
                                     ok
                                         ? 'Application withdrawn.'
                                         : (provider.error ??
-                                              'Failed to withdraw application.'),
+                                            'Failed to withdraw application.'),
                                   ),
                                 ),
                               );

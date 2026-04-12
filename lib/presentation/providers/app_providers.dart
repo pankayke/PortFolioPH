@@ -93,7 +93,8 @@ class AppProviderRegistry {
 
     /// Recruiter Application Repository — Application tracking for recruiters
     ProxyProvider<ApiService, ApplicationRepositoryImpl>(
-      update: (_, apiService, previous) => ApplicationRepositoryImpl(apiService),
+      update: (_, apiService, previous) =>
+          ApplicationRepositoryImpl(apiService),
     ),
 
     /// Seeker Repository — Job search and application management

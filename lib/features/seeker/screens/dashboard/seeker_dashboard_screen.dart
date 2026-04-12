@@ -92,7 +92,8 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
               compact: _compactHeader,
               onSearchTap: () => _onTabChanged(1),
               onSearchSubmitted: (_) => _onTabChanged(1),
-              onNotificationTap: () => context.push(AppRoutes.notificationSettings),
+              onNotificationTap: () =>
+                  context.push(AppRoutes.notificationSettings),
               onProfileTap: () => _onTabChanged(3),
               onLogoutTap: () => _logout(context),
             ),

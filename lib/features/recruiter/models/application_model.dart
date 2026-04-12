@@ -82,11 +82,13 @@ class RecruiterApplication {
       id: _asInt(json['id']),
       jobId: _asInt(json['job_id']),
       userId: _asInt(json['user_id']),
-        applicantName: json['user']?['name'] ?? json['applicant_name'] ?? 'N/A',
-        applicantEmail:
+      applicantName: json['user']?['name'] ?? json['applicant_name'] ?? 'N/A',
+      applicantEmail:
           json['user']?['email'] ?? json['applicant_email'] ?? 'N/A',
-        applicantPhone: json['user']?['phone_number'] ?? json['applicant_phone'] ?? '',
-        applicantLocation: json['user']?['location'] ?? json['applicant_location'] ?? '',
+      applicantPhone:
+          json['user']?['phone_number'] ?? json['applicant_phone'] ?? '',
+      applicantLocation:
+          json['user']?['location'] ?? json['applicant_location'] ?? '',
       status: json['status'] as String,
       resumeUrl: json['resume_url'] as String?,
       coverLetter: json['cover_letter'] as String?,

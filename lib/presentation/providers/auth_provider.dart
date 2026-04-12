@@ -167,17 +167,19 @@ class AuthProvider extends ChangeNotifier {
       // Call backend logout endpoint (invalidates token)
       await _authService.logout();
     } catch (e) {
-      debugPrint('[AuthProvider] Backend logout failed: $e (proceeding with local logout)');
+      debugPrint(
+        '[AuthProvider] Backend logout failed: $e (proceeding with local logout)',
+      );
     }
-    
+
     // Clear token from secure storage
     await _authService.clearToken();
-    
+
     // Clear user state
     _currentUser = null;
     _errorMessage = null;
     notifyListeners();
-    
+
     debugPrint('[AuthProvider] Logged out successfully');
   }
 
@@ -185,13 +187,13 @@ class AuthProvider extends ChangeNotifier {
   /// Called by [SplashScreen] on launch.
   /// Restores session from stored Sanctum token.
   /// Called on app startup by SplashScreen.
-  /// 
+  ///
   /// Flow:
   /// 1. Check if token exists in secure storage
   /// 2. If yes, call /auth/me to verify token is still valid
   /// 3. If valid, restore user and stay logged in
   /// 4. If invalid/expired, clear token and redirect to login
-  /// 
+  ///
   /// Returns true if session restored successfully, false otherwise.
   Future<bool> restoreSession() async {
     _begin();
@@ -206,14 +208,18 @@ class AuthProvider extends ChangeNotifier {
       // Token exists, now verify it with backend
       final user = await _authService.getCurrentUser();
       if (user == null) {
-        debugPrint('[AuthProvider] Token validation failed - redirecting to login');
+        debugPrint(
+          '[AuthProvider] Token validation failed - redirecting to login',
+        );
         await _authService.clearToken();
         return false;
       }
 
       _currentUser = user;
       notifyListeners();
-      debugPrint('[AuthProvider] Session restored successfully for ${user.email}');
+      debugPrint(
+        '[AuthProvider] Session restored successfully for ${user.email}',
+      );
       return true;
     } catch (e) {
       debugPrint('[AuthProvider] Session restore failed: $e');
@@ -234,16 +240,16 @@ class AuthProvider extends ChangeNotifier {
 
   // ── Token expiry handling ─────────────────────────────────────────────────────
   /// Handles 401 Unauthorized responses (expired or invalid token).
-  /// 
+  ///
   /// Called by providers/screens when they catch UnauthorizedException.
   /// This ensures consistent logout behavior across the app.
-  /// 
+  ///
   /// Flow:
   /// 1. Clear stored token from secure storage
   /// 2. Clear currentUser from state
   /// 3. Notify listeners (triggers UI rebuild)
   /// 4. Caller should navigate to /login
-  /// 
+  ///
   /// Usage in providers:
   /// ```dart
   /// try {
@@ -256,7 +262,7 @@ class AuthProvider extends ChangeNotifier {
   /// ```
   Future<void> handleTokenExpired() async {
     debugPrint('[AuthProvider] Token expired - clearing session');
-    
+
     await _authService.clearToken();
     _currentUser = null;
     _errorMessage = 'Session expired. Please log in again.';

@@ -29,7 +29,9 @@ class ReflectionsRepository {
       if (response.statusCode == 200) {
         final data = response.data as List;
         return data
-            .map((json) => ReflectionModel.fromMap(json as Map<String, dynamic>))
+            .map(
+              (json) => ReflectionModel.fromMap(json as Map<String, dynamic>),
+            )
             .toList();
       }
       return [];

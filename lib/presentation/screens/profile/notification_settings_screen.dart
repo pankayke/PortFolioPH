@@ -23,7 +23,8 @@ class NotificationSettingsScreen extends StatefulWidget {
       _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   late SharedPreferences _prefs;
   bool _isInitialized = false;
 
@@ -51,7 +52,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       _jobAlerts = _prefs.getBool('job_alerts') ?? true;
       _applicationUpdates = _prefs.getBool('application_updates') ?? true;
       _messageNotifications = _prefs.getBool('message_notifications') ?? true;
-      _newMatchNotifications = _prefs.getBool('new_match_notifications') ?? true;
+      _newMatchNotifications =
+          _prefs.getBool('new_match_notifications') ?? true;
       _emailFrequency = _prefs.getString('email_frequency') ?? 'daily';
       _isInitialized = true;
     });
@@ -67,10 +69,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   Future<void> _showSuccessMessage(String message) async {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -106,7 +105,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   _pushNotifications = value;
                   _savePreference('push_notifications', value);
                   _showSuccessMessage(
-                    value ? 'Push notifications enabled' : 'Push notifications disabled',
+                    value
+                        ? 'Push notifications enabled'
+                        : 'Push notifications disabled',
                   );
                 }),
               ),
@@ -123,7 +124,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   _emailNotifications = value;
                   _savePreference('email_notifications', value);
                   _showSuccessMessage(
-                    value ? 'Email notifications enabled' : 'Email notifications disabled',
+                    value
+                        ? 'Email notifications enabled'
+                        : 'Email notifications disabled',
                   );
                 }),
               ),
@@ -302,9 +305,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -329,10 +332,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
+                Text(title, style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
@@ -344,10 +344,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
           ),
           const SizedBox(width: 16),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-          ),
+          Switch.adaptive(value: value, onChanged: onChanged),
         ],
       ),
     );

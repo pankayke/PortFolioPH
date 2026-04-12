@@ -181,10 +181,10 @@ class SeekerApplication {
       'jobId': _asInt(_pick(json, 'jobId', 'job_id')),
       'jobTitle': (_pick(json, 'jobTitle', 'job_title') ?? 'Untitled Job')
           .toString(),
-      'recruiterName':
-          (_pick(json, 'recruiterName', 'recruiter_name') ?? '').toString(),
-      'recruiterLogo':
-          (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '').toString(),
+      'recruiterName': (_pick(json, 'recruiterName', 'recruiter_name') ?? '')
+          .toString(),
+      'recruiterLogo': (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '')
+          .toString(),
       'jobLocation': (_pick(json, 'jobLocation', 'job_location'))?.toString(),
       'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min')),
       'salaryMax': _asDouble(_pick(json, 'salaryMax', 'salary_max')),
@@ -193,17 +193,22 @@ class SeekerApplication {
       'interviewDate': _asNullableDateTime(
         _pick(json, 'interviewDate', 'interview_date'),
       )?.toIso8601String(),
-      'interviewLocation':
-          (_pick(json, 'interviewLocation', 'interview_location'))?.toString(),
+      'interviewLocation': (_pick(
+        json,
+        'interviewLocation',
+        'interview_location',
+      ))?.toString(),
       'videoInterviewLink': (_pick(
         json,
         'videoInterviewLink',
         'video_interview_link',
       ))?.toString(),
-      'appliedAt': _asDateTime(_pick(json, 'appliedAt', 'applied_at'))
-          .toIso8601String(),
-      'updatedAt': _asNullableDateTime(_pick(json, 'updatedAt', 'updated_at'))
-          ?.toIso8601String(),
+      'appliedAt': _asDateTime(
+        _pick(json, 'appliedAt', 'applied_at'),
+      ).toIso8601String(),
+      'updatedAt': _asNullableDateTime(
+        _pick(json, 'updatedAt', 'updated_at'),
+      )?.toIso8601String(),
     };
 
     return _$SeekerApplicationFromJson(normalized);

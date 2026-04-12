@@ -1,7 +1,7 @@
 // lib/main_development.dart
 // ─────────────────────────────────────────────────────────────────────────────
 // Development flavor entry point with debug logs enabled.
-// 
+//
 // Build: flutter run -t lib/main_development.dart
 // Or: flutter build apk --flavor development -t lib/main_development.dart
 // ─────────────────────────────────────────────────────────────────────────────

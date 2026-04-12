@@ -109,10 +109,7 @@ class JobCardSkeleton extends StatelessWidget {
                     margin: const EdgeInsets.only(right: 8),
                   ),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: SkeletonLoader(height: 16),
-                ),
+                Expanded(flex: 1, child: SkeletonLoader(height: 16)),
               ],
             ),
             const SizedBox(height: 12),
@@ -138,10 +135,7 @@ class JobCardSkeleton extends StatelessWidget {
 class JobListSkeleton extends StatelessWidget {
   final int itemCount;
 
-  const JobListSkeleton({
-    super.key,
-    this.itemCount = 5,
-  });
+  const JobListSkeleton({super.key, this.itemCount = 5});
 
   @override
   Widget build(BuildContext context) {
@@ -241,9 +235,7 @@ class DetailViewSkeleton extends StatelessWidget {
                     margin: const EdgeInsets.only(right: 8),
                   ),
                 ),
-                Expanded(
-                  child: SkeletonLoader(height: 16),
-                ),
+                Expanded(child: SkeletonLoader(height: 16)),
               ],
             ),
             const SizedBox(height: 24),
@@ -310,9 +302,9 @@ class LoadingOverlay extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       message!,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.white),
                     ),
                   ],
                 ],

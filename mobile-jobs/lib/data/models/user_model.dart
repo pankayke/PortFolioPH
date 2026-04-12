@@ -45,19 +45,19 @@ class UserModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'email': email,
-    'role': role,
-    'is_approved': isApproved,
-    'company_name': companyName,
-    'company_website': companyWebsite,
-    'phone': phone,
-    'bio': bio,
-    'profile_image_url': profileImageUrl,
-    'resume_url': resumeUrl,
-    'skills': skills,
-  };
+        'id': id,
+        'name': name,
+        'email': email,
+        'role': role,
+        'is_approved': isApproved,
+        'company_name': companyName,
+        'company_website': companyWebsite,
+        'phone': phone,
+        'bio': bio,
+        'profile_image_url': profileImageUrl,
+        'resume_url': resumeUrl,
+        'skills': skills,
+      };
 
   bool get isRecruiter => role == 'recruiter';
   bool get isJobSeeker => role == 'job_seeker';

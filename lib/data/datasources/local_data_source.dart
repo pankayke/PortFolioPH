@@ -39,8 +39,8 @@ class LocalDataSourceImpl implements LocalDataSource {
   }) async {
     await _storage.setJson(_itemKey(namespace, id), data);
 
-    final ids = await _storage.getStringList(_indexKey(namespace)) ??
-        <String>[];
+    final ids =
+        await _storage.getStringList(_indexKey(namespace)) ?? <String>[];
     if (!ids.contains(id)) {
       ids.add(id);
       await _storage.setStringList(_indexKey(namespace), ids);
@@ -56,9 +56,11 @@ class LocalDataSourceImpl implements LocalDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getItems({required String namespace}) async {
-    final ids = await _storage.getStringList(_indexKey(namespace)) ??
-        const <String>[];
+  Future<List<Map<String, dynamic>>> getItems({
+    required String namespace,
+  }) async {
+    final ids =
+        await _storage.getStringList(_indexKey(namespace)) ?? const <String>[];
     final result = <Map<String, dynamic>>[];
 
     for (final id in ids) {
@@ -70,19 +72,22 @@ class LocalDataSourceImpl implements LocalDataSource {
   }
 
   @override
-  Future<void> deleteItem({required String namespace, required String id}) async {
+  Future<void> deleteItem({
+    required String namespace,
+    required String id,
+  }) async {
     await _storage.remove(_itemKey(namespace, id));
 
-    final ids = await _storage.getStringList(_indexKey(namespace)) ??
-        <String>[];
+    final ids =
+        await _storage.getStringList(_indexKey(namespace)) ?? <String>[];
     ids.remove(id);
     await _storage.setStringList(_indexKey(namespace), ids);
   }
 
   @override
   Future<void> clearNamespace(String namespace) async {
-    final ids = await _storage.getStringList(_indexKey(namespace)) ??
-        const <String>[];
+    final ids =
+        await _storage.getStringList(_indexKey(namespace)) ?? const <String>[];
     for (final id in ids) {
       await _storage.remove(_itemKey(namespace, id));
     }

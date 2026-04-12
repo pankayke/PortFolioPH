@@ -22,7 +22,10 @@ class StudentReflectionsRepository {
       if (response.statusCode == 200) {
         final data = response.data as List;
         return data
-            .map((json) => StudentReflectionModel.fromMap(json as Map<String, dynamic>))
+            .map(
+              (json) =>
+                  StudentReflectionModel.fromMap(json as Map<String, dynamic>),
+            )
             .toList();
       }
 

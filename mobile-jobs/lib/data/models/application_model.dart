@@ -45,17 +45,17 @@ class ApplicationModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'job_id': jobId,
-    'user_id': userId,
-    'cover_letter': coverLetter,
-    'resume_url': resumeUrl,
-    'status': status,
-    'reviewed_at': reviewedAt,
-    'reviewed_by': reviewedBy,
-    'rejection_reason': rejectionReason,
-    'created_at': createdAt,
-  };
+        'id': id,
+        'job_id': jobId,
+        'user_id': userId,
+        'cover_letter': coverLetter,
+        'resume_url': resumeUrl,
+        'status': status,
+        'reviewed_at': reviewedAt,
+        'reviewed_by': reviewedBy,
+        'rejection_reason': rejectionReason,
+        'created_at': createdAt,
+      };
 
   bool get isPending => status == 'pending';
   bool get isAccepted => status == 'accepted';

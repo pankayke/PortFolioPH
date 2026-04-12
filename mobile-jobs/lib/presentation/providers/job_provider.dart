@@ -172,8 +172,7 @@ class JobProvider extends ChangeNotifier {
 
   // Withdraw application
   Future<bool> withdrawApplication(int applicationId) async {
-    final success =
-        await _runWithLoading(() async {
+    final success = await _runWithLoading(() async {
           await _repository.withdrawApplication(applicationId);
           return true;
         }) ??

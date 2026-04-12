@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -444,21 +442,21 @@ class _SettingsScreenState extends State<SettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Text Size'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ['Small', 'Normal', 'Large', 'Extra Large']
-              .map(
-                (size) => RadioListTile<String>(
-                  title: Text(size),
-                  value: size,
-                  groupValue: 'Normal',
-                  onChanged: (_) {
-                    Navigator.pop(context);
-                    _showSnackBar('Text size changed to $size');
-                  },
-                ),
-              )
-              .toList(),
+        content: RadioGroup<String>(
+          groupValue: 'Normal',
+          onChanged: (value) {
+            Navigator.pop(context);
+            _showSnackBar('Text size changed to $value');
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['Small', 'Normal', 'Large', 'Extra Large']
+                .map(
+                  (size) =>
+                      RadioListTile<String>(title: Text(size), value: size),
+                )
+                .toList(),
+          ),
         ),
       ),
     );
@@ -469,21 +467,23 @@ class _SettingsScreenState extends State<SettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Display Density'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ['Compact', 'Comfortable', 'Spacious']
-              .map(
-                (density) => RadioListTile<String>(
-                  title: Text(density),
-                  value: density,
-                  groupValue: 'Comfortable',
-                  onChanged: (_) {
-                    Navigator.pop(context);
-                    _showSnackBar('Density changed to $density');
-                  },
-                ),
-              )
-              .toList(),
+        content: RadioGroup<String>(
+          groupValue: 'Comfortable',
+          onChanged: (value) {
+            Navigator.pop(context);
+            _showSnackBar('Density changed to $value');
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['Compact', 'Comfortable', 'Spacious']
+                .map(
+                  (density) => RadioListTile<String>(
+                    title: Text(density),
+                    value: density,
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ),
     );
@@ -494,89 +494,93 @@ class _SettingsScreenState extends State<SettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ['English (US)', 'Filipino', 'Spanish']
-              .map(
-                (lang) => RadioListTile<String>(
-                  title: Text(lang),
-                  value: lang,
-                  groupValue: 'English (US)',
-                  onChanged: (_) {
-                    Navigator.pop(context);
-                    _showSnackBar('Language changed to $_preferredJobLocation');
-                  },
-                ),
-              )
-              .toList(),
+        content: RadioGroup<String>(
+          groupValue: 'English (US)',
+          onChanged: (value) {
+            Navigator.pop(context);
+            _showSnackBar('Language changed to $value');
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['English (US)', 'Filipino', 'Spanish']
+                .map(
+                  (lang) =>
+                      RadioListTile<String>(title: Text(lang), value: lang),
+                )
+                .toList(),
+          ),
         ),
       ),
     );
   }
 
   void _showLocationDialog(BuildContext context) {
+    final selectedLocation = _preferredJobLocation ?? 'All Locations';
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Preferred Location'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children:
-              [
-                    'All Locations',
-                    'Metro Manila',
-                    'Cebu',
-                    'Davao',
-                    'Baguio',
-                    'Iloilo',
-                  ]
-                  .map(
-                    (location) => RadioListTile<String>(
-                      title: Text(location),
-                      value: location,
-                      groupValue: _preferredJobLocation,
-                      onChanged: (value) {
-                        Navigator.pop(context);
-                        setState(() => _preferredJobLocation = value);
-                        _showSnackBar('Location preference updated');
-                      },
-                    ),
-                  )
-                  .toList(),
+        content: RadioGroup<String>(
+          groupValue: selectedLocation,
+          onChanged: (value) {
+            Navigator.pop(context);
+            setState(() => _preferredJobLocation = value);
+            _showSnackBar('Location preference updated');
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:
+                [
+                      'All Locations',
+                      'Metro Manila',
+                      'Cebu',
+                      'Davao',
+                      'Baguio',
+                      'Iloilo',
+                    ]
+                    .map(
+                      (location) => RadioListTile<String>(
+                        title: Text(location),
+                        value: location,
+                      ),
+                    )
+                    .toList(),
+          ),
         ),
       ),
     );
   }
 
   void _showJobTypeDialog(BuildContext context) {
+    final selectedJobType = _preferredJobType ?? 'All Types';
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Job Type'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children:
-              [
-                    'All Types',
-                    'Full-time',
-                    'Part-time',
-                    'Contract',
-                    'Freelance',
-                    'Internship',
-                  ]
-                  .map(
-                    (type) => RadioListTile<String>(
-                      title: Text(type),
-                      value: type,
-                      groupValue: _preferredJobType,
-                      onChanged: (value) {
-                        Navigator.pop(context);
-                        setState(() => _preferredJobType = value);
-                        _showSnackBar('Job type preference updated');
-                      },
-                    ),
-                  )
-                  .toList(),
+        content: RadioGroup<String>(
+          groupValue: selectedJobType,
+          onChanged: (value) {
+            Navigator.pop(context);
+            setState(() => _preferredJobType = value);
+            _showSnackBar('Job type preference updated');
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:
+                [
+                      'All Types',
+                      'Full-time',
+                      'Part-time',
+                      'Contract',
+                      'Freelance',
+                      'Internship',
+                    ]
+                    .map(
+                      (type) =>
+                          RadioListTile<String>(title: Text(type), value: type),
+                    )
+                    .toList(),
+          ),
         ),
       ),
     );

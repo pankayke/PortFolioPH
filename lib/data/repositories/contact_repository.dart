@@ -33,7 +33,9 @@ class ContactRepository {
       final response = await _apiService.get('/users/$userId/contacts');
       if (response.statusCode == 200) {
         final data = response.data as List;
-        return data.map((json) => ContactModel.fromMap(json as Map<String, dynamic>)).toList();
+        return data
+            .map((json) => ContactModel.fromMap(json as Map<String, dynamic>))
+            .toList();
       }
       return [];
     } catch (e) {

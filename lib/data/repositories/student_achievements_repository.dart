@@ -22,7 +22,10 @@ class StudentAchievementsRepository {
       if (response.statusCode == 200) {
         final data = response.data as List;
         return data
-            .map((json) => StudentAchievementModel.fromMap(json as Map<String, dynamic>))
+            .map(
+              (json) =>
+                  StudentAchievementModel.fromMap(json as Map<String, dynamic>),
+            )
             .toList();
       }
 

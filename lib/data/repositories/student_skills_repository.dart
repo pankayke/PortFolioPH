@@ -3,7 +3,7 @@ import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/student_skills_model.dart';
 
 /// StudentSkillsRepository (API-First)
-/// 
+///
 /// Fetches student skills from the backend API.
 /// No local SQLite operations - all data is from the server.
 class StudentSkillsRepository {
@@ -15,14 +15,15 @@ class StudentSkillsRepository {
   /// Fetch all skills for a specific student
   Future<List<StudentSkillsModel>> findByStudentId(int studentId) async {
     try {
-      final response = await _apiService.get(
-        '/students/$studentId/skills',
-      );
+      final response = await _apiService.get('/students/$studentId/skills');
 
       if (response.statusCode == 200) {
         final data = response.data as List;
         return data
-            .map((json) => StudentSkillsModel.fromMap(json as Map<String, dynamic>))
+            .map(
+              (json) =>
+                  StudentSkillsModel.fromMap(json as Map<String, dynamic>),
+            )
             .toList();
       }
 

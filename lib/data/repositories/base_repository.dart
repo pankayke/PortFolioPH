@@ -10,19 +10,13 @@ abstract class BaseRepository {
     }
   }
 
-  String asString(
-    dynamic value, {
-    String fallback = '',
-  }) {
+  String asString(dynamic value, {String fallback = ''}) {
     if (value == null) return fallback;
     final out = value.toString();
     return out.isEmpty ? fallback : out;
   }
 
-  int asInt(
-    dynamic value, {
-    int fallback = 0,
-  }) {
+  int asInt(dynamic value, {int fallback = 0}) {
     if (value == null) return fallback;
     if (value is int) return value;
     if (value is num) return value.toInt();

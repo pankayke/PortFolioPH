@@ -33,7 +33,12 @@ class CertificationRepository {
       final response = await _apiService.get('/users/$userId/certifications');
       if (response.statusCode == 200) {
         final data = response.data as List;
-        return data.map((json) => CertificationModel.fromMap(json as Map<String, dynamic>)).toList();
+        return data
+            .map(
+              (json) =>
+                  CertificationModel.fromMap(json as Map<String, dynamic>),
+            )
+            .toList();
       }
       return [];
     } catch (e) {

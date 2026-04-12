@@ -19,16 +19,16 @@ class RecruiterDetailRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white70,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
         ),
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: valueColor ?? Colors.white,
-              ),
+            fontWeight: FontWeight.bold,
+            color: valueColor ?? Colors.white,
+          ),
         ),
       ],
     );

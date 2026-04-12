@@ -31,17 +31,12 @@ class ServerFailure extends Failure {
 class ValidationFailure extends Failure {
   final Map<String, List<String>>? fieldErrors;
 
-  const ValidationFailure({
-    required super.message,
-    this.fieldErrors,
-  });
+  const ValidationFailure({required super.message, this.fieldErrors});
 }
 
 /// Resource not found (404)
 class NotFoundFailure extends Failure {
-  const NotFoundFailure({
-    super.message = 'Resource not found.',
-  });
+  const NotFoundFailure({super.message = 'Resource not found.'});
 }
 
 /// Authentication failed (401)
@@ -74,14 +69,10 @@ class DuplicateApplicationFailure extends Failure {
 
 /// Cache-related errors
 class CacheFailure extends Failure {
-  const CacheFailure({
-    super.message = 'Cache operation failed.',
-  });
+  const CacheFailure({super.message = 'Cache operation failed.'});
 }
 
 /// Generic/unknown failure
 class UnexpectedFailure extends Failure {
-  const UnexpectedFailure({
-    super.message = 'An unexpected error occurred.',
-  });
+  const UnexpectedFailure({super.message = 'An unexpected error occurred.'});
 }

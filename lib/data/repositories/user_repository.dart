@@ -24,7 +24,7 @@ class UserRepository {
   // ── Create ──────────────────────────────────────────────────────────────────
   /// Registers a new user via the API (online-only).
   /// Accepts plain password; backend hashes and stores it.
-  /// 
+  ///
   /// Returns: user ID from backend
   /// Throws: Exception if registration fails or backend is unavailable
   Future<int> registerUser({
@@ -66,25 +66,13 @@ class UserRepository {
         }
       }
 
-      throw Exception('Backend returned invalid registration response: $response');
+      throw Exception(
+        'Backend returned invalid registration response: $response',
+      );
     } catch (e) {
       debugPrint('[UserRepository] Registration failed: $e');
       rethrow; // Let caller handle the error - NO fallback to mock data
     }
-  }
-
-  /// Generic insert method (kept for backward compatibility, uses plain password).
-  Future<int> insert(UserModel user) async {
-    // Note: UserModel.passwordHash field is misnamed for API context.
-    // For registration, we pass it as plain password to backend.
-    return registerUser(
-      username: user.username,
-      email: user.email,
-      plainPassword:
-          user.passwordHash, // Actually plain password from AuthService
-      fullName: user.fullName,
-      role: user.role,
-    );
   }
 
   // ── Read ────────────────────────────────────────────────────────────────────
@@ -165,10 +153,10 @@ class UserRepository {
   }
 
   /// Authenticates user via API (Sanctum token-based auth).
-  /// 
+  ///
   /// Returns: UserModel on success, null on failure
   /// Side effect: Saves Sanctum token to secure storage on success
-  /// 
+  ///
   /// Response from Laravel:
   /// {"success": true, "message": "...", "data": {"user": {...}, "token": "..."}, "errors": null}
   /// ApiService extracts 'data', so we receive: {"user": {...}, "token": "..."}
@@ -179,10 +167,7 @@ class UserRepository {
     try {
       final response = await _apiService.post(
         '/auth/login',
-        data: {
-          'email': email.trim().toLowerCase(),
-          'password': plainPassword,
-        },
+        data: {'email': email.trim().toLowerCase(), 'password': plainPassword},
       );
 
       if (response is Map<String, dynamic>) {
@@ -190,18 +175,18 @@ class UserRepository {
         final userMap = response['user'];
         if (userMap is Map<String, dynamic>) {
           final user = UserModel.fromMap(userMap);
-          
+
           // CRITICAL: Save token for future authenticated requests
           final token = response['token'] as String?;
           if (token != null && token.isNotEmpty) {
             await _apiService.saveToken(token);
             debugPrint('[UserRepository] Login successful - token saved');
           }
-          
+
           return user;
         }
       }
-      
+
       debugPrint('[UserRepository] Login failed - invalid response format');
       return null;
     } on UnauthorizedException {
@@ -242,14 +227,23 @@ class UserRepository {
     }
   }
 
-  Future<UserModel?> createIfMissingByEmail(UserModel user) async {
+  Future<UserModel?> createIfMissingByEmail(
+    UserModel user, {
+    required String plainPassword,
+  }) async {
     final existingUser = await findByEmail(user.email);
     if (existingUser != null) {
       return existingUser;
     }
 
     try {
-      final id = await insert(user);
+      final id = await registerUser(
+        username: user.username,
+        email: user.email,
+        plainPassword: plainPassword,
+        fullName: user.fullName,
+        role: user.role,
+      );
       return user.copyWith(id: id);
     } catch (e) {
       return null;
@@ -267,9 +261,9 @@ class UserRepository {
   }
 
   /// Updates user profile with support for multipart form data (file uploads).
-  /// 
+  ///
   /// Supports partial updates – only fields provided will be updated.
-  /// 
+  ///
   /// Parameters:
   ///   - userId: User's ID
   ///   - name: Full name (optional)
@@ -280,20 +274,20 @@ class UserRepository {
   ///   - websiteUrl: Website/portfolio URL (optional)
   ///   - avatarFile: Profile image file to upload (optional)
   ///   - resumeFile: Resume PDF file to upload (optional)
-  /// 
+  ///
   /// Returns: Updated UserModel with all fields from backend
-  /// 
+  ///
   /// Throws: Various ApiException subclasses on failure
   ///   - ValidationException: If email already exists or validation fails (422)
   ///   - UnauthorizedException: If token expired (401)
   ///   - ServerException: If backend error (500+)
   ///   - ApiException: Other HTTP errors
-  /// 
+  ///
   /// Side effects:
   ///   - Uploads files to backend storage
   ///   - Backend stores avatar in storage/avatars/
   ///   - Backend stores resume in storage/resumes/
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// final updatedUser = await userRepository.updateProfile(
@@ -374,7 +368,9 @@ class UserRepository {
         return UserModel.fromMap(response);
       }
 
-      throw ApiException('Backend returned invalid profile update response: $response');
+      throw ApiException(
+        'Backend returned invalid profile update response: $response',
+      );
     } catch (e) {
       debugPrint('[UserRepository] Profile update failed: $e');
       rethrow;

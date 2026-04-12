@@ -167,13 +167,13 @@ class SeekerJob {
       ...json,
       'id': _asInt(_pick(json, 'id', 'id')),
       'recruiterId': _asInt(_pick(json, 'recruiterId', 'recruiter_id')),
-      'recruiterName':
-          (_pick(json, 'recruiterName', 'recruiter_name') ?? '').toString(),
-      'recruiterLogo':
-          (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '').toString(),
+      'recruiterName': (_pick(json, 'recruiterName', 'recruiter_name') ?? '')
+          .toString(),
+      'recruiterLogo': (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '')
+          .toString(),
       'title': (_pick(json, 'title', 'title') ?? '').toString(),
-      'description':
-          (_pick(json, 'description', 'description') ?? '').toString(),
+      'description': (_pick(json, 'description', 'description') ?? '')
+          .toString(),
       'category': (_pick(json, 'category', 'category') ?? 'General').toString(),
       'location': (_pick(json, 'location', 'location') ?? 'Remote').toString(),
       'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min')),
@@ -184,21 +184,26 @@ class SeekerJob {
       'experienceLevel':
           (_pick(json, 'experienceLevel', 'experience_level') ?? 'entry')
               .toString(),
-      'requiredSkills':
-          (requiredSkillsRaw ?? const <dynamic>[]).map((e) => '$e').toList(),
+      'requiredSkills': (requiredSkillsRaw ?? const <dynamic>[])
+          .map((e) => '$e')
+          .toList(),
       'requiredQualifications': _pick(
         json,
         'requiredQualifications',
         'required_qualifications',
       ),
-      'deadline': _asDateTime(_pick(json, 'deadline', 'deadline'))
-          .toIso8601String(),
-      'totalApplications':
-          _asInt(_pick(json, 'totalApplications', 'total_applications')),
-      'createdAt': _asDateTime(_pick(json, 'createdAt', 'created_at'))
-          .toIso8601String(),
-      'updatedAt': _asDateTime(_pick(json, 'updatedAt', 'updated_at'))
-          .toIso8601String(),
+      'deadline': _asDateTime(
+        _pick(json, 'deadline', 'deadline'),
+      ).toIso8601String(),
+      'totalApplications': _asInt(
+        _pick(json, 'totalApplications', 'total_applications'),
+      ),
+      'createdAt': _asDateTime(
+        _pick(json, 'createdAt', 'created_at'),
+      ).toIso8601String(),
+      'updatedAt': _asDateTime(
+        _pick(json, 'updatedAt', 'updated_at'),
+      ).toIso8601String(),
       'applicationStatus':
           (_pick(json, 'applicationStatus', 'application_status') ?? 'none')
               .toString(),

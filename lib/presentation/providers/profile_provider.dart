@@ -31,13 +31,13 @@ class ProfileProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   ProfileProvider({UserRepository? userRepository})
-      : _userRepository = userRepository ?? UserRepository();
+    : _userRepository = userRepository ?? UserRepository();
 
   // ── Load Profile ────────────────────────────────────────────────────────────
   /// Loads the current user's profile from the API.
   ///
   /// Call this on profile screen init or after login.
-  /// 
+  ///
   /// Side effects:
   ///   • Sets isLoading = true while fetching
   ///   • Sets currentProfile on success
@@ -79,7 +79,7 @@ class ProfileProvider extends ChangeNotifier {
   ///   - resumeFile: Resume PDF to upload
   ///
   /// Returns: true if successful, false if failed
-  /// 
+  ///
   /// Error handling:
   ///   • Catches specific exceptions (UnauthorizedException, ValidationException, etc.)
   ///   • Sets user-friendly error messages

@@ -76,22 +76,21 @@ class Job {
       location: json['location'] as String,
       salaryMin: _asDouble(json['salary_min']),
       salaryMax: _asDouble(json['salary_max']),
-        jobType: (json['job_type'] as String?) ?? 'full_time',
+      jobType: (json['job_type'] as String?) ?? 'full_time',
       requiredSkills:
           (json['required_skills'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-        status: (json['status'] as String?) ?? 'open',
-        deadline: json['deadline'] != null
+      status: (json['status'] as String?) ?? 'open',
+      deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline'] as String)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-        applicationCount:
-            _asInt(json['applications_count'], fallback: -1) >= 0
-                ? _asInt(json['applications_count'])
-                : _asInt(json['application_count']),
+      applicationCount: _asInt(json['applications_count'], fallback: -1) >= 0
+          ? _asInt(json['applications_count'])
+          : _asInt(json['application_count']),
     );
   }
 
@@ -132,7 +131,7 @@ class Job {
       location: location ?? this.location,
       salaryMin: salaryMin ?? this.salaryMin,
       salaryMax: salaryMax ?? this.salaryMax,
-        jobType: jobType ?? this.jobType,
+      jobType: jobType ?? this.jobType,
       requiredSkills: requiredSkills ?? this.requiredSkills,
       status: status ?? this.status,
       deadline: deadline ?? this.deadline,
