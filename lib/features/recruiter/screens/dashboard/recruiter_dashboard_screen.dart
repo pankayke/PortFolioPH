@@ -399,6 +399,72 @@ class _RecruiterOverviewTab extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 14),
+              _GlassCard(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF0B1B3D).withValues(alpha: 0.82),
+                    const Color(0xFF2563EB).withValues(alpha: 0.42),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Hiring Pulse',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                        const Icon(Icons.auto_awesome_rounded, size: 18),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        RecruiterGlowChip(label: '${jobsProvider.openJobCount} active roles'),
+                        RecruiterGlowChip(label: '${appsProvider.applications.length} applicants'),
+                        RecruiterGlowChip(label: '${appsProvider.shortlistedCount} shortlisted'),
+                        RecruiterGlowChip(label: '${appsProvider.acceptedCount} hired', glowColor: const Color(0xFF34D399)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.trending_up_rounded, color: Colors.white),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Keep the pipeline moving. Review new candidates, close stale roles, and post new openings.',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.92),
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -889,76 +955,140 @@ class _RecruiterCompanyProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().currentUser;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _GlassCard(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+    return Consumer3<AuthProvider, RecruiterJobManagerProvider,
+        RecruiterApplicationManagerProvider>(
+      builder: (context, authProvider, jobsProvider, appsProvider, _) {
+        final user = authProvider.currentUser;
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _GlassCard(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white.withValues(alpha: 0.28),
-                    child: const Icon(Icons.business),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.fullName ?? 'Company Name',
-                          style: Theme.of(context).textTheme.titleLarge,
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Colors.white.withValues(alpha: 0.28),
+                        child: const Icon(Icons.business),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.fullName ?? 'Company Name',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(user?.location ?? 'Philippines'),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(user?.location ?? 'Philippines'),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      RecruiterGlowChip(label: 'Verified Employer'),
+                      RecruiterGlowChip(label: 'Premium Profile'),
+                      RecruiterGlowChip(label: '${jobsProvider.jobs.length} live jobs'),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+            ),
+            const SizedBox(height: 12),
+            _GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RecruiterGlowChip(label: 'Verified Employer'),
-                  RecruiterGlowChip(label: 'Premium Profile'),
+                  Text('Company Description', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(
+                    (user?.bio?.trim().isNotEmpty ?? false)
+                        ? user!.bio!
+                        : 'Complete your company profile to attract the right candidates.',
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.tonalIcon(
+                    onPressed: () => context.push(AppRoutes.editProfile),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit Company Profile'),
+                  ),
                 ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _GlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Company Description', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              Text(
-                (user?.bio?.trim().isNotEmpty ?? false)
-                    ? user!.bio!
-                    : 'Complete your company profile to attract the right candidates.',
+            ),
+            const SizedBox(height: 12),
+            _GlassCard(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF1E293B).withValues(alpha: 0.88),
+                  const Color(0xFF2563EB).withValues(alpha: 0.28),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 12),
-              FilledButton.tonalIcon(
-                onPressed: () => context.push(AppRoutes.editProfile),
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Edit Company Profile'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Brand Snapshot',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                      const Icon(Icons.auto_awesome_rounded),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatTile(
+                          label: 'Open Roles',
+                          value: jobsProvider.openJobCount.toString(),
+                          icon: Icons.work_outline,
+                          accent: const Color(0xFF38BDF8),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _StatTile(
+                          label: 'Applicants',
+                          value: appsProvider.applications.length.toString(),
+                          icon: Icons.groups_outlined,
+                          accent: const Color(0xFF34D399),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Add fresh roles and keep your profile polished so candidates feel momentum when they land here.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.88),
+                        ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -302,6 +302,31 @@ class ApplicationControllerTest extends TestCase
     }
 
     /**
+     * Test create application as non-job-seeker fails
+     *
+     * Verifies:
+     * - Status 403
+     * - Clear role restriction message
+     */
+    public function test_create_application_as_recruiter_fails(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $jobOwner = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create(['recruiter_id' => $jobOwner->id, 'status' => 'approved']);
+
+        $token = $recruiter->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/applications', [
+                'job_id' => $job->id,
+                'cover_letter' => 'Trying to apply as recruiter',
+            ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Only job seekers can apply for jobs.');
+    }
+
+    /**
      * Test create application for non-existent job fails
      * 
      * Verifies:

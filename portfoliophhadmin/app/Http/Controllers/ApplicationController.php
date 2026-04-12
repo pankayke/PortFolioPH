@@ -44,17 +44,36 @@ class ApplicationController extends Controller
      */
     public function store(CreateApplicationRequest $request): JsonResponse
     {
+        if (auth()->user()->role !== 'job_seeker') {
+            return ApiResponse::error('Only job seekers can apply for jobs.', 403);
+        }
+
         try {
             $application = $this->applicationService->createApplication(
                 auth()->user(),
                 $request->validated()
             );
 
-            return ApiResponse::success(
+            $response = ApiResponse::success(
                 $application,
                 'Application submitted successfully',
                 201
             );
+
+            if (config('app.debug')) {
+                $response->headers->set(
+                    'X-Application-Debug',
+                    sprintf(
+                        'saved=1;application_id=%d;job_id=%d;user_id=%d;status=%s',
+                        $application->id,
+                        $application->job_id,
+                        $application->user_id,
+                        $application->status
+                    )
+                );
+            }
+
+            return $response;
         } catch (\Exception $e) {
             if ($e->getCode() === 409) {
                 return ApiResponse::error($e->getMessage(), 409);

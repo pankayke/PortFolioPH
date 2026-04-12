@@ -141,7 +141,24 @@
                 $hasApplied = auth()->user()->applications()->where('job_id', $job->id)->exists();
             @endphp
             <div class="bg-white rounded-lg shadow p-6">
-                @if($hasApplied)
+                @if(session('application_debug') && is_array(session('application_debug')) && (int) session('application_debug.job_id') === (int) $job->id)
+                    <div class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-indigo-800">Application Debug (Latest Submit)</h3>
+                        <div class="mt-2 grid grid-cols-1 gap-1 text-xs text-indigo-900 sm:grid-cols-2">
+                            <p><span class="font-medium">Application ID:</span> {{ session('application_debug.application_id') }}</p>
+                            <p><span class="font-medium">Job ID:</span> {{ session('application_debug.job_id') }}</p>
+                            <p><span class="font-medium">User ID:</span> {{ session('application_debug.user_id') }}</p>
+                            <p><span class="font-medium">Status:</span> {{ session('application_debug.status') }}</p>
+                            <p class="sm:col-span-2"><span class="font-medium">Created At:</span> {{ session('application_debug.created_at') }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                @if(auth()->user()->role !== 'job_seeker')
+                    <p class="text-amber-700 font-medium">
+                        <i class="fas fa-info-circle mr-2"></i>Only job seeker accounts can submit applications.
+                    </p>
+                @elseif($hasApplied)
                     <p class="text-green-600 font-medium">
                         <i class="fas fa-check-circle mr-2"></i>You have already applied for this job
                     </p>

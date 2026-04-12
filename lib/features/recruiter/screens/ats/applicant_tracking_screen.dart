@@ -106,13 +106,65 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Talent Queue',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.primary.withValues(alpha: 0.14),
+                  colorScheme.surface.withValues(alpha: 0.82),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.70),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Talent Queue',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '${applications.length} live',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Move quickly through incoming applicants and keep the flow visible.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -159,9 +211,20 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
           else if (applications.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 32),
-              child: Text(
-                'No candidates match this filter yet. Try switching status tabs or clear filters.',
-                style: Theme.of(context).textTheme.bodyMedium,
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.person_search_outlined,
+                    size: 40,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'No candidates match this filter yet. Try switching status tabs or clear filters.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
               ),
             )
           else
@@ -238,13 +301,23 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Text(
-                            application.coverLetter?.trim().isNotEmpty == true
-                                ? application.coverLetter!.trim()
-                                : 'No cover letter preview available.',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  application.applicantLocation.isNotEmpty
+                                      ? application.applicantLocation
+                                      : 'Location unavailable',
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => setState(
+                                  () => _selectedApplication = application,
+                                ),
+                                child: const Text('Open'),
+                              ),
+                            ],
                           ),
                         ],
                       ),

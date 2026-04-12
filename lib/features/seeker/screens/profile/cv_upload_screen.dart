@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,22 +18,36 @@ class CVUploadScreen extends StatefulWidget {
 
 class _CVUploadScreenState extends State<CVUploadScreen> {
   File? _selectedFile;
+  Uint8List? _selectedFileBytes;
   String? _selectedFileName;
 
   Future<void> _pickPdf() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['pdf'],
-      withData: false,
+      withData: kIsWeb,
     );
 
     if (result == null || result.files.isEmpty) return;
-    final path = result.files.single.path;
+    final picked = result.files.single;
+
+    if (kIsWeb) {
+      if (picked.bytes == null || picked.bytes!.isEmpty) return;
+      setState(() {
+        _selectedFile = null;
+        _selectedFileBytes = picked.bytes;
+        _selectedFileName = picked.name;
+      });
+      return;
+    }
+
+    final path = picked.path;
     if (path == null || path.isEmpty) return;
 
     setState(() {
       _selectedFile = File(path);
-      _selectedFileName = result.files.single.name;
+      _selectedFileBytes = null;
+      _selectedFileName = picked.name;
     });
   }
 
@@ -41,7 +56,8 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     final profileProvider = context.read<ProfileProvider>();
     final user = auth.currentUser;
 
-    if (user?.id == null || _selectedFile == null) return;
+    if (user?.id == null) return;
+    if (_selectedFile == null && _selectedFileBytes == null) return;
 
     if (profileProvider.currentProfile?.id != user!.id) {
       await profileProvider.loadProfile(user.id!);
@@ -50,6 +66,8 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     try {
       final success = await profileProvider.updateProfile(
         resumeFile: _selectedFile,
+        resumeBytes: _selectedFileBytes,
+        resumeFileName: _selectedFileName,
       );
 
       if (!mounted) return;
@@ -86,50 +104,123 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Upload your resume in PDF format.',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text('Max size is validated by the server.'),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        onPressed: profileProvider.isLoading ? null : _pickPdf,
-                        icon: const Icon(Icons.attach_file_outlined),
-                        label: const Text('Select PDF File'),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        _selectedFileName ?? 'No file selected',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: profileProvider.isLoading || _selectedFile == null
-                              ? null
-                              : _upload,
-                          icon: profileProvider.isLoading
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.upload_file_outlined),
-                          label: const Text('Upload CV'),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.14),
+                      Theme.of(context).colorScheme.surface.withValues(alpha: 0.82),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.70),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Upload your resume in PDF format.',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'A clean CV card helps recruiters scan your profile faster. Keep it current.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.62),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.68),
                         ),
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Icon(
+                                  Icons.description_outlined,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedFileName ?? 'No file selected',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      kIsWeb ? 'Web upload will use in-memory file bytes.' : 'Local file path selected from your device.',
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: profileProvider.isLoading ? null : _pickPdf,
+                                  icon: const Icon(Icons.attach_file_outlined),
+                                  label: const Text('Select PDF File'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: profileProvider.isLoading ||
+                                          (_selectedFile == null && _selectedFileBytes == null)
+                                      ? null
+                                      : _upload,
+                                  icon: profileProvider.isLoading
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : const Icon(Icons.upload_file_outlined),
+                                  label: const Text('Upload CV'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'PDF only, max 5MB. This now works on web and mobile.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

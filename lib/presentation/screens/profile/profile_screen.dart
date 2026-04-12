@@ -201,6 +201,15 @@ class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin
               ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
+            _ProfileMomentumCard(
+              displayName: displayName,
+              roleLabel: roleLabel,
+              experienceCount: experience.length,
+              skillsCount: skills.length,
+              educationCount: education.length,
+              certificationCount: certifications.length,
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'About',
               child: Text(
@@ -441,18 +450,197 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.surface.withValues(alpha: 0.92),
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.72),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.68)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppConstants.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+            const SizedBox(height: 10),
             child,
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ProfileMomentumCard extends StatelessWidget {
+  final String displayName;
+  final String roleLabel;
+  final int experienceCount;
+  final int skillsCount;
+  final int educationCount;
+  final int certificationCount;
+
+  const _ProfileMomentumCard({
+    required this.displayName,
+    required this.roleLabel,
+    required this.experienceCount,
+    required this.skillsCount,
+    required this.educationCount,
+    required this.certificationCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.spacingMd),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.primary.withValues(alpha: 0.16),
+            colorScheme.secondary.withValues(alpha: 0.12),
+            colorScheme.tertiary.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Profile Pulse',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$displayName • $roleLabel',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () => context.push(AppRoutes.editProfile),
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _MetricTile(label: 'Experience', value: '$experienceCount', icon: Icons.work_outline),
+              _MetricTile(label: 'Skills', value: '$skillsCount', icon: Icons.star_outline),
+              _MetricTile(label: 'Education', value: '$educationCount', icon: Icons.school_outlined),
+              _MetricTile(label: 'Certs', value: '$certificationCount', icon: Icons.verified_outlined),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => context.push(AppRoutes.seekerCvUpload),
+                  icon: const Icon(Icons.upload_file_outlined),
+                  label: const Text('Upload CV'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/settings'),
+                  icon: const Icon(Icons.tune_outlined),
+                  label: const Text('Settings'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _MetricTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 110,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.60)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: colorScheme.primary),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ],
       ),
     );
   }

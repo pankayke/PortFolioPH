@@ -18,6 +18,7 @@ import 'package:portfolioph/presentation/providers/portfolio_provider.dart';
 import 'package:portfolioph/presentation/providers/reflections_provider.dart';
 import 'package:portfolioph/presentation/providers/skills_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
+import 'package:portfolioph/features/seeker/providers/seeker_application_provider.dart';
 import 'package:portfolioph/presentation/widgets/job_feed_widgets.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
@@ -181,8 +182,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Consumer<JobFeedProvider>(
-                builder: (context, jobsProvider, _) {
+              Consumer2<JobFeedProvider, SeekerApplicationProvider>(
+                builder: (context, jobsProvider, applicationsProvider, _) {
                   return Column(
                     children: [
                       // Welcome Hero Card
@@ -201,6 +202,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                             portfolios,
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      _buildMomentumStrip(
+                        jobsProvider,
+                        applicationsProvider,
+                        isDark,
+                        colorScheme,
                       ),
                       const SizedBox(height: 24),
 
@@ -440,6 +449,253 @@ class _DashboardScreenState extends State<DashboardScreen>
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMomentumStrip(
+    JobFeedProvider jobsProvider,
+    SeekerApplicationProvider applicationsProvider,
+    bool isDark,
+    ColorScheme colorScheme,
+  ) {
+    final featuredJobs = jobsProvider.jobs.take(3).toList(growable: false);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary.withAlpha(isDark ? 58 : 28),
+                const Color(0xFF8B5CF6).withAlpha(isDark ? 42 : 20),
+                Colors.white.withAlpha(isDark ? 12 : 64),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withAlpha(isDark ? 40 : 120),
+              width: 1.4,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(isDark ? 80 : 26),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Momentum Board',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'A live snapshot of your job hunt this week.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? const Color(0xFFD7E0EA)
+                                      : const Color(0xFF475569),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(isDark ? 18 : 160),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(isDark ? 28 : 120),
+                        ),
+                      ),
+                      child: Text(
+                        '${jobsProvider.jobs.length} live roles',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _buildStatPill(
+                      'Pending: ${applicationsProvider.pendingCount}',
+                      colorScheme,
+                      isDark,
+                    ),
+                    _buildStatPill(
+                      'Applied: ${applicationsProvider.applicationCount}',
+                      colorScheme,
+                      isDark,
+                    ),
+                    _buildStatPill(
+                      'Saved: ${jobsProvider.savedJobIds.length}',
+                      colorScheme,
+                      isDark,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Featured roles',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 132,
+                  child: featuredJobs.isEmpty
+                      ? _buildMomentumEmptyState(isDark)
+                      : ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: featuredJobs.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 10),
+                          itemBuilder: (context, index) {
+                            final job = featuredJobs[index];
+                            final score = jobsProvider.getJobScore(job.id ?? -1);
+                            return _featuredRoleCard(
+                              title: job.title,
+                              company: job.company,
+                              location: job.location,
+                              score: score,
+                              isDark: isDark,
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMomentumEmptyState(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(isDark ? 12 : 160),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withAlpha(isDark ? 20 : 110)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.auto_awesome_rounded),
+          const SizedBox(height: 8),
+          Text(
+            'No live roles yet.',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Pull to refresh and new opportunities will appear here.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _featuredRoleCard({
+    required String title,
+    required String company,
+    required String location,
+    required double? score,
+    required bool isDark,
+  }) {
+    final scoreLabel = score == null
+        ? 'New'
+        : '${(score * 100).toStringAsFixed(0)}% match';
+
+    return Container(
+      width: 208,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(isDark ? 14 : 168),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withAlpha(isDark ? 24 : 120)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            company,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              const Icon(Icons.place_outlined, size: 16),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  location,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              color: score == null
+                  ? Colors.white.withAlpha(isDark ? 16 : 140)
+                  : const Color(0xFF3B82F6).withAlpha(34),
+            ),
+            child: Text(
+              scoreLabel,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }

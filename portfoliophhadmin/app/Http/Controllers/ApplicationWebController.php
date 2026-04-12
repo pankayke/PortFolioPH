@@ -44,6 +44,11 @@ class ApplicationWebController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'job_seeker') {
+            return redirect()->back()
+                ->with('error', 'Only job seekers can apply for jobs.');
+        }
+
         $validated = $request->validate([
             'job_id' => 'required|exists:jobs,id',
             'cover_letter' => 'nullable|string',
@@ -61,10 +66,19 @@ class ApplicationWebController extends Controller
 
         $validated['user_id'] = auth()->user()->id;
 
-        Application::create($validated);
+        $application = Application::create($validated);
 
-        return redirect()->route('my-applications')
-            ->with('success', 'Application submitted successfully!');
+        $debugPayload = [
+            'application_id' => $application->id,
+            'job_id' => $application->job_id,
+            'user_id' => $application->user_id,
+            'status' => $application->status,
+            'created_at' => optional($application->created_at)->toDateTimeString(),
+        ];
+
+        return redirect()->route('jobs.show', $application->job_id)
+            ->with('success', 'Application submitted successfully!')
+            ->with('application_debug', $debugPayload);
     }
 
     public function edit(Application $application)

@@ -3,6 +3,78 @@
 > Keep this file updated in real time for every non-trivial task.
 
 ## Current Task (Update)
+- Jira/Issue: Recruiter ATS Polish Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add a richer candidate header card
+- [x] 2. Improve ATS queue cards and empty state
+- [x] 3. Validate the recruiter ATS screens with analyzer
+
+## Evidence (Update)
+- `CandidateProfileView` now has a stronger header card with summary pills and a clearer CV action.
+- `ApplicantTrackingScreen` now has a richer queue header, better list cards, and a more deliberate empty state.
+- Validation: `flutter analyze lib/features/recruiter/screens/ats/candidate_profile_view.dart lib/features/recruiter/screens/ats/applicant_tracking_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Edit Profile + CV Upload Polish
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Rebuild edit profile with polished sections
+- [x] 2. Restyle CV upload for lively mobile feedback
+- [x] 3. Validate both screens with analyzer
+
+## Evidence (Update)
+- `EditProfileScreen` now has a branded header card, stronger section panels, and cleaner resume controls.
+- `CVUploadScreen` now uses a glass-style upload card and works cleanly with the existing web-safe file flow.
+- Validation: `flutter analyze lib/presentation/screens/profile/edit_profile_screen.dart lib/features/seeker/screens/profile/cv_upload_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Profile UI Liveliness Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add a lively profile momentum card
+- [x] 2. Restyle profile section cards for consistency
+- [x] 3. Validate the modified profile screen with analyzer
+
+## Evidence (Update)
+- `ProfileScreen` now includes a profile pulse card with metric tiles and direct action buttons.
+- `_SectionCard` now uses a glassier gradient treatment with a stronger header marker.
+- Validation: `flutter analyze lib/presentation/screens/profile/profile_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Dashboard UI Liveliness Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add a lively summary section to the seeker home dashboard
+- [x] 2. Fill recruiter home/company whitespace with real cards and metrics
+- [x] 3. Validate the edited Flutter files with analyzer
+
+## Evidence (Update)
+- `DashboardScreen` now includes a new momentum board with featured roles and live seeker stats.
+- `RecruiterDashboardScreen` now includes a hiring pulse card and a richer company snapshot section.
+- Validation: `flutter analyze lib/presentation/screens/dashboard/dashboard_screen.dart lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
 - Jira/Issue: Public Job Detail Payload Optimization
 - Owner: GitHub Copilot + Mark
 - Start: 2026-04-11
