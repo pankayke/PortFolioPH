@@ -93,8 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _selectedRole == null)
+    if (!(_formKey.currentState?.validate() ?? false) || _selectedRole == null) {
       return;
+    }
 
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
@@ -105,7 +106,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       role: _selectedRole!,
     );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     if (success) {
       context.go(AppRoutes.profileSetup);
