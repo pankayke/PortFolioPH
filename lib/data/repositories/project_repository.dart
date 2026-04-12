@@ -105,12 +105,30 @@ class ProjectRepository {
 
   Future<List<ProjectModel>> findFeaturedByUserId(int userId) async {
     try {
-      final data = await _apiService.get('/users/$userId/projects/featured');
-      if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .map(ProjectModel.fromMap)
-            .toList(growable: false);
+      final portfoliosData = await _apiService.get('/users/$userId/portfolios');
+      if (portfoliosData is List) {
+        final featured = <ProjectModel>[];
+
+        for (final rawPortfolio in portfoliosData) {
+          if (rawPortfolio is! Map<String, dynamic>) continue;
+          final portfolioId = _asInt(rawPortfolio['id']);
+          if (portfolioId == null) continue;
+
+          final projectsData = await _apiService.get(
+            '/portfolios/$portfolioId/projects',
+          );
+          if (projectsData is! List) continue;
+
+          for (final rawProject in projectsData) {
+            if (rawProject is! Map<String, dynamic>) continue;
+            final project = ProjectModel.fromMap(rawProject);
+            if (project.userId == userId && project.isFeatured) {
+              featured.add(project);
+            }
+          }
+        }
+
+        return featured;
       }
     } catch (_) {
       // Fallback to local cache.
@@ -120,6 +138,13 @@ class ProjectRepository {
         .expand((list) => list)
         .where((item) => item.userId == userId && item.isFeatured)
         .toList(growable: false);
+  }
+
+  static int? _asInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   Future<int> update(ProjectModel project) async {

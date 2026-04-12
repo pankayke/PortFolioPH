@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/mixins/animation_mixins.dart';
 import 'package:portfolioph/core/mixins/screen_mixins.dart';
+import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/data/models/job_listing_model.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/certification_provider.dart';
