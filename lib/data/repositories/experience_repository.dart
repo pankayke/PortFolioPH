@@ -10,65 +10,82 @@ import 'package:portfolioph/data/models/experience_model.dart';
 class ExperienceRepository {
   final ApiService _apiService;
 
+  static int _nextId = 1;
+  static final Map<int, List<ExperienceModel>> _localByUser =
+      <int, List<ExperienceModel>>{};
+
   ExperienceRepository({ApiService? apiService})
     : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
   Future<int> insert(ExperienceModel experience) async {
     try {
-      final response = await _apiService.post(
+      final data = await _apiService.post(
         '/users/${experience.userId}/experience',
         data: experience.toMap(),
       );
-      if (response.statusCode == 201) {
-        return response.data['id'] as int;
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        return data['id'] as int;
       }
-      throw Exception('Failed to create experience');
-    } catch (e) {
-      throw Exception('Failed to insert experience: $e');
+    } catch (_) {
+      // Fall through to local cache fallback.
     }
+
+    final id = _nextId++;
+    final created = experience.copyWith(id: id);
+    final list = _localByUser.putIfAbsent(experience.userId, () => <ExperienceModel>[]);
+    list.insert(0, created);
+    return id;
   }
 
   Future<List<ExperienceModel>> findByUserId(int userId) async {
     try {
-      final response = await _apiService.get('/users/$userId/experience');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      final data = await _apiService.get('/users/$userId/experience');
+      if (data is List) {
         return data
-            .map(
-              (json) => ExperienceModel.fromMap(json as Map<String, dynamic>),
-            )
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(ExperienceModel.fromMap)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch experience: $e');
+    } catch (_) {
+      // Fallback below.
     }
+
+    return List<ExperienceModel>.unmodifiable(_localByUser[userId] ?? const <ExperienceModel>[]);
   }
 
   Future<int> update(ExperienceModel experience) async {
     try {
-      final response = await _apiService.put(
+      await _apiService.put(
         '/experience/${experience.id}',
         data: experience.toMap(),
       );
-      if (response.statusCode == 200) {
+      return 1;
+    } catch (_) {
+      final list = _localByUser[experience.userId] ?? <ExperienceModel>[];
+      final index = list.indexWhere((item) => item.id == experience.id);
+      if (index >= 0) {
+        list[index] = experience;
         return 1;
       }
-      throw Exception('Failed to update experience');
-    } catch (e) {
-      throw Exception('Failed to update experience: $e');
+      return 0;
     }
   }
 
   Future<int> delete(int id) async {
     try {
-      final response = await _apiService.delete('/experience/$id');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return 1;
+      await _apiService.delete('/experience/$id');
+      return 1;
+    } catch (_) {
+      var deleted = 0;
+      for (final list in _localByUser.values) {
+        final before = list.length;
+        list.removeWhere((item) => item.id == id);
+        if (list.length != before) {
+          deleted = 1;
+          break;
+        }
       }
-      throw Exception('Failed to delete experience');
-    } catch (e) {
-      throw Exception('Failed to delete experience: $e');
+      return deleted;
     }
   }
 }

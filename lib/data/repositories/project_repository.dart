@@ -1,7 +1,5 @@
 // lib/data/repositories/project_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
-// API-First Repository: Projects stored on backend only
-// ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
@@ -10,34 +8,52 @@ import 'package:portfolioph/data/models/project_model.dart';
 class ProjectRepository {
   final ApiService _apiService;
 
+  static int _nextId = 1;
+  static final Map<int, List<ProjectModel>> _localByPortfolio =
+      <int, List<ProjectModel>>{};
+
   ProjectRepository({ApiService? apiService})
     : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
   Future<int> insert(ProjectModel project) async {
     try {
-      final response = await _apiService.post(
+      final data = await _apiService.post(
         '/portfolios/${project.portfolioId}/projects',
         data: project.toMap(),
       );
-      if (response.statusCode == 201) {
-        return response.data['id'] as int;
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        return data['id'] as int;
       }
-      throw Exception('Failed to create project');
-    } catch (e) {
-      throw Exception('Failed to insert project: $e');
+    } catch (_) {
+      // Fallback to local cache when backend route is unavailable.
     }
+
+    final id = _nextId++;
+    final created = project.copyWith(id: id);
+    final list = _localByPortfolio.putIfAbsent(
+      project.portfolioId,
+      () => <ProjectModel>[],
+    );
+    list.insert(0, created);
+    return id;
   }
 
   Future<ProjectModel?> findById(int id) async {
     try {
-      final response = await _apiService.get('/projects/$id');
-      if (response.statusCode == 200) {
-        return ProjectModel.fromMap(response.data as Map<String, dynamic>);
+      final data = await _apiService.get('/projects/$id');
+      if (data is Map<String, dynamic>) {
+        return ProjectModel.fromMap(data);
       }
-      return null;
-    } catch (e) {
-      throw Exception('Failed to fetch project: $e');
+    } catch (_) {
+      // Fallback lookup below.
     }
+
+    for (final list in _localByPortfolio.values) {
+      for (final item in list) {
+        if (item.id == id) return item;
+      }
+    }
+    return null;
   }
 
   Future<List<ProjectModel>> findByPortfolioId(
@@ -54,65 +70,88 @@ class ProjectRepository {
       if (limit != null) queryParams['limit'] = limit;
       if (offset != null) queryParams['offset'] = offset;
 
-      final response = await _apiService.get(
+      final data = await _apiService.get(
         '/portfolios/$portfolioId/projects',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      if (data is List) {
         return data
-            .map((json) => ProjectModel.fromMap(json as Map<String, dynamic>))
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(ProjectModel.fromMap)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch projects: $e');
+    } catch (_) {
+      // Fallback to local cache.
     }
+
+    final source = List<ProjectModel>.from(_localByPortfolio[portfolioId] ?? const <ProjectModel>[]);
+    final hasSearch = searchQuery != null && searchQuery.trim().isNotEmpty;
+    final filtered = hasSearch
+        ? source.where((item) {
+        final q = searchQuery.toLowerCase();
+            return item.title.toLowerCase().contains(q) ||
+                (item.description?.toLowerCase().contains(q) ?? false) ||
+                (item.techStack?.toLowerCase().contains(q) ?? false);
+          }).toList(growable: false)
+        : source;
+
+    final start = (offset ?? 0).clamp(0, filtered.length);
+    final end = limit == null
+        ? filtered.length
+        : (start + limit).clamp(start, filtered.length);
+    return filtered.sublist(start, end);
   }
 
   Future<List<ProjectModel>> findFeaturedByUserId(int userId) async {
     try {
-      final response = await _apiService.get(
-        '/users/$userId/projects/featured',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      final data = await _apiService.get('/users/$userId/projects/featured');
+      if (data is List) {
         return data
-            .map((json) => ProjectModel.fromMap(json as Map<String, dynamic>))
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(ProjectModel.fromMap)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch featured projects: $e');
+    } catch (_) {
+      // Fallback to local cache.
     }
+
+    return _localByPortfolio.values
+        .expand((list) => list)
+        .where((item) => item.userId == userId && item.isFeatured)
+        .toList(growable: false);
   }
 
   Future<int> update(ProjectModel project) async {
     try {
-      final response = await _apiService.put(
-        '/projects/${project.id}',
-        data: project.toMap(),
-      );
-      if (response.statusCode == 200) {
+      await _apiService.put('/projects/${project.id}', data: project.toMap());
+      return 1;
+    } catch (_) {
+      final list = _localByPortfolio[project.portfolioId] ?? <ProjectModel>[];
+      final index = list.indexWhere((item) => item.id == project.id);
+      if (index >= 0) {
+        list[index] = project;
         return 1;
       }
-      throw Exception('Failed to update project');
-    } catch (e) {
-      throw Exception('Failed to update project: $e');
+      return 0;
     }
   }
 
   Future<int> delete(int id) async {
     try {
-      final response = await _apiService.delete('/projects/$id');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return 1;
+      await _apiService.delete('/projects/$id');
+      return 1;
+    } catch (_) {
+      var deleted = 0;
+      for (final list in _localByPortfolio.values) {
+        final before = list.length;
+        list.removeWhere((item) => item.id == id);
+        if (list.length != before) {
+          deleted = 1;
+          break;
+        }
       }
-      throw Exception('Failed to delete project');
-    } catch (e) {
-      throw Exception('Failed to delete project: $e');
+      return deleted;
     }
   }
 }
