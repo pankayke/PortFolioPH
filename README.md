@@ -53,29 +53,29 @@ flutter run -d chrome
 
 **Access URLs**
 - App: http://localhost:54725
-- API: http://localhost:8000/api/v1
+- API: http://localhost:8000/api
 
 ## 📚 API Endpoints
 
 ### Authentication (Public)
-- `POST /api/v1/auth/register` - Register user
-- `POST /api/v1/auth/login` - Login user
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/login` - Login user
 
 ### Jobs (Protected)
-- `GET /api/v1/jobs` - List all jobs
-- `POST /api/v1/jobs` - Create new job
-- `GET /api/v1/jobs/{id}` - Get job details
-- `PUT /api/v1/jobs/{id}` - Update job
-- `DELETE /api/v1/jobs/{id}` - Delete job
+- `GET /api/jobs` - List all jobs
+- `POST /api/jobs` - Create new job
+- `GET /api/jobs/{id}` - Get job details
+- `PUT /api/jobs/{id}` - Update job
+- `DELETE /api/jobs/{id}` - Delete job
 
 ### Applications (Protected)
-- `POST /api/v1/applications` - Submit application
-- `GET /api/v1/applications` - List applications
-- `PUT /api/v1/applications/{id}/status` - Update status
+- `POST /api/applications` - Submit application
+- `GET /api/applications` - List applications
+- `PUT /api/applications/{id}/status` - Update status
 
 ### Users (Protected)
-- `GET /api/v1/users/{id}` - Get user
-- `GET /api/v1/users/search` - Search users
+- `GET /api/users/{id}` - Get user
+- `GET /api/users/search` - Search users
 
 ## 👥 User Roles
 
@@ -105,12 +105,12 @@ flutter run -d chrome
 
 ```bash
 # Register new user
-curl -X POST http://localhost:8000/api/v1/auth/register \
+curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"John","email":"john@test.com","password":"pass123","role":"job_seeker"}'
 
 # Check health
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/health
 ```
 
 ## 🔄 Development Workflow

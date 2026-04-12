@@ -133,7 +133,7 @@ node api-server.cjs
 
 # Output:
 # ✅ Job Platform API running on http://localhost:8000
-# 📝 API v1 endpoints ready at :8000/api/v1
+# 📝 API endpoints ready at :8000/api
 ```
 
 ### Terminal 2: Start Flutter App (Already Running)
@@ -145,8 +145,8 @@ flutter run -d chrome
 
 ### Access Points
 - **App**: http://localhost:54725
-- **API**: http://localhost:8000/api/v1
-- **Health Check**: `curl http://localhost:8000/api/v1/health`
+- **API**: http://localhost:8000/api
+- **Health Check**: `curl http://localhost:8000/api/health`
 
 ---
 
@@ -186,7 +186,7 @@ flutter run -d chrome
 
 | Component | Status | Check |
 |-----------|--------|-------|
-| Backend API | ✅ Running | `curl http://localhost:8000/api/v1/health` |
+| Backend API | ✅ Running | `curl http://localhost:8000/api/health` |
 | Flutter App | ✅ Running | Open http://localhost:54725 |
 | Register Flow | ✅ Works | Form validates, navigates to role selection |
 | Role Selection | ✅ Works | UI shows role-specific dashboard |
@@ -290,7 +290,7 @@ flutter run -d chrome
 ```bash
 1. Edit backend/api-server.cjs
 2. Stop and restart: node api-server.cjs
-3. Test: curl http://localhost:8000/api/v1/health
+3. Test: curl http://localhost:8000/api/health
 ```
 
 **Frontend Changes**
@@ -343,7 +343,7 @@ node backend/api-server.cjs  # Restart
 ### Issue: Flutter can't connect to API
 ```bash
 # Verify backend is running
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/health
 
 # Check api_service.dart has correct baseUrl
 # Ensure CORS is enabled (it is by default)

@@ -12,7 +12,7 @@ node api-server.cjs
 ✅ Should output:
 ```
 ✅ Job Platform API running on http://localhost:8000
-📝 API v1 endpoints ready at :8000/api/v1
+📝 API endpoints ready at :8000/api
 ```
 
 ## API Endpoints
@@ -21,7 +21,7 @@ node api-server.cjs
 
 #### Register User
 ```
-POST /api/v1/auth/register
+POST /api/auth/register
 Content-Type: application/json
 
 {
@@ -40,7 +40,7 @@ Response (201):
 
 #### Login
 ```
-POST /api/v1/auth/login
+POST /api/auth/login
 Content-Type: application/json
 
 {
@@ -59,7 +59,7 @@ Response (200):
 
 #### List All Jobs
 ```
-GET /api/v1/jobs
+GET /api/jobs
 Authorization: Bearer {token}
 
 Response (200):
@@ -74,7 +74,7 @@ Response (200):
 
 #### Create Job (Recruiters Only)
 ```
-POST /api/v1/jobs
+POST /api/jobs
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -93,7 +93,7 @@ Response (201):
 
 #### Get Job Details
 ```
-GET /api/v1/jobs/1
+GET /api/jobs/1
 Authorization: Bearer {token}
 
 Response: { "id": 1, "title": "Senior Developer", ... }
@@ -103,7 +103,7 @@ Response: { "id": 1, "title": "Senior Developer", ... }
 
 #### Submit Application
 ```
-POST /api/v1/applications
+POST /api/applications
 Authorization: Bearer {token}
 Content-Type: application/json
 
@@ -118,7 +118,7 @@ Response (201):
 
 #### List Applications
 ```
-GET /api/v1/applications
+GET /api/applications
 Authorization: Bearer {token}
 
 Response (200):
@@ -135,7 +135,7 @@ Response (200):
 
 #### Get User Profile
 ```
-GET /api/v1/users/1
+GET /api/users/1
 Authorization: Bearer {token}
 
 Response (200):
@@ -144,7 +144,7 @@ Response (200):
 
 #### Search Users
 ```
-GET /api/v1/users/search
+GET /api/users/search
 Authorization: Bearer {token}
 
 Response (200):
@@ -158,7 +158,7 @@ Response (200):
 
 #### Check API Status
 ```
-GET /api/v1/health
+GET /api/health
 
 Response (200):
 { "status": "ok", "message": "Job Platform API running" }
@@ -168,7 +168,7 @@ Response (200):
 
 ### 1. Register a User
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
+curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Alice Johnson",
@@ -182,7 +182,7 @@ curl -X POST http://localhost:8000/api/v1/auth/register \
 
 ### 2. Create a Job (As Recruiter)
 ```bash
-curl -X POST http://localhost:8000/api/v1/jobs \
+curl -X POST http://localhost:8000/api/jobs \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -195,13 +195,13 @@ curl -X POST http://localhost:8000/api/v1/jobs \
 
 ### 3. List Jobs
 ```bash
-curl -X GET http://localhost:8000/api/v1/jobs \
+curl -X GET http://localhost:8000/api/jobs \
   -H "Authorization: Bearer {token}"
 ```
 
 ### 4. Apply for Job
 ```bash
-curl -X POST http://localhost:8000/api/v1/applications \
+curl -X POST http://localhost:8000/api/applications \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -212,7 +212,7 @@ curl -X POST http://localhost:8000/api/v1/applications \
 
 ### 5. Check Health
 ```bash
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/health
 ```
 
 ## Database Schema (Reference)
@@ -283,7 +283,7 @@ The Flutter app is configured to use this API:
 
 ```dart
 // In lib/core/services/api_service.dart
-static const String baseUrl = 'http://localhost:8000/api/v1';
+static const String baseUrl = 'http://localhost:8000/api';
 ```
 
 The app automatically:
