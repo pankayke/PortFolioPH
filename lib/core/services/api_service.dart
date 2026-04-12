@@ -27,7 +27,6 @@ class ApiService {
   // - Staging: https://staging-api.portfolioph.dev/api
   // - Production: https://api.portfolioph.dev/api
   static const String tokenKey = 'auth_token';
-  static const String userKey = 'auth_user';
 
   // NO CACHING - Disable timeouts for long polling scenarios
   static const Duration kConnectTimeout = Duration(seconds: 30);
@@ -65,9 +64,25 @@ class ApiService {
     );
 
     // Add intelligent error interceptor with retry logic (TIER 2)
-    _dio.interceptors.add(ApiErrorInterceptor());
+    _dio.interceptors.add(ApiErrorInterceptor(_buildRetryDio()));
 
     AppLogger.success('ApiService initialized with ${AppConfig.apiBaseUrl}');
+  }
+
+  Dio _buildRetryDio() {
+    return Dio(
+      BaseOptions(
+        baseUrl: AppConfig.apiBaseUrl,
+        connectTimeout: kConnectTimeout,
+        receiveTimeout: kReceiveTimeout,
+        contentType: 'application/json',
+        headers: const {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        validateStatus: (_) => true,
+      ),
+    );
   }
 
   Future<void> _onRequest(
@@ -114,16 +129,20 @@ class ApiService {
 
   // ─── Public Methods ────────────────────────────────────────────────────────
 
+  Future<dynamic> _request(Future<Response> Function() sendRequest) async {
+    try {
+      final response = await sendRequest();
+      return _handleResponse(response);
+    } on DioException catch (error) {
+      throw _handleError(error);
+    }
+  }
+
   Future<dynamic> get(
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
-    try {
-      final response = await _dio.get(path, queryParameters: queryParameters);
-      return _handleResponse(response);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _request(() => _dio.get(path, queryParameters: queryParameters));
   }
 
   Future<dynamic> post(
@@ -131,16 +150,9 @@ class ApiService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    try {
-      final response = await _dio.post(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
-      return _handleResponse(response);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _request(
+      () => _dio.post(path, data: data, queryParameters: queryParameters),
+    );
   }
 
   Future<dynamic> put(
@@ -148,31 +160,16 @@ class ApiService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    try {
-      final response = await _dio.put(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
-      return _handleResponse(response);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _request(
+      () => _dio.put(path, data: data, queryParameters: queryParameters),
+    );
   }
 
   Future<dynamic> delete(
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
-    try {
-      final response = await _dio.delete(
-        path,
-        queryParameters: queryParameters,
-      );
-      return _handleResponse(response);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _request(() => _dio.delete(path, queryParameters: queryParameters));
   }
 
   /// Multipart form data upload (for file uploads with additional fields).
@@ -190,19 +187,14 @@ class ApiService {
     required FormData data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    try {
-      final response = await _dio.post(
+    return _request(
+      () => _dio.post(
         path,
         data: data,
         queryParameters: queryParameters,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
-      );
-      return _handleResponse(response);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+        options: Options(contentType: 'multipart/form-data'),
+      ),
+    );
   }
 
   // ─── Token Management ─────────────────────────────────────────────────────

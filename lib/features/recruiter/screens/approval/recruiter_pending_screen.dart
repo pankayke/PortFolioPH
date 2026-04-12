@@ -11,6 +11,7 @@ import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
+import 'package:portfolioph/features/recruiter/screens/approval/recruiter_approval_widgets.dart';
 
 class RecruiterPendingScreen extends StatelessWidget {
   const RecruiterPendingScreen({super.key});
@@ -169,33 +170,16 @@ class _PendingContent extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 16),
-        _buildDetailRow(context, 'Name', user?.fullName ?? 'N/A'),
+        RecruiterDetailRow(label: 'Name', value: user?.fullName ?? 'N/A'),
         const SizedBox(height: 8),
-        _buildDetailRow(context, 'Email', user?.email ?? 'N/A'),
+        RecruiterDetailRow(label: 'Email', value: user?.email ?? 'N/A'),
         const SizedBox(height: 8),
-        _buildDetailRow(context, 'Company', user?.location ?? 'N/A'),
+        RecruiterDetailRow(label: 'Company', value: user?.location ?? 'N/A'),
         const SizedBox(height: 8),
-        _buildDetailRow(context, 'Status', 'Pending', valueColor: Colors.amber.shade200),
-      ],
-    );
-  }
-
-  Widget _buildDetailRow(
-    BuildContext context,
-    String label,
-    String value, {
-    Color? valueColor,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: valueColor ?? Colors.white,
-              ),
+        RecruiterDetailRow(
+          label: 'Status',
+          value: 'Pending',
+          valueColor: Colors.amber.shade200,
         ),
       ],
     );

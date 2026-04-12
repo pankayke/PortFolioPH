@@ -14,32 +14,23 @@ class JobRepository {
     String? jobType,
     bool? remote,
   }) async {
-    try {
-      final response = await apiService.getJobs(
-        page: page,
-        perPage: perPage,
-        search: search,
-        jobType: jobType,
-        remote: remote,
-      );
+    final response = await apiService.getJobs(
+      page: page,
+      perPage: perPage,
+      search: search,
+      jobType: jobType,
+      remote: remote,
+    );
 
-      final jobs = (response['data'] as List)
-          .map((job) => JobModel.fromJson(job))
-          .toList();
+    final jobs =
+        (response['data'] as List).map((job) => JobModel.fromJson(job)).toList();
 
-      return (jobs, response['pagination'] as Map<String, dynamic>? ?? {});
-    } catch (e) {
-      rethrow;
-    }
+    return (jobs, response['pagination'] as Map<String, dynamic>? ?? {});
   }
 
   Future<JobModel> getJobDetail(int jobId) async {
-    try {
-      final response = await apiService.getJobDetail(jobId);
-      return JobModel.fromJson(response['data']);
-    } catch (e) {
-      rethrow;
-    }
+    final response = await apiService.getJobDetail(jobId);
+    return JobModel.fromJson(response['data']);
   }
 
   Future<JobModel> createJob({
@@ -53,23 +44,19 @@ class JobRepository {
     double? salaryMax,
     bool remote = false,
   }) async {
-    try {
-      final response = await apiService.createJob(
-        title: title,
-        description: description,
-        requirements: requirements,
-        jobType: jobType,
-        location: location,
-        deadlineAt: deadlineAt,
-        salaryMin: salaryMin,
-        salaryMax: salaryMax,
-        remote: remote,
-      );
+    final response = await apiService.createJob(
+      title: title,
+      description: description,
+      requirements: requirements,
+      jobType: jobType,
+      location: location,
+      deadlineAt: deadlineAt,
+      salaryMin: salaryMin,
+      salaryMax: salaryMax,
+      remote: remote,
+    );
 
-      return JobModel.fromJson(response['data']);
-    } catch (e) {
-      rethrow;
-    }
+    return JobModel.fromJson(response['data']);
   }
 
   Future<JobModel> updateJob(
@@ -84,32 +71,24 @@ class JobRepository {
     double? salaryMax,
     bool? remote,
   }) async {
-    try {
-      final response = await apiService.updateJob(
-        jobId,
-        title: title,
-        description: description,
-        requirements: requirements,
-        jobType: jobType,
-        location: location,
-        deadlineAt: deadlineAt,
-        salaryMin: salaryMin,
-        salaryMax: salaryMax,
-        remote: remote,
-      );
+    final response = await apiService.updateJob(
+      jobId,
+      title: title,
+      description: description,
+      requirements: requirements,
+      jobType: jobType,
+      location: location,
+      deadlineAt: deadlineAt,
+      salaryMin: salaryMin,
+      salaryMax: salaryMax,
+      remote: remote,
+    );
 
-      return JobModel.fromJson(response['data']);
-    } catch (e) {
-      rethrow;
-    }
+    return JobModel.fromJson(response['data']);
   }
 
   Future<void> deleteJob(int jobId) async {
-    try {
-      await apiService.deleteJob(jobId);
-    } catch (e) {
-      rethrow;
-    }
+    await apiService.deleteJob(jobId);
   }
 
   // Applications
@@ -118,42 +97,29 @@ class JobRepository {
     String? coverLetter,
     String? resumeUrl,
   }) async {
-    try {
-      final response = await apiService.applyJob(
-        jobId: jobId,
-        coverLetter: coverLetter,
-        resumeUrl: resumeUrl,
-      );
+    final response = await apiService.applyJob(
+      jobId: jobId,
+      coverLetter: coverLetter,
+      resumeUrl: resumeUrl,
+    );
 
-      return ApplicationModel.fromJson(response['data']);
-    } catch (e) {
-      rethrow;
-    }
+    return ApplicationModel.fromJson(response['data']);
   }
 
   Future<(List<ApplicationModel> applications, Map<String, dynamic> pagination)>
   getMyApplications({int page = 1, int perPage = 15}) async {
-    try {
-      final response = await apiService.getMyApplications(
-        page: page,
-        perPage: perPage,
-      );
+    final response = await apiService.getMyApplications(
+      page: page,
+      perPage: perPage,
+    );
 
-      final applications = (response['data'] as List)
-          .map((app) => ApplicationModel.fromJson(app))
-          .toList();
+    final applications =
+        (response['data'] as List).map((app) => ApplicationModel.fromJson(app)).toList();
 
-      return (applications, response['pagination'] as Map<String, dynamic>? ?? {});
-    } catch (e) {
-      rethrow;
-    }
+    return (applications, response['pagination'] as Map<String, dynamic>? ?? {});
   }
 
   Future<void> withdrawApplication(int applicationId) async {
-    try {
-      await apiService.withdrawApplication(applicationId);
-    } catch (e) {
-      rethrow;
-    }
+    await apiService.withdrawApplication(applicationId);
   }
 }

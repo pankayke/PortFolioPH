@@ -11,6 +11,7 @@ import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
+import 'package:portfolioph/features/recruiter/screens/approval/recruiter_approval_widgets.dart';
 
 class RecruiterRejectedScreen extends StatelessWidget {
   const RecruiterRejectedScreen({super.key});
@@ -102,12 +103,11 @@ class RecruiterRejectedScreen extends StatelessWidget {
                                 ),
                           ),
                           const SizedBox(height: 16),
-                          _buildDetailRow(context, label: 'Name', value: user?.fullName ?? 'N/A'),
+                          RecruiterDetailRow(label: 'Name', value: user?.fullName ?? 'N/A'),
                           const SizedBox(height: 8),
-                          _buildDetailRow(context, label: 'Email', value: user?.email ?? 'N/A'),
+                          RecruiterDetailRow(label: 'Email', value: user?.email ?? 'N/A'),
                           const SizedBox(height: 8),
-                          _buildDetailRow(
-                            context,
+                          RecruiterDetailRow(
                             label: 'Status',
                             value: 'Rejected',
                             valueColor: Colors.red.shade200,
@@ -209,27 +209,6 @@ class RecruiterRejectedScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildDetailRow(
-    BuildContext context, {
-    required String label,
-    required String value,
-    Color? valueColor,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: valueColor ?? Colors.white,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -56,7 +56,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     Text(provider.error!, textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     FilledButton(
-                      onPressed: () => provider.getJobDetail(widget.jobId),
+                      onPressed: () => provider.getJobDetail(widget.jobId, forceRefresh: true),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -163,6 +163,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     );
 
     if (!mounted) return;
+    if (success) {
+      _coverLetterController.clear();
+      _resumeUrlController.clear();
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

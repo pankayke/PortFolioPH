@@ -52,7 +52,8 @@ class _JobListScreenState extends State<JobListScreen> {
                     Text(provider.error!, textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     FilledButton(
-                      onPressed: () => provider.fetchJobs(page: 1),
+                      onPressed: () =>
+                          provider.fetchJobs(page: 1, forceRefresh: true),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -66,7 +67,7 @@ class _JobListScreenState extends State<JobListScreen> {
           }
 
           return RefreshIndicator(
-            onRefresh: () => provider.fetchJobs(page: 1),
+            onRefresh: () => provider.fetchJobs(page: 1, forceRefresh: true),
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: provider.jobs.length,

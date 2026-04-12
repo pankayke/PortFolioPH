@@ -9,6 +9,7 @@ class JobProvider extends ChangeNotifier {
   List<JobModel> _jobs = [];
   Map<String, dynamic> _jobsPagination = {};
   JobModel? _selectedJob;
+  final Map<int, JobModel> _jobDetailCache = {};
   List<ApplicationModel> _myApplications = [];
   bool _isLoading = false;
   String? _error;
@@ -25,56 +26,70 @@ class JobProvider extends ChangeNotifier {
   String? get error => _error;
   int get currentPage => _currentPage;
 
+  Future<T?> _runWithLoading<T>(Future<T> Function() action) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      return await action();
+    } catch (e) {
+      _error = e.toString();
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Fetch jobs
   Future<void> fetchJobs({
     int page = 1,
     String? search,
     String? jobType,
     bool? remote,
+    bool forceRefresh = false,
   }) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      _currentPage = page;
-      notifyListeners();
+    final isDefaultQuery = search == null && jobType == null && remote == null;
+    if (!forceRefresh && page == 1 && isDefaultQuery && _jobs.isNotEmpty) {
+      return;
+    }
 
-      final (jobs, pagination) = await _repository.getJobs(
+    _currentPage = page;
+    final result = await _runWithLoading(
+      () => _repository.getJobs(
         page: page,
         search: search,
         jobType: jobType,
         remote: remote,
-      );
+      ),
+    );
 
-      if (page == 1) {
-        _jobs = jobs;
-      } else {
-        _jobs.addAll(jobs);
-      }
-
-      _jobsPagination = pagination;
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    if (result == null) {
+      return;
     }
+
+    final (jobs, pagination) = result;
+    if (page == 1) {
+      _jobs = jobs;
+    } else {
+      _jobs.addAll(jobs);
+    }
+    _jobsPagination = pagination;
   }
 
   // Get job detail
-  Future<void> getJobDetail(int jobId) async {
-    try {
-      _isLoading = true;
-      _error = null;
+  Future<void> getJobDetail(int jobId, {bool forceRefresh = false}) async {
+    if (!forceRefresh && _jobDetailCache.containsKey(jobId)) {
+      _selectedJob = _jobDetailCache[jobId];
       notifyListeners();
+      return;
+    }
 
-      _selectedJob = await _repository.getJobDetail(jobId);
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    final job = await _runWithLoading(() => _repository.getJobDetail(jobId));
+    if (job != null) {
+      _selectedJob = job;
+      _jobDetailCache[jobId] = job;
     }
   }
 
@@ -90,12 +105,8 @@ class JobProvider extends ChangeNotifier {
     double? salaryMax,
     bool remote = false,
   }) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      final job = await _repository.createJob(
+    final job = await _runWithLoading(
+      () => _repository.createJob(
         title: title,
         description: description,
         requirements: requirements,
@@ -105,19 +116,17 @@ class JobProvider extends ChangeNotifier {
         salaryMin: salaryMin,
         salaryMax: salaryMax,
         remote: remote,
-      );
+      ),
+    );
 
-      _jobs.insert(0, job);
-      _isLoading = false;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    if (job == null) {
       return false;
     }
+
+    _jobs.insert(0, job);
+    _jobDetailCache[job.id] = job;
+    notifyListeners();
+    return true;
   }
 
   // Apply for job
@@ -126,76 +135,57 @@ class JobProvider extends ChangeNotifier {
     String? coverLetter,
     String? resumeUrl,
   }) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      final application = await _repository.applyJob(
+    final application = await _runWithLoading(
+      () => _repository.applyJob(
         jobId: jobId,
         coverLetter: coverLetter,
         resumeUrl: resumeUrl,
-      );
+      ),
+    );
 
-      _myApplications.insert(0, application);
-      _isLoading = false;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    if (application == null) {
       return false;
     }
+
+    _myApplications.insert(0, application);
+    notifyListeners();
+    return true;
   }
 
   // Get my applications
   Future<void> getMyApplications({int page = 1}) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+    final result = await _runWithLoading(
+      () => _repository.getMyApplications(page: page),
+    );
 
-      final (applications, pagination) = await _repository.getMyApplications(
-        page: page,
-      );
+    if (result == null) {
+      return;
+    }
 
-      if (page == 1) {
-        _myApplications = applications;
-      } else {
-        _myApplications.addAll(applications);
-      }
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    final (applications, _) = result;
+    if (page == 1) {
+      _myApplications = applications;
+    } else {
+      _myApplications.addAll(applications);
     }
   }
 
   // Withdraw application
   Future<bool> withdrawApplication(int applicationId) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+    final success =
+        await _runWithLoading(() async {
+          await _repository.withdrawApplication(applicationId);
+          return true;
+        }) ??
+        false;
 
-      await _repository.withdrawApplication(applicationId);
-
-      _myApplications.removeWhere((app) => app.id == applicationId);
-      _isLoading = false;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    if (!success) {
       return false;
     }
+
+    _myApplications.removeWhere((app) => app.id == applicationId);
+    notifyListeners();
+    return true;
   }
 
   // Clear error
@@ -207,6 +197,11 @@ class JobProvider extends ChangeNotifier {
   // Clear selection
   void clearSelection() {
     _selectedJob = null;
+    notifyListeners();
+  }
+
+  void clearJobCache() {
+    _jobDetailCache.clear();
     notifyListeners();
   }
 }

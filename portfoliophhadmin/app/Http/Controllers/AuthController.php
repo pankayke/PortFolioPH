@@ -8,6 +8,7 @@ use App\Http\Resources\ApiResponse;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -76,13 +77,24 @@ class AuthController extends Controller
             return ApiResponse::success(null, 'If the email exists, a reset token has been issued.', 200);
         }
 
-        // TODO: Replace with email delivery in production.
         if (app()->environment(['local', 'development', 'testing'])) {
             return ApiResponse::success(
                 ['reset_token' => $token],
                 'Use this reset token to confirm password reset.',
                 200
             );
+        }
+
+        try {
+            Mail::raw(
+                "Your PortFolioPH password reset token is: {$token}\n\nThis token expires in 60 minutes.",
+                function ($message) use ($email): void {
+                    $message->to($email)
+                        ->subject('PortFolioPH Password Reset Token');
+                }
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
         }
 
         return ApiResponse::success(null, 'If the email exists, a reset token has been issued.', 200);

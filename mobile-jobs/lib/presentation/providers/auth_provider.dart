@@ -8,6 +8,7 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _user;
   String? _token;
   bool _isLoading = false;
+  bool _isInitialized = false;
   String? _error;
 
   AuthProvider(this._repository);
@@ -16,11 +17,65 @@ class AuthProvider extends ChangeNotifier {
   UserModel? get user => _user;
   String? get token => _token;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   String? get error => _error;
   bool get isAuthenticated => _token != null && _user != null;
   bool get isRecruiter => _user?.isRecruiter ?? false;
   bool get isJobSeeker => _user?.isJobSeeker ?? false;
   bool get isAdmin => _user?.isAdmin ?? false;
+
+  Future<T?> _runWithLoading<T>(Future<T> Function() action) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      return await action();
+    } catch (e) {
+      _error = e.toString();
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void _clearLocalState({bool notify = true}) {
+    _user = null;
+    _token = null;
+    _error = null;
+    _isLoading = false;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  // Restore session from persisted token + /auth/me
+  Future<void> restoreSession() async {
+    if (_isInitialized) {
+      return;
+    }
+
+    final restored = await _runWithLoading(() async {
+      final hasToken = await _repository.hasToken();
+      if (!hasToken) {
+        return false;
+      }
+
+      final user = await _repository.getMe();
+      _user = user;
+      // Token value remains in secure storage; sentinel keeps auth state alive in-memory.
+      _token = 'persisted_token';
+      return true;
+    });
+
+    if (restored != true) {
+      _clearLocalState(notify: false);
+    }
+
+    _isInitialized = true;
+    notifyListeners();
+  }
 
   // Register
   Future<bool> register({
@@ -32,12 +87,8 @@ class AuthProvider extends ChangeNotifier {
     String? companyWebsite,
     String? phone,
   }) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      final (user, token) = await _repository.register(
+    final result = await _runWithLoading(
+      () => _repository.register(
         name: name,
         email: email,
         password: password,
@@ -45,90 +96,56 @@ class AuthProvider extends ChangeNotifier {
         companyName: companyName,
         companyWebsite: companyWebsite,
         phone: phone,
-      );
+      ),
+    );
 
-      _user = user;
-      _token = token;
-      _isLoading = false;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    if (result == null) {
       return false;
     }
+
+    final (user, token) = result;
+    _user = user;
+    _token = token;
+    notifyListeners();
+    return true;
   }
 
   // Login
   Future<bool> login({required String email, required String password}) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+    final result = await _runWithLoading(
+      () => _repository.login(email: email, password: password),
+    );
 
-      final (user, token) = await _repository.login(
-        email: email,
-        password: password,
-      );
-
-      _user = user;
-      _token = token;
-      _isLoading = false;
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
+    if (result == null) {
       return false;
     }
+
+    final (user, token) = result;
+    _user = user;
+    _token = token;
+    notifyListeners();
+    return true;
   }
 
   // Logout
   Future<void> logout() async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
+    await _runWithLoading(() async {
       await _repository.logout();
-
-      _user = null;
-      _token = null;
-      _error = null;
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
+      return true;
+    });
+    _clearLocalState();
   }
 
   /// Clears local auth state without making a network call.
   void forceLogout() {
-    _user = null;
-    _token = null;
-    _error = null;
-    _isLoading = false;
-    notifyListeners();
+    _clearLocalState();
   }
 
   // Get current user
   Future<void> getMe() async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      final user = await _repository.getMe();
+    final user = await _runWithLoading(() => _repository.getMe());
+    if (user != null) {
       _user = user;
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
       notifyListeners();
     }
   }

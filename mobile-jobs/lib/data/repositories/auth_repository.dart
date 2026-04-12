@@ -15,57 +15,41 @@ class AuthRepository {
     String? companyWebsite,
     String? phone,
   }) async {
-    try {
-      final response = await apiService.register(
-        name: name,
-        email: email,
-        password: password,
-        role: role,
-        companyName: companyName,
-        companyWebsite: companyWebsite,
-        phone: phone,
-      );
+    final response = await apiService.register(
+      name: name,
+      email: email,
+      password: password,
+      role: role,
+      companyName: companyName,
+      companyWebsite: companyWebsite,
+      phone: phone,
+    );
 
-      final user = UserModel.fromJson(response['user']);
-      final token = (response['token'] as String?) ?? '';
+    final user = UserModel.fromJson(response['user']);
+    final token = (response['token'] as String?) ?? '';
 
-      return (user, token);
-    } catch (e) {
-      rethrow;
-    }
+    return (user, token);
   }
 
   Future<(UserModel user, String token)> login({
     required String email,
     required String password,
   }) async {
-    try {
-      final response = await apiService.login(email: email, password: password);
+    final response = await apiService.login(email: email, password: password);
 
-      final user = UserModel.fromJson(response['user']);
-      final token = (response['token'] as String?) ?? '';
+    final user = UserModel.fromJson(response['user']);
+    final token = (response['token'] as String?) ?? '';
 
-      return (user, token);
-    } catch (e) {
-      rethrow;
-    }
+    return (user, token);
   }
 
   Future<void> logout() async {
-    try {
-      await apiService.logout();
-    } catch (e) {
-      rethrow;
-    }
+    await apiService.logout();
   }
 
   Future<UserModel> getMe() async {
-    try {
-      final response = await apiService.getMe();
-      return UserModel.fromJson(response['user']);
-    } catch (e) {
-      rethrow;
-    }
+    final response = await apiService.getMe();
+    return UserModel.fromJson(response['user']);
   }
 
   Future<bool> hasToken() async {

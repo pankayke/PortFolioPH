@@ -86,9 +86,9 @@ if (Test-Path $apiRespPath) {
     $content = Get-Content $apiRespPath -Raw
     
     Test-Condition "ApiResponse wrapper exists" $true
-    Test-Condition "success() includes 'success':true" ($content -match '"success"\s*=>\s*true')
-    Test-Condition "success() includes 'data' field" ($content -match "'data'\s*=>\s*\$data")
-    Test-Condition "error() includes 'success':false" ($content -match '"success"\s*=>\s*false')
+    Test-Condition "success() includes 'success':true" ($content -match "'success'\s*=>\s*true")
+    Test-Condition "success() includes 'data' field" ($content -match '''data''\s*=>\s*\$data')
+    Test-Condition "error() includes 'success':false" ($content -match "'success'\s*=>\s*false")
     Test-Condition "error() includes 'errors' field" ($content -match "'errors'")
     Test-Condition "message field in all responses" ($content -match "'message'")
 } else {
@@ -113,7 +113,10 @@ if (Test-Path $dioPath) {
     Test-Condition "Bearer token injected in headers" ($content -match "Authorization.*Bearer")
     Test-Condition "Token read from secure storage" ($content -match "_secureStorage|FlutterSecureStorage")
     Test-Condition "401 error handled" ($content -match "statusCode == 401")
-    Test-Condition "Token cleared on 401" ($content -match "401.*delete|delete.*401")
+    Test-Condition "Token cleared on 401" (
+        $content -match "(?s)statusCode\s*==\s*401.*_secureStorage\.delete" -or
+        $content -match "(?s)_secureStorage\.delete.*statusCode\s*==\s*401"
+    )
 } else {
     Write-Host "❌ api_service.dart not found!" -ForegroundColor Red
     $script:failCount += 6
@@ -212,9 +215,9 @@ if (Test-Path $routesPath) {
     
     Test-Condition "Routes file exists" $true
     Test-Condition "Public auth routes defined" ($content -match "post.*register|post.*login")
-    Test-Condition "auth:sanctum middleware on protected routes" ($content -match "auth:sanctum")
+    Test-Condition "auth:sanctum middleware on protected routes" ($content -match "auth:sanctum|:sanctum")
     Test-Condition "/auth/me protected route" ($content -match "auth/me.*auth:sanctum|auth:sanctum.*auth/me" -or ($content -match "auth/me" -and $content -match "sanctum"))
-    Test-Condition "/auth/logout protected route" ($content -match "logout.*sanctum|sanctum.*logout" -or ($content -match "logout" -and $content -match "santum"))
+    Test-Condition "/auth/logout protected route" ($content -match "logout.*sanctum|sanctum.*logout" -or ($content -match "logout" -and $content -match "sanctum"))
 } else {
     Write-Host "❌ routes/api.php not found!" -ForegroundColor Red
     $script:failCount += 5
@@ -261,6 +264,7 @@ if (Test-Path $testPath) {
 } else {
     Write-Host "❌ integration_auth_test.dart not found!" -ForegroundColor Red
     Write-Host "   This file should exist for testing" -ForegroundColor Yellow
+    $script:failCount++
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

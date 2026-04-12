@@ -45,6 +45,13 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>> _request(
+    Future<Response<dynamic>> Function() action,
+  ) async {
+    final response = await action();
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   // Auth endpoints
   Future<Map<String, dynamic>> register({
     required String name,
@@ -55,49 +62,43 @@ class ApiService {
     String? companyWebsite,
     String? phone,
   }) async {
-    try {
-      final data = {
-        'name': name,
-        'email': email,
-        'password': password,
-        'role': role,
-        if (companyName != null) 'company_name': companyName,
-        if (companyWebsite != null) 'company_website': companyWebsite,
-        if (phone != null) 'phone': phone,
-      };
+    final data = {
+      'name': name,
+      'email': email,
+      'password': password,
+      'role': role,
+      if (companyName != null) 'company_name': companyName,
+      if (companyWebsite != null) 'company_website': companyWebsite,
+      if (phone != null) 'phone': phone,
+    };
 
-      final response = await _dio.post('/auth/register', data: data);
-
-      if (response.statusCode == 201) {
-        final token = response.data['token'];
-        await saveToken(token);
-        return response.data;
-      }
-      throw Exception(response.data['message'] ?? 'Registration failed');
-    } catch (e) {
-      rethrow;
+    final response = await _request(() => _dio.post('/auth/register', data: data));
+    final token = response['token'];
+    if (token is! String || token.isEmpty) {
+      throw Exception(response['message'] ?? 'Registration failed');
     }
+
+    await saveToken(token);
+    return response;
   }
 
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
-    try {
-      final response = await _dio.post(
+    final response = await _request(
+      () => _dio.post(
         '/auth/login',
         data: {'email': email, 'password': password},
-      );
-
-      if (response.statusCode == 200) {
-        final token = response.data['token'];
-        await saveToken(token);
-        return response.data;
-      }
-      throw Exception(response.data['message'] ?? 'Login failed');
-    } catch (e) {
-      rethrow;
+      ),
+    );
+    final token = response['token'];
+    if (token is! String || token.isEmpty) {
+      throw Exception(response['message'] ?? 'Login failed');
     }
+
+    await saveToken(token);
+    return response;
   }
 
   Future<void> logout() async {
@@ -112,12 +113,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getMe() async {
-    try {
-      final response = await _dio.get('/auth/me');
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+    return _request(() => _dio.get('/auth/me'));
   }
 
   // Job endpoints
@@ -128,8 +124,8 @@ class ApiService {
     String? jobType,
     bool? remote,
   }) async {
-    try {
-      final response = await _dio.get(
+    return _request(
+      () => _dio.get(
         '/jobs',
         queryParameters: {
           'page': page,
@@ -138,20 +134,12 @@ class ApiService {
           if (jobType != null) 'job_type': jobType,
           if (remote != null) 'remote': remote ? 1 : 0,
         },
-      );
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> getJobDetail(int jobId) async {
-    try {
-      final response = await _dio.get('/jobs/$jobId');
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+    return _request(() => _dio.get('/jobs/$jobId'));
   }
 
   Future<Map<String, dynamic>> createJob({
@@ -165,24 +153,19 @@ class ApiService {
     double? salaryMax,
     bool remote = false,
   }) async {
-    try {
-      final data = {
-        'title': title,
-        'description': description,
-        'requirements': requirements,
-        'job_type': jobType,
-        'location': location,
-        'deadline_at': deadlineAt,
-        'remote_work': remote,
-        if (salaryMin != null) 'salary_min': salaryMin,
-        if (salaryMax != null) 'salary_max': salaryMax,
-      };
+    final data = {
+      'title': title,
+      'description': description,
+      'requirements': requirements,
+      'job_type': jobType,
+      'location': location,
+      'deadline_at': deadlineAt,
+      'remote_work': remote,
+      if (salaryMin != null) 'salary_min': salaryMin,
+      if (salaryMax != null) 'salary_max': salaryMax,
+    };
 
-      final response = await _dio.post('/jobs', data: data);
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+    return _request(() => _dio.post('/jobs', data: data));
   }
 
   Future<Map<String, dynamic>> updateJob(
@@ -197,32 +180,23 @@ class ApiService {
     double? salaryMax,
     bool? remote,
   }) async {
-    try {
-      final data = {
-        if (title != null) 'title': title,
-        if (description != null) 'description': description,
-        if (requirements != null) 'requirements': requirements,
-        if (jobType != null) 'job_type': jobType,
-        if (location != null) 'location': location,
-        if (deadlineAt != null) 'deadline_at': deadlineAt,
-        if (remote != null) 'remote_work': remote,
-        if (salaryMin != null) 'salary_min': salaryMin,
-        if (salaryMax != null) 'salary_max': salaryMax,
-      };
+    final data = {
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (requirements != null) 'requirements': requirements,
+      if (jobType != null) 'job_type': jobType,
+      if (location != null) 'location': location,
+      if (deadlineAt != null) 'deadline_at': deadlineAt,
+      if (remote != null) 'remote_work': remote,
+      if (salaryMin != null) 'salary_min': salaryMin,
+      if (salaryMax != null) 'salary_max': salaryMax,
+    };
 
-      final response = await _dio.put('/jobs/$jobId', data: data);
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+    return _request(() => _dio.put('/jobs/$jobId', data: data));
   }
 
   Future<void> deleteJob(int jobId) async {
-    try {
-      await _dio.delete('/jobs/$jobId');
-    } catch (e) {
-      rethrow;
-    }
+    await _dio.delete('/jobs/$jobId');
   }
 
   // Application endpoints
@@ -231,50 +205,33 @@ class ApiService {
     String? coverLetter,
     String? resumeUrl,
   }) async {
-    try {
-      final data = {
-        if (coverLetter != null) 'cover_letter': coverLetter,
-        if (resumeUrl != null) 'resume_url': resumeUrl,
-      };
+    final data = {
+      if (coverLetter != null) 'cover_letter': coverLetter,
+      if (resumeUrl != null) 'resume_url': resumeUrl,
+    };
 
-      final response = await _dio.post('/jobs/$jobId/apply', data: data);
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+    return _request(() => _dio.post('/jobs/$jobId/apply', data: data));
   }
 
   Future<Map<String, dynamic>> getMyApplications({
     int page = 1,
     int perPage = 15,
   }) async {
-    try {
-      final response = await _dio.get(
+    return _request(
+      () => _dio.get(
         '/my-applications',
         queryParameters: {'page': page, 'per_page': perPage},
-      );
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+      ),
+    );
   }
 
   Future<void> withdrawApplication(int applicationId) async {
-    try {
-      await _dio.post('/applications/$applicationId/withdraw');
-    } catch (e) {
-      rethrow;
-    }
+    await _dio.post('/applications/$applicationId/withdraw');
   }
 
   // Admin endpoints
   Future<Map<String, dynamic>> getAdminStats() async {
-    try {
-      final response = await _dio.get('/admin/stats');
-      return response.data;
-    } catch (e) {
-      rethrow;
-    }
+    return _request(() => _dio.get('/admin/stats'));
   }
 
   // Token management

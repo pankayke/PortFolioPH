@@ -22,6 +22,9 @@ import '../exceptions/custom_exceptions.dart';
 /// - User-friendly error message mapping
 class ApiErrorInterceptor extends Interceptor {
   static const int _maxRetries = 3;
+  final Dio _retryDio;
+
+  ApiErrorInterceptor(this._retryDio);
   
   /// Retry delay strategy: exponential backoff
   /// Attempt 1: 100ms, Attempt 2: 200ms, Attempt 3: 400ms
@@ -94,52 +97,9 @@ class ApiErrorInterceptor extends Interceptor {
     return false;
   }
 
-  /// Execute retry request using existing Dio instance
-  /// Hack: We create a temporary Dio to retry since we don't have access to main Dio
+  /// Execute retry request using a dedicated retry client.
   Future<Response> _retryRequest(RequestOptions requestOptions) async {
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: requestOptions.baseUrl,
-        connectTimeout: requestOptions.connectTimeout,
-        receiveTimeout: requestOptions.receiveTimeout,
-        contentType: requestOptions.contentType,
-        validateStatus: (_) => true,
-      ),
-    );
-
-    // Copy all headers
-    dio.options.headers = requestOptions.headers;
-
-    // Execute request based on method
-    switch (requestOptions.method.toUpperCase()) {
-      case 'GET':
-        return dio.get(
-          requestOptions.path,
-          queryParameters: requestOptions.queryParameters,
-        );
-      case 'POST':
-        return dio.post(
-          requestOptions.path,
-          data: requestOptions.data,
-          queryParameters: requestOptions.queryParameters,
-        );
-      case 'PUT':
-        return dio.put(
-          requestOptions.path,
-          data: requestOptions.data,
-          queryParameters: requestOptions.queryParameters,
-        );
-      case 'DELETE':
-        return dio.delete(
-          requestOptions.path,
-          queryParameters: requestOptions.queryParameters,
-        );
-      default:
-        throw DioException(
-          requestOptions: requestOptions,
-          error: 'Unsupported method: ${requestOptions.method}',
-        );
-    }
+    return _retryDio.fetch<dynamic>(requestOptions);
   }
 
   /// Convert DioException to user-friendly ApiException with localized message

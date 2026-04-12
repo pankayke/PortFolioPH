@@ -17,10 +17,15 @@ class AppRouter {
     initialLocation: '/splash',
     redirect: (context, state) async {
       final authProvider = context.read<AuthProvider>();
+      final isGoingToSplash = state.uri.path == '/splash';
+      if (!authProvider.isInitialized && !isGoingToSplash) {
+        return '/splash';
+      }
+
       final isAuthenticated = authProvider.isAuthenticated;
       final isGoingToAuth = state.uri.path == '/login' ||
           state.uri.path == '/register' ||
-          state.uri.path == '/splash';
+          isGoingToSplash;
 
       if (isAuthenticated && isGoingToAuth) {
         return '/jobs';
@@ -86,9 +91,12 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
-    await Future.delayed(const Duration(seconds: 2));
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.restoreSession();
+    await Future.delayed(const Duration(milliseconds: 800));
+
     if (mounted) {
-      context.go('/login');
+      context.go(authProvider.isAuthenticated ? '/jobs' : '/login');
     }
   }
 
