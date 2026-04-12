@@ -32,7 +32,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin, UserAwareScreenMixin, BokehAnimationMixin {
   late AnimationController _fadeController;
   late AnimationController _scaleController;
-  int _currentCategoryIndex = 0;
   bool _didInitUserLoad = false;
 
   static const List<String> _rotationCategories = [
@@ -451,6 +450,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     ColorScheme colorScheme,
   ) {
     final previewJobs = jobsProvider.jobs.take(2).toList(growable: false);
+    final textTheme = Theme.of(context).textTheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -488,8 +488,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                         children: [
                           Text(
                             'Jobs & Opportunities',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           Container(
                             padding: const EdgeInsets.all(8),
@@ -539,7 +540,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildJobCategoriesCarousel(isDark, colorScheme),
+                _JobCategoriesCarousel(
+                  categories: _rotationCategories,
+                  colorScheme: colorScheme,
+                  isDark: isDark,
+                ),
                 if (previewJobs.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   ...previewJobs.map(
@@ -554,109 +559,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildJobCategoriesCarousel(bool isDark, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          height: 80,
-          child: PageView.builder(
-            onPageChanged: (index) {
-              setState(() => _currentCategoryIndex = index);
-            },
-            itemCount: _rotationCategories.length,
-            itemBuilder: (context, index) {
-              final category = _rotationCategories[index];
-              final isActive = index == _currentCategoryIndex;
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: AnimatedScale(
-                  scale: isActive ? 1.0 : 0.92,
-                  duration: const Duration(milliseconds: 300),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: isActive
-                                ? [
-                                    colorScheme.primary.withAlpha(51),
-                                    colorScheme.primary.withAlpha(25),
-                                  ]
-                                : [
-                                    Colors.white.withAlpha(10),
-                                    Colors.white.withAlpha(5),
-                                  ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isActive
-                                ? colorScheme.primary.withAlpha(102)
-                                : Colors.white.withAlpha(26),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: InkWell(
-                          onTap: () =>
-                              setState(() => _currentCategoryIndex = index),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(
-                                category,
-                                textAlign: TextAlign.center,
-                                style:
-                                    (Theme.of(context).textTheme.bodyMedium ??
-                                            const TextStyle())
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                          color: isActive
-                                              ? colorScheme.primary
-                                              : null,
-                                        ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              _rotationCategories.length,
-              (index) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: index == _currentCategoryIndex ? 24 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: index == _currentCategoryIndex
-                        ? colorScheme.primary
-                        : Colors.grey.withAlpha(102),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -1219,6 +1121,129 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
+    );
+  }
+}
+
+class _JobCategoriesCarousel extends StatefulWidget {
+  final List<String> categories;
+  final ColorScheme colorScheme;
+  final bool isDark;
+
+  const _JobCategoriesCarousel({
+    required this.categories,
+    required this.colorScheme,
+    required this.isDark,
+  });
+
+  @override
+  State<_JobCategoriesCarousel> createState() => _JobCategoriesCarouselState();
+}
+
+class _JobCategoriesCarouselState extends State<_JobCategoriesCarousel> {
+  int _currentCategoryIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 80,
+          child: PageView.builder(
+            onPageChanged: (index) {
+              setState(() => _currentCategoryIndex = index);
+            },
+            itemCount: widget.categories.length,
+            itemBuilder: (context, index) {
+              final category = widget.categories[index];
+              final isActive = index == _currentCategoryIndex;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: AnimatedScale(
+                  scale: isActive ? 1.0 : 0.92,
+                  duration: const Duration(milliseconds: 300),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: isActive
+                                ? [
+                                    widget.colorScheme.primary.withAlpha(51),
+                                    widget.colorScheme.primary.withAlpha(25),
+                                  ]
+                                : [
+                                    Colors.white.withAlpha(10),
+                                    Colors.white.withAlpha(5),
+                                  ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isActive
+                                ? widget.colorScheme.primary.withAlpha(102)
+                                : Colors.white.withAlpha(26),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: InkWell(
+                          onTap: () =>
+                              setState(() => _currentCategoryIndex = index),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text(
+                                category,
+                                textAlign: TextAlign.center,
+                                style: (textTheme.bodyMedium ?? const TextStyle())
+                                    .copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: isActive
+                                          ? widget.colorScheme.primary
+                                          : null,
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              widget.categories.length,
+              (index) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: index == _currentCategoryIndex ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: index == _currentCategoryIndex
+                        ? widget.colorScheme.primary
+                        : Colors.grey.withAlpha(102),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
