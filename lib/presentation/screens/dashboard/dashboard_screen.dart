@@ -68,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Start polling jobs when screen is visible
+    // Keep live jobs updated while dashboard is visible.
     context.read<JobFeedProvider>().startPolling();
 
     loadDataForUserWithId((userId) {
@@ -87,7 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void deactivate() {
-    // Stop polling when leaving dashboard to conserve battery
+    // Stop polling when leaving dashboard to conserve resources.
     context.read<JobFeedProvider>().stopPolling();
     super.deactivate();
   }
@@ -183,6 +183,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                     displayName,
                     isDark,
                     colorScheme,
+                    jobsProvider.jobs.length,
+                    jobsProvider.savedJobIds.length,
+                    skills,
+                    portfolios,
                   ),
                 ),
               ),
@@ -257,6 +261,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     String displayName,
     bool isDark,
     ColorScheme colorScheme,
+    int liveJobsCount,
+    int savedJobsCount,
+    int skillsCount,
+    int portfoliosCount,
   ) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
@@ -337,9 +345,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                               width: 1.2,
                             ),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              'M',
+                              displayName.characters.first.toUpperCase(),
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
@@ -366,10 +374,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    _buildStatPill('Applied: 3', colorScheme, isDark),
-                    _buildStatPill('Saved: 12', colorScheme, isDark),
-                    _buildStatPill('Views: 2.4k', colorScheme, isDark),
-                    _buildStatPill('50k+ users', colorScheme, isDark),
+                    _buildStatPill('Live Jobs: $liveJobsCount', colorScheme, isDark),
+                    _buildStatPill('Saved: $savedJobsCount', colorScheme, isDark),
+                    _buildStatPill('Skills: $skillsCount', colorScheme, isDark),
+                    _buildStatPill('Portfolio: $portfoliosCount', colorScheme, isDark),
                   ],
                 ),
               ],
@@ -970,6 +978,40 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: CircularProgressIndicator(color: colorScheme.primary),
             ),
           )
+        else if (jobsProvider.errorMessage != null && jobsProvider.jobs.isEmpty)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withAlpha(10)
+                      : Colors.white.withAlpha(102),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withAlpha(26)
+                        : Colors.white.withAlpha(51),
+                  ),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Unable to load live jobs right now.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pull to refresh or check backend connection.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
         else if (jobsProvider.jobs.isEmpty)
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -990,7 +1032,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 padding: const EdgeInsets.all(20),
                 child: Center(
                   child: Text(
-                    'No jobs available yet. Pull to refresh.',
+                    'No live jobs found right now. Pull to refresh.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
@@ -1078,18 +1120,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                   _buildActionTile(
                     context,
                     Icons.people_alt_outlined,
-                    'Kapwa Pinoy Network',
-                    'Mentorship • Cebu • Manila • Davao',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Networking module coming next sprint.',
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    'Saved Jobs',
+                    'Review your shortlisted opportunities',
+                    () => context.push(AppRoutes.seekerSavedJobs),
                     colorScheme,
                   ),
                   Divider(height: 1, color: Colors.white.withAlpha(26)),

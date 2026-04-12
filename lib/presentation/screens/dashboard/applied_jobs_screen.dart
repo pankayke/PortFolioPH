@@ -188,7 +188,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'No applications yet',
+                                  'No applications yet. Start applying to jobs to track them here.',
                                   style: Theme.of(context).textTheme.bodyLarge,
                                 ),
                                 const SizedBox(height: 8),

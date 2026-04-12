@@ -10,23 +10,37 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/mixins/screen_mixins.dart';
+import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/providers/certification_provider.dart';
+import 'package:portfolioph/presentation/providers/education_provider.dart';
+import 'package:portfolioph/presentation/providers/experience_provider.dart';
 import 'package:portfolioph/presentation/providers/file_download_provider.dart';
+import 'package:portfolioph/presentation/providers/skills_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
 import 'package:portfolioph/presentation/widgets/file_download_widgets.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  static const List<String> _regionalBadges = ['Cebu', 'Manila', 'Davao'];
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-  static const List<({String skill, int rating})> _skillRatings = [
-    (skill: 'Email Management', rating: 5),
-    (skill: 'Canva', rating: 4),
-    (skill: 'Zoom Coordination', rating: 5),
-    (skill: 'Customer Support', rating: 4),
-  ];
+class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin {
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadDataForUserWithId((userId) {
+      context.read<ExperienceProvider>().loadForUser(userId);
+      context.read<SkillsProvider>().loadForUser(userId);
+      context.read<EducationProvider>().loadForUser(userId);
+      context.read<CertificationProvider>().loadForUser(userId);
+    });
+  }
 
   Future<void> _logout(BuildContext context) async {
     final confirm = await showDialog<bool>(
@@ -67,6 +81,21 @@ class ProfileScreen extends StatelessWidget {
     final displayName = (user.fullName?.trim().isNotEmpty ?? false)
         ? user.fullName!
         : user.username;
+    final roleLabel = user.role
+      .split('_')
+      .map((word) => word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1)}')
+      .join(' ');
+    final locationBadges = (user.location?.trim().isNotEmpty ?? false)
+      ? user.location!
+          .split(',')
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false)
+      : const <String>[];
+    final experience = context.watch<ExperienceProvider>().experience;
+    final skills = context.watch<SkillsProvider>().skills;
+    final education = context.watch<EducationProvider>().education;
+    final certifications = context.watch<CertificationProvider>().certifications;
 
     return PremiumAppBackground(
       child: Scaffold(
@@ -124,7 +153,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Virtual Assistant | Cebu | 50+ Connections',
+                          locationBadges.isNotEmpty
+                              ? '$roleLabel | ${locationBadges.first}'
+                              : roleLabel,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 2),
@@ -133,20 +164,22 @@ class ProfileScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: _regionalBadges
-                              .map(
-                                (badge) => Chip(
-                                  label: Text(badge),
-                                  avatar: const Icon(Icons.flag, size: 14),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              )
-                              .toList(growable: false),
-                        ),
-                        const SizedBox(height: 8),
+                        if (locationBadges.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: locationBadges
+                                .map(
+                                  (badge) => Chip(
+                                    label: Text(badge),
+                                    avatar: const Icon(Icons.flag, size: 14),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                )
+                                .toList(growable: false),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
@@ -173,59 +206,66 @@ class ProfileScreen extends StatelessWidget {
               child: Text(
                 (user.bio?.trim().isNotEmpty ?? false)
                     ? user.bio!
-                    : 'No bio yet. You can add this in profile setup/edit later.',
+                    : 'Add a short bio to introduce your strengths to recruiters.',
               ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'Experience',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Virtual Assistant @ RemoteBoss',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 4),
-                  const Text('Jan 2025 - Present • ₱25k/mo'),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Managed emails and calendar workflows for 5 CEOs.',
-                  ),
-                ],
-              ),
+              child: experience.isEmpty
+                  ? const Text('No experience added yet. Add your latest role in Resume.')
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${experience.first.jobTitle} @ ${experience.first.company}',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${experience.first.startDate ?? 'Start date not set'}'
+                          '${experience.first.isCurrent ? ' - Present' : (experience.first.endDate != null ? ' - ${experience.first.endDate}' : '')}',
+                        ),
+                        if (experience.first.description?.trim().isNotEmpty ?? false) ...[
+                          const SizedBox(height: 6),
+                          Text(experience.first.description!),
+                        ],
+                      ],
+                    ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'Skills',
-              child: Column(
-                children: _skillRatings
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Expanded(child: Text(item.skill)),
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => Icon(
-                                  index < item.rating
-                                      ? Icons.star_rounded
-                                      : Icons.star_outline_rounded,
-                                  size: 18,
-                                  color: index < item.rating
-                                      ? AppConstants.warningColor
-                                      : null,
-                                ),
+              child: skills.isEmpty
+                  ? const Text('No skills added yet. Add your strongest skills in the Skills tab.')
+                  : Column(
+                      children: skills
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Text(item.name)),
+                                  Row(
+                                    children: List.generate(
+                                      5,
+                                      (index) => Icon(
+                                        index < item.proficiency
+                                            ? Icons.star_rounded
+                                            : Icons.star_outline_rounded,
+                                        size: 18,
+                                        color: index < item.proficiency
+                                            ? AppConstants.warningColor
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    )
-                    .toList(growable: false),
-              ),
+                          )
+                          .toList(growable: false),
+                    ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
@@ -259,11 +299,7 @@ class ProfileScreen extends StatelessWidget {
                           icon: const Icon(Icons.upload_file_outlined),
                           label: const Text('Upload CV'),
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('CV upload feature coming soon'),
-                              ),
-                            );
+                            context.push(AppRoutes.seekerCvUpload);
                           },
                         ),
                       ),
@@ -275,12 +311,21 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'Education & Certifications',
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('BS IT - LNU 2024 • Dean\'s Lister'),
-                  SizedBox(height: 6),
-                  Text('Google IT Support • TESDA Bookkeeping'),
+                  if (education.isEmpty && certifications.isEmpty)
+                    const Text('No education or certifications added yet. Add them in Resume to strengthen your profile.'),
+                  if (education.isNotEmpty)
+                    Text(
+                      '${education.first.degree} - ${education.first.institution}',
+                    ),
+                  if (certifications.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      certifications.take(2).map((c) => c.name).join(' • '),
+                    ),
+                  ],
                 ],
               ),
             ),

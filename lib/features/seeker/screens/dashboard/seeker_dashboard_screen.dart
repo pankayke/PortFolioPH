@@ -288,7 +288,7 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                         Icon(Icons.history, size: 48, color: Colors.grey[400]),
                         const SizedBox(height: 12),
                         Text(
-                          'No recent activity yet',
+                          'No recent activity yet. Your latest applications will appear here.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -352,7 +352,9 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
         }
 
         if (jobsProvider.jobs.isEmpty) {
-          return const Center(child: Text('No jobs available yet.'));
+          return const Center(
+            child: Text('No jobs available right now. Pull down to refresh.'),
+          );
         }
 
         return RefreshIndicator(
@@ -515,7 +517,9 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
         }
 
         if (applicationProvider.applications.isEmpty) {
-          return const Center(child: Text('No applications yet.'));
+          return const Center(
+            child: Text('No applications yet. Apply to a job to track progress here.'),
+          );
         }
 
         return RefreshIndicator(
