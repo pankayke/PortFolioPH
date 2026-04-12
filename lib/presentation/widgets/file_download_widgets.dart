@@ -160,17 +160,19 @@ class _DownloadDialogState extends State<DownloadDialog> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
-              ...widget.formats.map((format) {
-                return RadioListTile<String>(
-                  value: format,
-                  groupValue: _selectedFormat,
-                  onChanged: isLoading ? null : (value) {
-                    setState(() => _selectedFormat = value ?? format);
-                  },
-                  title: Text(format.toUpperCase()),
-                  dense: true,
-                );
-              }),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: widget.formats.map((format) {
+                  return ChoiceChip(
+                    label: Text(format.toUpperCase()),
+                    selected: _selectedFormat == format,
+                    onSelected: isLoading
+                        ? null
+                        : (_) => setState(() => _selectedFormat = format),
+                  );
+                }).toList(growable: false),
+              ),
               if (provider.isDownloading)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
