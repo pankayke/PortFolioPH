@@ -11,8 +11,8 @@ import 'package:portfolioph/features/recruiter/repositories/recruiter_repository
 import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/providers/theme_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
-import 'package:portfolioph/presentation/widgets/premium_titan_mobile_header.dart';
 
 class RecruiterDashboardScreen extends StatefulWidget {
   final int initialTab;
@@ -54,7 +54,6 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   ];
 
   late int _selectedIndex;
-  bool _compactHeader = false;
 
   @override
   void initState() {
@@ -72,46 +71,66 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isPostTab = _selectedIndex == 3;
-    final user = context.watch<AuthProvider>().currentUser;
-    final userName = user?.fullName ?? user?.username ?? 'Recruiter';
     return PremiumAppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: PremiumTitanMobileHeader(
-          title: _tabs[_selectedIndex].label,
-          greeting: 'Recruiter Dashboard',
-          userName: userName,
-          compact: _compactHeader,
-          onSearchTap: () => _goToTab(1),
-          onSearchSubmitted: (_) => _goToTab(1),
-          onNotificationTap: () => context.push(AppRoutes.notificationSettings),
-          onProfileTap: () => _goToTab(4),
-          onLogoutTap: () => _logout(context),
-        ),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (notification.metrics.axis != Axis.vertical) return false;
-            final shouldCompact = notification.metrics.pixels > 18;
-            if (shouldCompact != _compactHeader) {
-              setState(() => _compactHeader = shouldCompact);
-            }
-            return false;
-          },
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            child: IndexedStack(
-              key: ValueKey(_selectedIndex),
-              index: _selectedIndex,
-              children: [
-                _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
-                const _RecruiterJobsTab(),
-                const ApplicantTrackingScreen(compactMode: true),
-                _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
-                const _RecruiterCompanyProfileTab(),
-              ],
+        appBar: AppBar(
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0A66C2), Color(0xFF38BDF8)],
+                  ),
+                ),
+                child: const Icon(Icons.apartment_rounded, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Text(_tabs[_selectedIndex].label),
+            ],
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, _) {
+                final isDark = themeProvider.themeMode == ThemeMode.dark;
+                return IconButton(
+                  onPressed: () => themeProvider.toggleDarkMode(),
+                  icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+                  tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
+                );
+              },
             ),
+            IconButton(
+              onPressed: () => context.push(AppRoutes.notificationSettings),
+              icon: const Icon(Icons.notifications_outlined),
+              tooltip: 'Notifications',
+            ),
+            IconButton(
+              onPressed: () => _logout(context),
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+            ),
+          ],
+        ),
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 260),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          child: IndexedStack(
+            key: ValueKey(_selectedIndex),
+            index: _selectedIndex,
+            children: [
+              _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
+              const _RecruiterJobsTab(),
+              const ApplicantTrackingScreen(compactMode: true),
+              _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+              const _RecruiterCompanyProfileTab(),
+            ],
           ),
         ),
         floatingActionButton: isPostTab
@@ -180,11 +199,8 @@ class _RecruiterOverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer3<
-      AuthProvider,
-      RecruiterJobManagerProvider,
-      RecruiterApplicationManagerProvider
-    >(
+    return Consumer3<AuthProvider, RecruiterJobManagerProvider,
+        RecruiterApplicationManagerProvider>(
       builder: (context, authProvider, jobsProvider, appsProvider, _) {
         final user = authProvider.currentUser;
         final recentApplicants = appsProvider.applications.take(4).toList();
@@ -220,8 +236,7 @@ class _RecruiterOverviewTab extends StatelessWidget {
                             children: [
                               Text(
                                 'Welcome back, ${user?.fullName ?? 'Recruiter'}',
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w800,
                                       height: 1.05,
@@ -230,11 +245,8 @@ class _RecruiterOverviewTab extends StatelessWidget {
                               const SizedBox(height: 8),
                               Text(
                                 user?.location ?? 'Your hiring workspace',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.82,
-                                      ),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.82),
                                     ),
                               ),
                               const SizedBox(height: 12),
@@ -256,14 +268,9 @@ class _RecruiterOverviewTab extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(18),
                             color: Colors.white.withValues(alpha: 0.18),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.22),
-                            ),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
                           ),
-                          child: const Icon(
-                            Icons.apartment_rounded,
-                            color: Colors.white,
-                          ),
+                          child: const Icon(Icons.apartment_rounded, color: Colors.white),
                         ),
                       ],
                     ),
@@ -333,8 +340,9 @@ class _RecruiterOverviewTab extends StatelessWidget {
                         children: [
                           Text(
                             'Recent Applicants',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w800),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
                           ),
                           const SizedBox(height: 3),
                           Text(
@@ -356,13 +364,11 @@ class _RecruiterOverviewTab extends StatelessWidget {
               SizedBox(
                 height: 148,
                 child: recentApplicants.isEmpty
-                    ? const _GlassCard(
-                        child: Center(child: Text('No applicants yet.')),
-                      )
+                    ? const _GlassCard(child: Center(child: Text('No applicants yet.')))
                     : ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: recentApplicants.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 10),
+                          separatorBuilder: (_, _) => const SizedBox(width: 10),
                         itemBuilder: (context, index) {
                           final app = recentApplicants[index];
                           return SizedBox(
@@ -456,8 +462,8 @@ class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
                       child: Text(
                         '${provider.jobs.length} postings',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                     ),
                     Text(
@@ -560,8 +566,8 @@ class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
                       child: Text(
                         '${provider.applications.length} candidates',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                     ),
                     Text(
@@ -723,8 +729,7 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
                 DropdownMenuItem(value: 'contract', child: Text('Contract')),
                 DropdownMenuItem(value: 'freelance', child: Text('Freelance')),
               ],
-              onChanged: (value) =>
-                  setState(() => _jobType = value ?? 'full_time'),
+              onChanged: (value) => setState(() => _jobType = value ?? 'full_time'),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -764,7 +769,9 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
       labelText: label,
       filled: true,
       fillColor: Colors.white.withValues(alpha: 0.50),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.28)),
@@ -800,9 +807,9 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Job posted successfully.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Job posted successfully.')),
+      );
       widget.onPosted();
     } catch (_) {
       if (!mounted) return;
@@ -873,10 +880,7 @@ class _RecruiterCompanyProfileTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Company Description',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('Company Description', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               Text(
                 (user?.bio?.trim().isNotEmpty ?? false)
@@ -918,15 +922,13 @@ class _JobCard extends StatelessWidget {
                   child: Text(
                     job.title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                          fontWeight: FontWeight.w800,
+                        ),
                   ),
                 ),
                 RecruiterGlowChip(
                   label: job.status.toUpperCase(),
-                  glowColor: job.isClosed
-                      ? Colors.redAccent
-                      : const Color(0xFF38BDF8),
+                  glowColor: job.isClosed ? Colors.redAccent : const Color(0xFF38BDF8),
                 ),
               ],
             ),
@@ -940,19 +942,14 @@ class _JobCard extends StatelessWidget {
               spacing: 8,
               children: [
                 RecruiterGlowChip(label: '${job.applicationCount} applicants'),
-                if (job.isDeadlinePassed)
-                  RecruiterGlowChip(
-                    label: 'Deadline passed',
-                    glowColor: Colors.orangeAccent,
-                  ),
+                if (job.isDeadlinePassed) RecruiterGlowChip(label: 'Deadline passed', glowColor: Colors.orangeAccent),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 TextButton.icon(
-                  onPressed: () =>
-                      context.push('/recruiter/jobs/${job.id}/edit'),
+                  onPressed: () => context.push('/recruiter/jobs/${job.id}/edit'),
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Edit'),
                 ),
@@ -995,13 +992,11 @@ class _ApplicantCard extends StatelessWidget {
                   radius: 18,
                   backgroundColor: Colors.white.withValues(alpha: 0.18),
                   child: Text(
-                    app.applicantName.isNotEmpty
-                        ? app.applicantName[0].toUpperCase()
-                        : '?',
+                    app.applicantName.isNotEmpty ? app.applicantName[0].toUpperCase() : '?',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -1011,8 +1006,9 @@ class _ApplicantCard extends StatelessWidget {
                     children: [
                       Text(
                         app.applicantName,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -1031,10 +1027,7 @@ class _ApplicantCard extends StatelessWidget {
               children: [
                 RecruiterGlowChip(label: app.statusDisplay),
                 if (app.applicantLocation.isNotEmpty)
-                  RecruiterGlowChip(
-                    label: app.applicantLocation,
-                    glowColor: const Color(0xFF60A5FA),
-                  ),
+                  RecruiterGlowChip(label: app.applicantLocation, glowColor: const Color(0xFF60A5FA)),
               ],
             ),
             const SizedBox(height: 8),
@@ -1060,10 +1053,7 @@ class _ApplicantCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  app.applicantName,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text(app.applicantName, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
@@ -1143,9 +1133,7 @@ class _StatusFilterChip extends StatelessWidget {
       selectedColor: colorScheme.primary.withValues(alpha: 0.22),
       backgroundColor: colorScheme.surface.withValues(alpha: 0.38),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      side: BorderSide(
-        color: colorScheme.outlineVariant.withValues(alpha: 0.72),
-      ),
+      side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.72)),
     );
   }
 }
@@ -1183,12 +1171,15 @@ class _StatTile extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
           ),
           const SizedBox(height: 2),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ),
     );
@@ -1205,11 +1196,11 @@ class _ApplicantPreviewCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final initials = app.applicantName.isNotEmpty
         ? app.applicantName
-              .trim()
-              .split(' ')
-              .take(2)
-              .map((part) => part.isNotEmpty ? part[0].toUpperCase() : '')
-              .join()
+            .trim()
+            .split(' ')
+            .take(2)
+            .map((part) => part.isNotEmpty ? part[0].toUpperCase() : '')
+            .join()
         : '?';
 
     return _GlassCard(
@@ -1225,9 +1216,9 @@ class _ApplicantPreviewCard extends StatelessWidget {
                 child: Text(
                   initials,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1240,8 +1231,8 @@ class _ApplicantPreviewCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                            fontWeight: FontWeight.w800,
+                          ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1258,8 +1249,8 @@ class _ApplicantPreviewCard extends StatelessWidget {
                 glowColor: app.isAccepted
                     ? colorScheme.tertiary
                     : app.isRejected
-                    ? colorScheme.error
-                    : colorScheme.primary,
+                        ? colorScheme.error
+                        : colorScheme.primary,
               ),
             ],
           ),
@@ -1280,18 +1271,16 @@ class _ApplicantPreviewCard extends StatelessWidget {
                   value: _matchScore(app),
                   minHeight: 6,
                   backgroundColor: colorScheme.surface.withValues(alpha: 0.12),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    colorScheme.primary,
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
               const SizedBox(width: 10),
               Text(
                 '${(_matchScore(app) * 100).round()}%',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
             ],
           ),

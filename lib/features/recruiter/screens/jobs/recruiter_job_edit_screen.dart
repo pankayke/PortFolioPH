@@ -95,8 +95,7 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                     children: [
                       Text(
                         'Update Job Posting',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                             ),
@@ -105,8 +104,8 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                       Text(
                         'Refine the role details, salary, and publishing status without breaking the existing posting.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.84),
-                        ),
+                              color: Colors.white.withValues(alpha: 0.84),
+                            ),
                       ),
                     ],
                   ),
@@ -167,25 +166,12 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                           decoration: _glassDecoration('Status'),
                           dropdownColor: const Color(0xFF0F172A),
                           items: const [
-                            DropdownMenuItem(
-                              value: 'draft',
-                              child: Text('Draft'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'pending',
-                              child: Text('Pending'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'approved',
-                              child: Text('Approved'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'closed',
-                              child: Text('Closed'),
-                            ),
+                            DropdownMenuItem(value: 'draft', child: Text('Draft')),
+                            DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                            DropdownMenuItem(value: 'approved', child: Text('Approved')),
+                            DropdownMenuItem(value: 'closed', child: Text('Closed')),
                           ],
-                          onChanged: (value) =>
-                              setState(() => _status = value ?? _status),
+                          onChanged: (value) => setState(() => _status = value ?? _status),
                         ),
                       ],
                     ),
@@ -204,8 +190,7 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                             try {
                               await provider.updateJob(job.id, {
                                 'title': _titleController.text.trim(),
-                                'description': _descriptionController.text
-                                    .trim(),
+                                'description': _descriptionController.text.trim(),
                                 'location': _locationController.text.trim(),
                                 'salary_min': double.tryParse(
                                   _salaryMinController.text.trim(),
@@ -268,9 +253,7 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(
-          color: const Color(0xFF38BDF8).withValues(alpha: 0.9),
-        ),
+        borderSide: BorderSide(color: const Color(0xFF38BDF8).withValues(alpha: 0.9)),
       ),
     );
   }
