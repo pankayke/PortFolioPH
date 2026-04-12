@@ -160,7 +160,7 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 32),
               child: Text(
-                'No candidates match this view yet.',
+                'No candidates match this filter yet. Try switching status tabs or clear filters.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             )

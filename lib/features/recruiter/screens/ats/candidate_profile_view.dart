@@ -172,7 +172,7 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                     const SizedBox(height: 10),
                     if (skills.isEmpty)
                       Text(
-                        'No structured skills were provided yet.',
+                        'No structured skills were provided. Review cover letter and resume details below.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),

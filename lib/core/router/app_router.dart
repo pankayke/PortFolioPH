@@ -31,7 +31,6 @@ import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_sc
 import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_detail_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_edit_screen.dart';
-import 'package:portfolioph/features/seeker/screens/dashboard/seeker_dashboard_screen.dart';
 import 'package:portfolioph/features/seeker/screens/jobs/saved_jobs_screen.dart';
 import 'package:portfolioph/features/seeker/screens/profile/cv_upload_screen.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
@@ -229,27 +228,27 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.dashboard,
         name: 'dashboard',
-        builder: (context, state) => const SeekerDashboardScreen(),
+        builder: (context, state) => const MainScaffold(),
       ),
       GoRoute(
         path: AppRoutes.seekerDashboard,
         name: 'seeker-dashboard',
-        builder: (context, state) => const SeekerDashboardScreen(),
+        builder: (context, state) => const MainScaffold(),
       ),
       GoRoute(
         path: AppRoutes.seekerJobsList,
         name: 'seeker-jobs-list',
-        builder: (context, state) => const SeekerDashboardScreen(),
+        builder: (context, state) => const MainScaffold(),
       ),
       GoRoute(
         path: AppRoutes.seekerApplications,
         name: 'seeker-applications',
-        builder: (context, state) => const SeekerDashboardScreen(),
+        builder: (context, state) => const MainScaffold(),
       ),
       GoRoute(
         path: AppRoutes.seekerProfile,
         name: 'seeker-profile',
-        builder: (context, state) => const SeekerDashboardScreen(),
+        builder: (context, state) => const MainScaffold(),
       ),
       GoRoute(
         path: AppRoutes.seekerSavedJobs,
