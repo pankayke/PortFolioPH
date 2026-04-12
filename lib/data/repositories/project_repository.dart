@@ -107,28 +107,39 @@ class ProjectRepository {
     try {
       final portfoliosData = await _apiService.get('/users/$userId/portfolios');
       if (portfoliosData is List) {
-        final featured = <ProjectModel>[];
+        final portfolioIds = portfoliosData
+            .whereType<Map<String, dynamic>>()
+            .map((item) => _asInt(item['id']))
+            .whereType<int>()
+            .toList(growable: false);
 
-        for (final rawPortfolio in portfoliosData) {
-          if (rawPortfolio is! Map<String, dynamic>) continue;
-          final portfolioId = _asInt(rawPortfolio['id']);
-          if (portfolioId == null) continue;
+        final projectsPerPortfolio = await Future.wait(
+          portfolioIds.map(_loadPortfolioProjectsSafely),
+        );
 
-          final projectsData = await _apiService.get(
-            '/portfolios/$portfolioId/projects',
-          );
-          if (projectsData is! List) continue;
+        final featured = projectsPerPortfolio
+            .expand((items) => items)
+            .where((project) => project.userId == userId && project.isFeatured)
+            .toList(growable: false);
 
-          for (final rawProject in projectsData) {
-            if (rawProject is! Map<String, dynamic>) continue;
-            final project = ProjectModel.fromMap(rawProject);
-            if (project.userId == userId && project.isFeatured) {
-              featured.add(project);
-            }
+        featured.sort((a, b) {
+          final sortOrderCompare = a.sortOrder.compareTo(b.sortOrder);
+          if (sortOrderCompare != 0) return sortOrderCompare;
+          return b.createdAt.compareTo(a.createdAt);
+        });
+
+        final deduped = <ProjectModel>[];
+        final seenIds = <int>{};
+        for (final project in featured) {
+          final id = project.id;
+          if (id != null) {
+            if (seenIds.contains(id)) continue;
+            seenIds.add(id);
           }
+          deduped.add(project);
         }
 
-        return featured;
+        return deduped;
       }
     } catch (_) {
       // Fallback to local cache.
@@ -145,6 +156,19 @@ class ProjectRepository {
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value);
     return null;
+  }
+
+  Future<List<ProjectModel>> _loadPortfolioProjectsSafely(int portfolioId) async {
+    try {
+      final projectsData = await _apiService.get('/portfolios/$portfolioId/projects');
+      if (projectsData is! List) return const <ProjectModel>[];
+      return projectsData
+          .whereType<Map<String, dynamic>>()
+          .map(ProjectModel.fromMap)
+          .toList(growable: false);
+    } catch (_) {
+      return const <ProjectModel>[];
+    }
   }
 
   Future<int> update(ProjectModel project) async {

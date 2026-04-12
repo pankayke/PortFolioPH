@@ -33,6 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   late AnimationController _fadeController;
   late AnimationController _scaleController;
   int _currentCategoryIndex = 0;
+  bool _didInitUserLoad = false;
 
   static const List<String> _rotationCategories = [
     'Week 1: IT / Dev Jobs',
@@ -68,6 +69,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_didInitUserLoad) return;
+    _didInitUserLoad = true;
 
     // Keep live jobs updated while dashboard is visible.
     context.read<JobFeedProvider>().startPolling();
@@ -122,9 +125,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       context.read<ReflectionsProvider>().loadForUser(userId),
       context.read<ExperienceProvider>().loadForUser(userId),
       context.read<EducationProvider>().loadForUser(userId),
-      _loadJobsWithAlignment(),
-      Future<void>.delayed(const Duration(milliseconds: 700)),
     ]);
+
+    // Recompute alignment only after profile signals are refreshed.
+    await _loadJobsWithAlignment();
   }
 
   Future<void> _quickApply(JobListingModel job) async {
