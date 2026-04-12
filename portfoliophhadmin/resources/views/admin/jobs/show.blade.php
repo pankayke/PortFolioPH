@@ -78,6 +78,11 @@
                 <div class="space-y-6">
                     <div class="cc-elevated-card p-5 md:p-6">
                         <h3 class="text-base font-semibold text-slate-900">Job Deep Dive</h3>
+                        @php
+                            $skills = is_array($job->required_skills)
+                                ? array_values(array_filter(array_map('trim', $job->required_skills)))
+                                : array_values(array_filter(array_map('trim', explode(',', (string) ($job->required_skills ?? '')))));
+                        @endphp
                         <div class="mt-4 space-y-5">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Description</p>
@@ -87,16 +92,18 @@
                                 <div><p class="text-xs text-slate-500">Location</p><p class="font-semibold text-slate-900">{{ $job->location }}</p></div>
                                 <div><p class="text-xs text-slate-500">Job Type</p><p class="font-semibold text-slate-900">{{ ucfirst($job->job_type) }}</p></div>
                                 <div><p class="text-xs text-slate-500">Salary Range</p><p class="font-semibold text-slate-900">{{ number_format($job->salary_min) }} - {{ number_format($job->salary_max) }}</p></div>
-                                <div><p class="text-xs text-slate-500">Deadline</p><p class="font-semibold text-slate-900">{{ $job->deadline->format('M d, Y') }}</p></div>
+                                <div><p class="text-xs text-slate-500">Deadline</p><p class="font-semibold text-slate-900">{{ $job->deadline ? \Illuminate\Support\Carbon::parse($job->deadline)->format('M d, Y') : 'No deadline set' }}</p></div>
                                 <div><p class="text-xs text-slate-500">Last IP</p><p class="font-semibold text-slate-900">N/A</p></div>
                                 <div><p class="text-xs text-slate-500">Success Rate</p><p class="font-semibold text-slate-900">{{ $isApproved ? '96%' : '67%' }}</p></div>
                             </div>
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Required Skills</p>
                                 <div class="mt-2 flex flex-wrap gap-2">
-                                    @foreach(is_array($job->required_skills) ? $job->required_skills : explode(',', $job->required_skills) as $skill)
-                                        <span class="cc-glass-chip border-indigo-200 bg-indigo-50/90 text-indigo-700">{{ trim($skill) }}</span>
-                                    @endforeach
+                                    @forelse($skills as $skill)
+                                        <span class="cc-glass-chip border-indigo-200 bg-indigo-50/90 text-indigo-700">{{ $skill }}</span>
+                                    @empty
+                                        <span class="text-sm text-slate-500">No skills listed.</span>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>
