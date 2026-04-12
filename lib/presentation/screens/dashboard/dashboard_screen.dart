@@ -156,14 +156,18 @@ class _DashboardScreenState extends State<DashboardScreen>
         ? user.fullName!
         : user.username;
 
-    final portfolios = context.watch<PortfolioProvider>().portfolios.length;
-    final certifications = context
-        .watch<CertificationProvider>()
-        .certifications
-        .length;
-    final skills = context.watch<SkillsProvider>().skills.length;
-    final reflections = context.watch<ReflectionsProvider>().reflections.length;
-    final jobsProvider = context.watch<JobFeedProvider>();
+    final portfolios = context.select<PortfolioProvider, int>(
+      (provider) => provider.portfolios.length,
+    );
+    final certifications = context.select<CertificationProvider, int>(
+      (provider) => provider.certifications.length,
+    );
+    final skills = context.select<SkillsProvider, int>(
+      (provider) => provider.skills.length,
+    );
+    final reflections = context.select<ReflectionsProvider, int>(
+      (provider) => provider.reflections.length,
+    );
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -178,28 +182,44 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Welcome Hero Card
-              FadeTransition(
-                opacity: _fadeController,
-                child: ScaleTransition(
-                  scale: _scaleController,
-                  child: _buildWelcomeCard(
-                    context,
-                    displayName,
-                    isDark,
-                    colorScheme,
-                    jobsProvider.jobs.length,
-                    jobsProvider.savedJobIds.length,
-                    skills,
-                    portfolios,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+              Consumer<JobFeedProvider>(
+                builder: (context, jobsProvider, _) {
+                  return Column(
+                    children: [
+                      // Welcome Hero Card
+                      FadeTransition(
+                        opacity: _fadeController,
+                        child: ScaleTransition(
+                          scale: _scaleController,
+                          child: _buildWelcomeCard(
+                            context,
+                            displayName,
+                            isDark,
+                            colorScheme,
+                            jobsProvider.jobs.length,
+                            jobsProvider.savedJobIds.length,
+                            skills,
+                            portfolios,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
-              // Jobs & Opportunities
-              _buildJobsOpportunitiesSection(jobsProvider, isDark, colorScheme),
-              const SizedBox(height: 24),
+                      // Jobs & Opportunities
+                      _buildJobsOpportunitiesSection(
+                        jobsProvider,
+                        isDark,
+                        colorScheme,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Live Job Feed
+                      _buildJobFeedSection(jobsProvider, isDark, colorScheme),
+                      const SizedBox(height: 24),
+                    ],
+                  );
+                },
+              ),
 
               // Progress Overview
               _buildProgressOverview(
@@ -210,10 +230,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 isDark,
                 colorScheme,
               ),
-              const SizedBox(height: 24),
-
-              // Live Job Feed
-              _buildJobFeedSection(jobsProvider, isDark, colorScheme),
               const SizedBox(height: 24),
 
               // Quick Actions
