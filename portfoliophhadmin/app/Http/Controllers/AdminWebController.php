@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Job;
 use App\Models\Application;
+use App\Services\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -429,5 +430,73 @@ class AdminWebController extends Controller
         $serverLoad = min(84, max(26, (int) round($activeSessions * 7.5)));
 
         return view('admin.audit', compact('recentActions', 'activeSessions', 'serverLoad'));
+    }
+
+    /**
+     * Export users to Excel
+     */
+    public function exportUsers(ExportService $exportService)
+    {
+        return $exportService->exportUsers('xlsx');
+    }
+
+    /**
+     * Export users to CSV
+     */
+    public function exportUsersCSV(ExportService $exportService)
+    {
+        return $exportService->exportUsers('csv');
+    }
+
+    /**
+     * Export jobs to Excel
+     */
+    public function exportJobs(ExportService $exportService)
+    {
+        return $exportService->exportJobs('xlsx');
+    }
+
+    /**
+     * Export jobs to CSV
+     */
+    public function exportJobsCSV(ExportService $exportService)
+    {
+        return $exportService->exportJobs('csv');
+    }
+
+    /**
+     * Export applications to Excel
+     */
+    public function exportApplications(ExportService $exportService)
+    {
+        return $exportService->exportApplications('xlsx');
+    }
+
+    /**
+     * Export applications to CSV
+     */
+    public function exportApplicationsCSV(ExportService $exportService)
+    {
+        return $exportService->exportApplications('csv');
+    }
+
+    /**
+     * Download CV for a user
+     */
+    public function downloadCV(User $user, ExportService $exportService)
+    {
+        if (!$user->resume_path) {
+            return redirect()->back()->with('error', 'This user has not uploaded a CV yet.');
+        }
+
+        return $exportService->downloadCV($user);
+    }
+
+    /**
+     * Download CV for an applicant
+     */
+    public function downloadApplicantCV(Application $application, ExportService $exportService)
+    {
+        return $exportService->downloadApplicantCV($application);
     }
 }

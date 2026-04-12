@@ -7,6 +7,8 @@ use App\Http\Controllers\JobController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CVController;
+use App\Services\ExportService;
 use App\Http\Middleware\Authenticate;
 
 // ─── Rate Limiting Configuration ──────────────────────────────────────────────
@@ -40,6 +42,11 @@ Route::middleware([
     Route::post('/profile/update', [ProfileController::class, 'update'])->middleware('throttle:5,1');
     Route::get('/profile', [ProfileController::class, 'show']);
     
+    // CV Downloads
+    Route::get('/profile/cv', [CVController::class, 'downloadMine']);
+    Route::get('/users/{user}/cv', [CVController::class, 'downloadUserCV'])->whereNumber('user');
+    Route::get('/applications/{application}/cv', [CVController::class, 'downloadApplicantCV'])->whereNumber('application');
+    
     // Users
     Route::get('/users/{user}', [UserController::class, 'show'])->whereNumber('user');
     Route::get('/users/search', [UserController::class, 'search']);
@@ -57,6 +64,27 @@ Route::middleware([
     Route::get('/applications', [ApplicationController::class, 'index']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show'])->whereNumber('application');
     Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->whereNumber('application')->middleware('throttle:10,1');
+
+    // Admin exports (token auth + explicit role check)
+    Route::prefix('admin')->group(function () {
+        Route::get('/users/export/{format}', function (string $format, ExportService $exportService, Request $request) {
+            abort_unless($request->user()?->role === 'admin', 403, 'Forbidden');
+            abort_unless(in_array($format, ['xlsx', 'csv'], true), 404, 'Unsupported format');
+            return $exportService->exportUsers($format);
+        })->whereIn('format', ['xlsx', 'csv']);
+
+        Route::get('/jobs/export/{format}', function (string $format, ExportService $exportService, Request $request) {
+            abort_unless($request->user()?->role === 'admin', 403, 'Forbidden');
+            abort_unless(in_array($format, ['xlsx', 'csv'], true), 404, 'Unsupported format');
+            return $exportService->exportJobs($format);
+        })->whereIn('format', ['xlsx', 'csv']);
+
+        Route::get('/applications/export/{format}', function (string $format, ExportService $exportService, Request $request) {
+            abort_unless($request->user()?->role === 'admin', 403, 'Forbidden');
+            abort_unless(in_array($format, ['xlsx', 'csv'], true), 404, 'Unsupported format');
+            return $exportService->exportApplications($format);
+        })->whereIn('format', ['xlsx', 'csv']);
+    });
 });
 
 // Health check (no rate limit)

@@ -73,6 +73,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/{user}/suspend', [AdminWebController::class, 'suspendUser'])->name('suspend');
         Route::post('/{user}/unsuspend', [AdminWebController::class, 'unsuspendUser'])->name('unsuspend');
         Route::delete('/{user}', [AdminWebController::class, 'deleteUser'])->name('delete');
+        
+        // Download CV for user
+        Route::get('/{user}/download-cv', [AdminWebController::class, 'downloadCV'])->name('download-cv');
+        
+        // Export routes
+        Route::get('/export/excel', [AdminWebController::class, 'exportUsers'])->name('export-excel');
+        Route::get('/export/csv', [AdminWebController::class, 'exportUsersCSV'])->name('export-csv');
     });
     
     // Jobs Management
@@ -82,10 +89,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/{job}/suspend', [AdminWebController::class, 'suspendJob'])->name('suspend');
         Route::post('/{job}/approve', [AdminWebController::class, 'approveJob'])->name('approve');
         Route::delete('/{job}', [AdminWebController::class, 'deleteJob'])->name('delete');
+        
+        // Export routes
+        Route::get('/export/excel', [AdminWebController::class, 'exportJobs'])->name('export-excel');
+        Route::get('/export/csv', [AdminWebController::class, 'exportJobsCSV'])->name('export-csv');
     });
     
     // Applications Analytics
-    Route::get('/applications', [AdminWebController::class, 'applications'])->name('applications.index');
+    Route::prefix('applications')->name('applications.')->group(function () {
+        Route::get('/', [AdminWebController::class, 'applications'])->name('index');
+        
+        // Download CV for applicant
+        Route::get('/{application}/download-cv', [AdminWebController::class, 'downloadApplicantCV'])->name('download-cv');
+        
+        // Export routes
+        Route::get('/export/excel', [AdminWebController::class, 'exportApplications'])->name('export-excel');
+        Route::get('/export/csv', [AdminWebController::class, 'exportApplicationsCSV'])->name('export-csv');
+    });
 
     // Settings
     Route::get('/settings', [AdminWebController::class, 'settings'])->name('settings');
