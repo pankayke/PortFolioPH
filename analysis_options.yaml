@@ -14,6 +14,8 @@ analyzer:
   # Keep analyzer strict for application code while test migration is in progress.
   exclude:
     - test/**
+    # mobile-jobs is a separate Flutter package with its own pubspec and CI lane.
+    - mobile-jobs/**
 
 linter:
   # The lint rules applied to this project can be customized in the

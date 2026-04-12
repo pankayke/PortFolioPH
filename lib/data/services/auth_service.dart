@@ -242,6 +242,7 @@ class AuthService {
 
     final createdUser = await _userRepository.createIfMissingByEmail(
       seededAdmin,
+      plainPassword: AppConstants.localAdminPassword,
     );
     if (createdUser == null) {
       throw const AuthException(
@@ -315,7 +316,10 @@ class AuthService {
       updatedAt: now,
     );
 
-    final created = await _userRepository.createIfMissingByEmail(user);
+    final created = await _userRepository.createIfMissingByEmail(
+      user,
+      plainPassword: password,
+    );
     if (created == null) {
       throw AuthException(
         'Failed to create local $role account.',
