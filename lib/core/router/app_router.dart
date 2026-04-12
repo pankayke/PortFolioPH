@@ -31,6 +31,9 @@ import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_sc
 import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_detail_screen.dart';
 import 'package:portfolioph/features/recruiter/screens/jobs/recruiter_job_edit_screen.dart';
+import 'package:portfolioph/features/seeker/screens/dashboard/seeker_dashboard_screen.dart';
+import 'package:portfolioph/features/seeker/screens/jobs/saved_jobs_screen.dart';
+import 'package:portfolioph/features/seeker/screens/profile/cv_upload_screen.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/screens/admin/filament_admin_screen.dart';
 import 'package:portfolioph/presentation/screens/auth/login_screen.dart';
@@ -72,6 +75,8 @@ abstract final class AppRoutes {
   static const String seekerJobDetail = '/seeker/jobs/:id';
   static const String seekerApplications = '/seeker/applications';
   static const String seekerProfile = '/seeker/profile';
+  static const String seekerSavedJobs = '/seeker/saved-jobs';
+  static const String seekerCvUpload = '/seeker/cv-upload';
 
   // ── Reserved for future sprints ────────────────────────────────────────────
   static const String editProfile = '/profile/edit';
@@ -224,7 +229,37 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.dashboard,
         name: 'dashboard',
-        builder: (context, state) => const MainScaffold(),
+        builder: (context, state) => const SeekerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.seekerDashboard,
+        name: 'seeker-dashboard',
+        builder: (context, state) => const SeekerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.seekerJobsList,
+        name: 'seeker-jobs-list',
+        builder: (context, state) => const SeekerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.seekerApplications,
+        name: 'seeker-applications',
+        builder: (context, state) => const SeekerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.seekerProfile,
+        name: 'seeker-profile',
+        builder: (context, state) => const SeekerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.seekerSavedJobs,
+        name: 'seeker-saved-jobs',
+        builder: (context, state) => const SavedJobsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.seekerCvUpload,
+        name: 'seeker-cv-upload',
+        builder: (context, state) => const CVUploadScreen(),
       ),
 
       // ── Future sprint routes ───────────────────────────────────────────────

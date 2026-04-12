@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:portfolioph/data/models/education_model.dart';
 import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
+import 'package:portfolioph/presentation/providers/file_download_provider.dart';
+import 'package:portfolioph/presentation/widgets/file_download_widgets.dart';
 import 'package:portfolioph/presentation/widgets/gwa_tracker_widget.dart';
 import 'package:portfolioph/presentation/widgets/student_portfolio_sections.dart';
 
@@ -95,6 +98,31 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                       ],
                     ),
                   ),
+                  // CV Download Button
+                  if (application.resumeUrl?.isNotEmpty == true)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Consumer<FileDownloadProvider>(
+                            builder: (context, downloadProvider, _) {
+                              return DownloadButton(
+                                label: 'CV',
+                                icon: Icons.file_download_outlined,
+                                isLoading: downloadProvider.isDownloading,
+                                onPressed: () async {
+                                  if (downloadProvider.isDownloading) return;
+                                  await downloadProvider.downloadApplicantCV(
+                                    application.id,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 16),

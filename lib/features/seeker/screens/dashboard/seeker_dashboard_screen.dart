@@ -8,9 +8,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/features/seeker/screens/jobs/saved_jobs_screen.dart';
+import 'package:portfolioph/features/seeker/screens/profile/cv_upload_screen.dart';
 import 'package:portfolioph/features/seeker/providers/seeker_application_provider.dart';
 import 'package:portfolioph/features/seeker/providers/seeker_job_list_provider.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/providers/file_download_provider.dart';
+import 'package:portfolioph/presentation/widgets/file_download_widgets.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/presentation/widgets/premium_titan_mobile_header.dart';
 
@@ -233,6 +237,40 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionCard(
+                      context,
+                      icon: Icons.bookmark_outline,
+                      label: 'Saved Jobs',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const SavedJobsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildActionCard(
+                      context,
+                      icon: Icons.upload_file_outlined,
+                      label: 'Upload CV',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const CVUploadScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 24),
 
@@ -321,10 +359,63 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
           onRefresh: () => jobsProvider.loadJobs(refresh: true),
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: jobsProvider.jobs.length,
+            itemCount: jobsProvider.jobs.length + 1,
             separatorBuilder: (_, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final job = jobsProvider.jobs[index];
+              if (index == 0) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            hintText: 'Search jobs by title or keyword',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onSubmitted: (value) {
+                            if (value.trim().isEmpty) {
+                              jobsProvider.clearFilters();
+                            } else {
+                              jobsProvider.searchJobs(value.trim());
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton.icon(
+                              onPressed: jobsProvider.clearFilters,
+                              icon: const Icon(Icons.filter_alt_off_outlined),
+                              label: const Text('Clear Filters'),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton.tonalIcon(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const SavedJobsScreen(),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.bookmarks_outlined),
+                              label: const Text('Saved'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final job = jobsProvider.jobs[index - 1];
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(14),
@@ -462,8 +553,8 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
   }
 
   Widget _buildProfileTab() {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
+    return Consumer2<AuthProvider, FileDownloadProvider>(
+      builder: (context, authProvider, downloadProvider, _) {
         final user = authProvider.currentUser;
         return ListView(
           padding: const EdgeInsets.all(16),
@@ -497,6 +588,41 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
               leading: const Icon(Icons.edit_outlined),
               title: const Text('Edit Profile'),
               onTap: () => context.push(AppRoutes.editProfile),
+            ),
+            ListTile(
+              leading: const Icon(Icons.download_for_offline_outlined),
+              title: const Text('Download My CV'),
+              subtitle: const Text('Save your latest resume file locally'),
+              trailing: DownloadButton(
+                label: 'Download',
+                isLoading: downloadProvider.isDownloading,
+                onPressed: () {
+                  if (downloadProvider.isDownloading) return;
+                  downloadProvider.downloadMyCV();
+                },
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.upload_file_outlined),
+              title: const Text('Upload or Replace CV'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CVUploadScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.bookmarks_outlined),
+              title: const Text('Saved Jobs'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SavedJobsScreen(),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined),

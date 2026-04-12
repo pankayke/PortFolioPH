@@ -53,7 +53,7 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                   );
                   final detailPane = selected == null
                       ? _emptyState(context)
-                      : CandidateProfileView(application: selected);
+                      : _buildDetailPane(context, provider, selected);
 
                   if (wideLayout && !widget.compactMode) {
                     return Padding(
@@ -270,6 +270,164 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailPane(
+    BuildContext context,
+    RecruiterApplicationManagerProvider provider,
+    RecruiterApplication selected,
+  ) {
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.all(12),
+          child: Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: provider.isLoading
+                  ? null
+                  : () => _openAddNoteDialog(provider, selected),
+                icon: const Icon(Icons.note_add_outlined),
+                label: const Text('Add Note'),
+              ),
+              OutlinedButton.icon(
+                onPressed: provider.isLoading
+                  ? null
+                  : () => _openInterviewDialog(provider, selected),
+                icon: const Icon(Icons.event_outlined),
+                label: const Text('Schedule Interview'),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: provider.isLoading
+                    ? null
+                    : () => provider.updateApplicationStatus(
+                        selected.id,
+                        ApplicationStatus.shortlisted,
+                      ),
+                icon: const Icon(Icons.star_outline),
+                label: const Text('Shortlist'),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: provider.isLoading
+                    ? null
+                    : () => provider.updateApplicationStatus(
+                        selected.id,
+                        ApplicationStatus.rejected,
+                      ),
+                icon: const Icon(Icons.cancel_outlined),
+                label: const Text('Reject'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        CandidateProfileView(application: selected),
+      ],
+    );
+  }
+
+  Future<void> _openAddNoteDialog(
+    RecruiterApplicationManagerProvider provider,
+    RecruiterApplication selected,
+  ) async {
+    final controller = TextEditingController(text: selected.notes ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add Recruiter Note'),
+          content: TextField(
+            controller: controller,
+            minLines: 4,
+            maxLines: 7,
+            decoration: const InputDecoration(
+              hintText: 'Write evaluation notes for this candidate...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+              child: const Text('Save Note'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    await provider.updateApplicationStatus(
+      selected.id,
+      selected.status,
+      notes: result,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _selectedApplication = selected.copyWith(notes: result);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Candidate note saved.')),
+    );
+  }
+
+  Future<void> _openInterviewDialog(
+    RecruiterApplicationManagerProvider provider,
+    RecruiterApplication selected,
+  ) async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (pickedDate == null || !mounted) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 10, minute: 0),
+    );
+    if (pickedTime == null || !mounted) return;
+
+    final scheduledAt = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    final note =
+        'Interview scheduled: ${scheduledAt.toLocal()} (${pickedTime.format(context)})';
+
+    await provider.updateApplicationStatus(
+      selected.id,
+      ApplicationStatus.reviewing,
+      notes: note,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _selectedApplication = selected.copyWith(
+        status: ApplicationStatus.reviewing,
+        notes: note,
+        interviewDate: scheduledAt,
+      );
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Interview schedule saved.')),
     );
   }
 }

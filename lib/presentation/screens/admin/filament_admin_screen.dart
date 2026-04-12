@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/user_model.dart';
 import 'package:portfolioph/data/repositories/user_repository.dart';
+import 'package:portfolioph/presentation/providers/file_download_provider.dart';
 
 class FilamentAdminScreen extends StatefulWidget {
   const FilamentAdminScreen({super.key});
@@ -430,6 +432,7 @@ class _FilamentAdminScreenState extends State<FilamentAdminScreen> {
               ),
               icon: const Icon(Icons.download_outlined),
             ),
+            _buildExportMenu('users'),
             Wrap(
               spacing: 8,
               children: [
@@ -562,6 +565,7 @@ class _FilamentAdminScreenState extends State<FilamentAdminScreen> {
               ),
               icon: const Icon(Icons.download_outlined),
             ),
+            _buildExportMenu('jobs'),
             Wrap(
               spacing: 8,
               children: [
@@ -704,6 +708,7 @@ class _FilamentAdminScreenState extends State<FilamentAdminScreen> {
               ),
               icon: const Icon(Icons.download_outlined),
             ),
+            _buildExportMenu('applications'),
             Wrap(
               spacing: 8,
               children: [
@@ -922,6 +927,46 @@ class _FilamentAdminScreenState extends State<FilamentAdminScreen> {
         );
       },
     );
+  }
+
+  Widget _buildExportMenu(String type) {
+    return PopupMenuButton<String>(
+      tooltip: 'Download export',
+      icon: const Icon(Icons.file_download_outlined),
+      onSelected: (format) => _downloadExport(type, format),
+      itemBuilder: (context) => const [
+        PopupMenuItem(value: 'xlsx', child: Text('Download Excel (.xlsx)')),
+        PopupMenuItem(value: 'csv', child: Text('Download CSV (.csv)')),
+      ],
+    );
+  }
+
+  Future<void> _downloadExport(String type, String format) async {
+    final provider = context.read<FileDownloadProvider>();
+
+    try {
+      switch (type) {
+        case 'users':
+          await provider.downloadUserExport(format);
+          break;
+        case 'jobs':
+          await provider.downloadJobsExport(format);
+          break;
+        case 'applications':
+          await provider.downloadApplicationsExport(format);
+          break;
+      }
+
+      if (!mounted) return;
+      if (provider.state == DownloadState.success) {
+        _showMessage('${type.toUpperCase()} $format export downloaded');
+      } else if (provider.errorMessage != null) {
+        _showMessage(provider.errorMessage!);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showMessage('Failed to download $type export');
+    }
   }
 
   Widget _buildAnalytics() {

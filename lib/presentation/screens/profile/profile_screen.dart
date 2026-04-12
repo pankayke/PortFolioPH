@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/providers/file_download_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
+import 'package:portfolioph/presentation/widgets/file_download_widgets.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -223,6 +225,51 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     )
                     .toList(growable: false),
+              ),
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
+            _SectionCard(
+              title: 'Resume / CV',
+              child: Consumer<FileDownloadProvider>(
+                builder: (context, downloadProvider, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Download your current CV or upload a fresh version.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: DownloadButton(
+                          label: 'Download CV',
+                          icon: Icons.file_download_outlined,
+                          isLoading: downloadProvider.isDownloading,
+                          onPressed: () {
+                            if (downloadProvider.isDownloading) return;
+                            downloadProvider.downloadMyCV();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.upload_file_outlined),
+                          label: const Text('Upload CV'),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('CV upload feature coming soon'),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
             const SizedBox(height: AppConstants.spacingMd),

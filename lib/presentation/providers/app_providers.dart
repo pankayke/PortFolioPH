@@ -19,6 +19,7 @@ import 'package:provider/single_child_widget.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:portfolioph/core/services/api_service.dart';
+import 'package:portfolioph/core/services/file_download_service.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
@@ -27,6 +28,7 @@ import 'package:portfolioph/features/seeker/providers/seeker_job_list_provider.d
 import 'package:portfolioph/features/seeker/providers/seeker_application_provider.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/navigation_provider.dart';
+import 'package:portfolioph/presentation/providers/file_download_provider.dart';
 import 'package:portfolioph/presentation/providers/portfolio_provider.dart';
 import 'package:portfolioph/presentation/providers/certification_provider.dart';
 import 'package:portfolioph/presentation/providers/education_provider.dart';
@@ -84,6 +86,19 @@ class AppProviderRegistry {
     /// API Service — Dio HTTP client with token management and error handling
     Provider<ApiService>(
       create: (_) => ApiService(const FlutterSecureStorage()),
+    ),
+
+    /// File Download Service — Handles file downloads (CVs, exports) with progress tracking
+    Provider<FileDownloadService>(
+      create: (_) => FileDownloadService(const FlutterSecureStorage()),
+    ),
+
+    /// File Download Provider — State management for file downloads
+    ChangeNotifierProxyProvider<FileDownloadService, FileDownloadProvider>(
+      create: (context) =>
+          FileDownloadProvider(context.read<FileDownloadService>()),
+      update: (_, service, previous) =>
+          previous ?? FileDownloadProvider(service),
     ),
 
     /// Recruiter Repository — Job and application CRUD operations
