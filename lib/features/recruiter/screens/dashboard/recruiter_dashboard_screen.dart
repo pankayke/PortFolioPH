@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/models/job_model.dart';
+import 'package:portfolioph/features/recruiter/providers/recruiter_dashboard_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_overview_tab.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
@@ -61,6 +63,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     _selectedIndex = widget.initialTab.clamp(0, _tabs.length - 1);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      context.read<RecruiterDashboardProvider>().loadDashboard(refresh: true);
       context.read<RecruiterJobManagerProvider>().loadJobs(refresh: true);
       context.read<RecruiterApplicationManagerProvider>().loadApplications(
         refresh: true,
@@ -71,9 +74,31 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isPostTab = _selectedIndex == 3;
-    return PremiumAppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    final dashboardTheme = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF2563EB),
+        brightness: Brightness.light,
+      ),
+      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+    ).copyWith(
+      textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: const Color(0xFF111827),
+            displayColor: const Color(0xFF111827),
+          ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        foregroundColor: Color(0xFF111827),
+        elevation: 0,
+      ),
+    );
+
+    return Theme(
+      data: dashboardTheme,
+      child: PremiumAppBackground(
+        child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
           title: Opacity(
             opacity: 0.85,
@@ -84,28 +109,143 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                   ),
             ),
           ),
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           elevation: 0,
           actions: [
-            Consumer<ThemeProvider>(
-              builder: (context, themeProvider, _) {
-                final isDark = themeProvider.themeMode == ThemeMode.dark;
+            Consumer<RecruiterDashboardProvider>(
+              builder: (context, dashboardProvider, _) {
+                final count = dashboardProvider.notificationCount;
                 return IconButton(
-                  onPressed: () => themeProvider.toggleDarkMode(),
-                  icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
-                  tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
+                  onPressed: () => context.push(AppRoutes.notificationSettings),
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.notifications_outlined),
+                      if (count > 0)
+                        Positioned(
+                          right: -4,
+                          top: -4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              count > 9 ? '9+' : '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  tooltip: count > 0
+                      ? '$count new applications'
+                      : 'Notifications',
                 );
               },
             ),
-            IconButton(
-              onPressed: () => context.push(AppRoutes.notificationSettings),
-              icon: const Icon(Icons.notifications_outlined),
-              tooltip: 'Notifications',
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Consumer2<AuthProvider, ThemeProvider>(
+                builder: (context, authProvider, themeProvider, _) {
+                  final user = authProvider.currentUser;
+                  final initial = (user?.fullName ?? 'R').trim().isNotEmpty
+                      ? (user?.fullName ?? 'R').trim()[0].toUpperCase()
+                      : 'R';
+                  final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+                  return PopupMenuButton<String>(
+                    tooltip: 'Profile',
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'theme':
+                          final nextIsDark = themeProvider.themeMode != ThemeMode.dark;
+                          themeProvider.toggleDarkMode();
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  nextIsDark
+                                      ? 'Dark mode enabled'
+                                      : 'Light mode enabled',
+                                ),
+                                duration: const Duration(milliseconds: 1400),
+                              ),
+                            );
+                          break;
+                        case 'company':
+                          _goToTab(4);
+                          break;
+                        case 'logout':
+                          _logout(context);
+                          break;
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'theme',
+                        child: Row(
+                          children: [
+                            Icon(
+                              isDark
+                                  ? Icons.light_mode_outlined
+                                  : Icons.dark_mode_outlined,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              isDark
+                                  ? 'Switch to Light Mode'
+                                  : 'Switch to Dark Mode',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem<String>(
+                        value: 'company',
+                        child: Row(
+                          children: [
+                            Icon(Icons.business_outlined, size: 18),
+                            SizedBox(width: 10),
+                            Text('Company Profile'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, size: 18),
+                            SizedBox(width: 10),
+                            Text('Logout'),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: const Color(0xFF2563EB),
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
             ),
-            IconButton(
-              onPressed: () => _logout(context),
-              icon: const Icon(Icons.logout),
-              tooltip: 'Logout',
             ),
           ],
         ),
@@ -117,7 +257,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
             key: ValueKey(_selectedIndex),
             index: _selectedIndex,
             children: [
-              _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
+              RecruiterDashboardOverviewTab(onJumpToAts: () => _goToTab(2)),
               const _RecruiterJobsTab(),
               const ApplicantTrackingScreen(compactMode: true),
               _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
@@ -155,7 +295,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
             padding: EdgeInsets.zero,
             child: NavigationBar(
               selectedIndex: _selectedIndex,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white,
               onDestinationSelected: _goToTab,
               destinations: _tabs
                   .map(
@@ -170,6 +310,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -181,332 +322,6 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     await context.read<AuthProvider>().logout();
     if (!context.mounted) return;
     context.go(AppRoutes.login);
-  }
-}
-
-class _RecruiterOverviewTab extends StatelessWidget {
-  final VoidCallback onJumpToAts;
-
-  const _RecruiterOverviewTab({required this.onJumpToAts});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer3<AuthProvider, RecruiterJobManagerProvider,
-        RecruiterApplicationManagerProvider>(
-      builder: (context, authProvider, jobsProvider, appsProvider, _) {
-        final user = authProvider.currentUser;
-        final recentApplicants = appsProvider.applications.take(4).toList();
-
-        return RefreshIndicator(
-          onRefresh: () async {
-            await jobsProvider.loadJobs(refresh: true);
-            await appsProvider.loadApplications(refresh: true);
-          },
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-            children: [
-              _GlassCard(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0F172A),
-                    const Color(0xFF1D4ED8).withValues(alpha: 0.90),
-                    const Color(0xFF38BDF8).withValues(alpha: 0.76),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome back, ${user?.fullName ?? 'Recruiter'}',
-                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.05,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                user?.location ?? 'Your hiring workspace',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.82),
-                                    ),
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  RecruiterGlowChip(label: 'Premium Hiring'),
-                                  RecruiterGlowChip(label: 'Fast Review Mode'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            color: Colors.white.withValues(alpha: 0.18),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-                          ),
-                          child: const Icon(Icons.apartment_rounded, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _GlassCard(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0B1B3D).withValues(alpha: 0.78),
-                    const Color(0xFF1D4ED8).withValues(alpha: 0.26),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Job Categories',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.auto_awesome, size: 16),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        color: Colors.white.withValues(alpha: 0.08),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      child: Text(
-                        'Week 1: IT / Dev Jobs',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white.withValues(alpha: 0.92),
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 18,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(99),
-                            color: const Color(0xFF3B82F6),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        ...List.generate(
-                          3,
-                          (_) => Container(
-                            width: 6,
-                            height: 6,
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.35),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Your Progress',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Active Jobs',
-                      value: jobsProvider.openJobCount.toString(),
-                      icon: Icons.work,
-                      accent: const Color(0xFF22D3EE),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Applicants',
-                      value: appsProvider.applications.length.toString(),
-                      icon: Icons.groups,
-                      accent: const Color(0xFF3B82F6),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Interviews',
-                      value: appsProvider.acceptedCount.toString(),
-                      icon: Icons.videocam,
-                      accent: const Color(0xFF34D399),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Shortlisted',
-                      value: appsProvider.shortlistedCount.toString(),
-                      icon: Icons.verified,
-                      accent: const Color(0xFFF59E0B),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _GlassCard(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0B1B3D).withValues(alpha: 0.82),
-                    const Color(0xFF2563EB).withValues(alpha: 0.42),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Hiring Pulse',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                        ),
-                        const Icon(Icons.auto_awesome_rounded, size: 18),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        RecruiterGlowChip(label: '${jobsProvider.openJobCount} active roles'),
-                        RecruiterGlowChip(label: '${appsProvider.applications.length} applicants'),
-                        RecruiterGlowChip(label: '${appsProvider.shortlistedCount} shortlisted'),
-                        RecruiterGlowChip(label: '${appsProvider.acceptedCount} hired', glowColor: const Color(0xFF34D399)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.trending_up_rounded, color: Colors.white),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Keep the pipeline moving. Review new candidates, close stale roles, and post new openings.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.92),
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text(
-                    'Live Candidate Feed',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: onJumpToAts,
-                    child: const Text('View ATS'),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 148,
-                child: recentApplicants.isEmpty
-                    ? const _GlassCard(
-                        child: Center(
-                          child: Text('No applicants yet. Share job links to start receiving candidates.'),
-                        ),
-                      )
-                    : ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: recentApplicants.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 10),
-                        itemBuilder: (context, index) {
-                          final app = recentApplicants[index];
-                          return SizedBox(
-                            width: 240,
-                            child: _ApplicantPreviewCard(app: app),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 }
 
@@ -779,11 +594,6 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
         ),
         const SizedBox(height: 12),
         _GlassCard(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           child: Form(
             key: _formKey,
             child: AnimatedSwitcher(
@@ -896,17 +706,17 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.50),
+      fillColor: Colors.white,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.28)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.blue.withValues(alpha: 0.80)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF2563EB)),
       ),
     );
   }
@@ -1294,11 +1104,20 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return Container(
       padding: padding,
-      gradient: gradient,
-      borderRadius: BorderRadius.circular(20),
-      blurSigma: 20,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
       child: child,
     );
   }
@@ -1360,7 +1179,7 @@ class _StatTile extends StatelessWidget {
             ),
             child: Icon(icon, color: accent, size: 20),
           ),
-          const Spacer(),
+          const SizedBox(height: 12),
           Text(
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -1375,118 +1194,6 @@ class _StatTile extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _ApplicantPreviewCard extends StatelessWidget {
-  final RecruiterApplication app;
-
-  const _ApplicantPreviewCard({required this.app});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final initials = app.applicantName.isNotEmpty
-        ? app.applicantName
-            .trim()
-            .split(' ')
-            .take(2)
-            .map((part) => part.isNotEmpty ? part[0].toUpperCase() : '')
-            .join()
-        : '?';
-
-    return _GlassCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.16),
-                child: Text(
-                  initials,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      app.applicantName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      app.applicantLocation.isNotEmpty
-                          ? app.applicantLocation
-                          : 'Candidate',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              RecruiterGlowChip(
-                label: app.statusDisplay,
-                glowColor: app.isAccepted
-                    ? colorScheme.tertiary
-                    : app.isRejected
-                        ? colorScheme.error
-                        : colorScheme.primary,
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            app.coverLetter?.trim().isNotEmpty == true
-                ? app.coverLetter!.trim().split(' ').take(8).join(' ')
-                : 'No cover letter preview available.',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: LinearProgressIndicator(
-                  value: _matchScore(app),
-                  minHeight: 6,
-                  backgroundColor: colorScheme.surface.withValues(alpha: 0.12),
-                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                '${(_matchScore(app) * 100).round()}%',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  double _matchScore(RecruiterApplication app) {
-    if (app.isAccepted) return 0.96;
-    if (app.isShortlisted) return 0.82;
-    if (app.isReviewing) return 0.65;
-    if (app.isRejected) return 0.22;
-    return 0.48;
   }
 }
 

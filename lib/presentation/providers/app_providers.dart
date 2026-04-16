@@ -21,6 +21,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/core/services/file_download_service.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
+import 'package:portfolioph/features/recruiter/providers/recruiter_dashboard_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/seeker/repositories/seeker_repository_impl.dart';
@@ -79,18 +80,24 @@ class AppProviderRegistry {
       create: (_) => NavigationProvider(),
     ),
 
+    /// Shared secure storage instance for auth token and persisted secrets
+    Provider<FlutterSecureStorage>(
+      create: (_) => const FlutterSecureStorage(),
+    ),
+
     // ────────────────────────────────────────────────────────────────────────
     // API & REPOSITORY PROVIDERS — Backend communication
     // ────────────────────────────────────────────────────────────────────────
 
     /// API Service — Dio HTTP client with token management and error handling
-    Provider<ApiService>(
-      create: (_) => ApiService(const FlutterSecureStorage()),
+    ProxyProvider<FlutterSecureStorage, ApiService>(
+      update: (_, storage, previous) => previous ?? ApiService(storage),
     ),
 
     /// File Download Service — Handles file downloads (CVs, exports) with progress tracking
-    Provider<FileDownloadService>(
-      create: (_) => FileDownloadService(const FlutterSecureStorage()),
+    ProxyProvider<FlutterSecureStorage, FileDownloadService>(
+      update: (_, storage, previous) =>
+          previous ?? FileDownloadService(storage),
     ),
 
     /// File Download Provider — State management for file downloads
@@ -148,6 +155,18 @@ class AppProviderRegistry {
       ),
       update: (_, repo, previous) =>
           previous ?? RecruiterApplicationManagerProvider(repo),
+    ),
+
+    /// Recruiter Dashboard — aggregates recruiter analytics payloads
+    ChangeNotifierProxyProvider<
+      RecruiterRepositoryImpl,
+      RecruiterDashboardProvider
+    >(
+      create: (context) => RecruiterDashboardProvider(
+        context.read<RecruiterRepositoryImpl>(),
+      ),
+      update: (_, repo, previous) =>
+          previous ?? RecruiterDashboardProvider(repo),
     ),
 
     // ────────────────────────────────────────────────────────────────────────

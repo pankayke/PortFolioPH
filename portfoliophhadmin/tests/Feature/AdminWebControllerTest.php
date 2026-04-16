@@ -223,6 +223,41 @@ class AdminWebControllerTest extends TestCase
         });
     }
 
+    public function test_admin_application_inspect_page_loads(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter', 'active' => true]);
+        $seeker = User::factory()->create(['role' => 'job_seeker', 'active' => true]);
+        $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
+        $application = Application::factory()->create([
+            'job_id' => $job->id,
+            'user_id' => $seeker->id,
+            'status' => 'reviewed',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.applications.show', $application));
+
+        $response->assertOk();
+        $response->assertSee($application->job->title);
+        $response->assertSee($application->user->email);
+    }
+
+    public function test_applications_page_links_inspect_to_detail_view(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter', 'active' => true]);
+        $seeker = User::factory()->create(['role' => 'job_seeker', 'active' => true]);
+        $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
+        $application = Application::factory()->create([
+            'job_id' => $job->id,
+            'user_id' => $seeker->id,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.applications.index'));
+
+        $response->assertOk();
+        $response->assertSee(route('admin.applications.show', $application), false);
+    }
+
     public function test_update_settings_rejects_invalid_payload(): void
     {
         $response = $this->actingAs($this->admin)

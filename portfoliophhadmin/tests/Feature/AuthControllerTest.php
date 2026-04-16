@@ -4,11 +4,20 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Prevent rate limiter counters from leaking between test methods.
+        Cache::flush();
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Registration Tests
@@ -147,6 +156,31 @@ class AuthControllerTest extends TestCase
             ->assertJsonPath('errors.name', ['Full name is required'])
             ->assertJsonPath('errors.email', ['Email address is required'])
             ->assertJsonPath('errors.password', ['Password is required']);
+    }
+
+    /**
+     * Test public registration cannot create admin users
+     *
+     * Verifies:
+     * - Status 422
+     * - Invalid role validation is returned
+     */
+    public function test_register_with_admin_role_fails(): void
+    {
+        $response = $this->postJson('/api/auth/register', [
+            'name' => 'Escalation Attempt',
+            'email' => 'escalate@example.com',
+            'password' => 'SecurePass123!',
+            'role' => 'admin',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.role.0', 'Invalid role selected');
+
+        $this->assertDatabaseMissing('users', [
+            'email' => 'escalate@example.com',
+            'role' => 'admin',
+        ]);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

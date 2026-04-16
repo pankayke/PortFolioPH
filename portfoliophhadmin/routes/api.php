@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\RecruiterDashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CVController;
@@ -58,6 +59,9 @@ Route::middleware([
     Route::post('/jobs', [JobController::class, 'store'])->middleware('throttle:10,1');  // Stricter for writes
     Route::put('/jobs/{job}', [JobController::class, 'update'])->whereNumber('job')->middleware('throttle:10,1');
     Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->whereNumber('job')->middleware('throttle:10,1');
+
+    // Recruiter dashboard analytics
+    Route::get('/recruiter/dashboard', [RecruiterDashboardController::class, 'index']);
     
     // Applications
     Route::post('/applications', [ApplicationController::class, 'store'])->middleware('throttle:10,1');

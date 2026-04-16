@@ -3,18 +3,40 @@
 namespace App\Exports;
 
 use App\Models\Job;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class JobsExport implements FromCollection, WithHeadings, WithMapping
+class JobsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading
 {
-    /**
-     * @return \Illuminate\Support\Collection
-     */
-    public function collection()
+    public function query(): Builder
     {
-        return Job::with('recruiter')->get();
+        return Job::query()
+            ->select([
+                'id',
+                'recruiter_id',
+                'title',
+                'description',
+                'location',
+                'salary_min',
+                'salary_max',
+                'job_type',
+                'status',
+                'required_skills',
+                'deadline',
+                'created_at',
+                'updated_at',
+            ])
+            ->with('recruiter:id,name')
+            ->latest('id');
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 
     public function headings(): array
@@ -55,9 +77,26 @@ class JobsExport implements FromCollection, WithHeadings, WithMapping
             ucfirst($job->job_type ?? 'full-time'),
             ucfirst($job->status ?? 'draft'),
             $skills,
-            $job->deadline?->format('Y-m-d') ?? 'N/A',
-            $job->created_at->format('Y-m-d H:i:s'),
-            $job->updated_at->format('Y-m-d H:i:s'),
+            $this->formatDate($job->deadline, 'Y-m-d'),
+            $this->formatDate($job->created_at, 'Y-m-d H:i:s'),
+            $this->formatDate($job->updated_at, 'Y-m-d H:i:s'),
         ];
+    }
+
+    private function formatDate(mixed $value, string $format): string
+    {
+        if ($value === null || $value === '') {
+            return 'N/A';
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format($format);
+        }
+
+        try {
+            return Carbon::parse((string) $value)->format($format);
+        } catch (\Throwable) {
+            return 'N/A';
+        }
     }
 }

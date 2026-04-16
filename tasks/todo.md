@@ -3,6 +3,24 @@
 > Keep this file updated in real time for every non-trivial task.
 
 ## Current Task (Update)
+- Jira/Issue: Repo Context + Optimization Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Map the main repo flows and hot paths
+- [x] 2. Trim broad eager loads and summary queries
+- [x] 3. Validate the affected Laravel test suite
+
+## Evidence (Update)
+- Admin and dashboard screens now load only the columns each view renders.
+- `DashboardController`, `JobWebController`, and `AdminWebController` were tightened without changing route behavior.
+- Validation: `php artisan test` passed (81 tests, 317 assertions).
+- Status: Completed.
+
+## Current Task (Update)
 - Jira/Issue: Recruiter ATS Polish Pass
 - Owner: GitHub Copilot + Mark
 - Start: 2026-04-13

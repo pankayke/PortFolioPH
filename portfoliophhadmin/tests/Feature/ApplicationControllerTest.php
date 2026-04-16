@@ -263,7 +263,7 @@ class ApplicationControllerTest extends TestCase
      */
     public function test_create_application_without_cover_letter_succeeds(): void
     {
-        $jobSeeker = User::factory()->create();
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
         $recruiter = User::factory()->create();
         $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
 

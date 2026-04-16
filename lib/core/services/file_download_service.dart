@@ -87,14 +87,19 @@ class FileDownloadService {
 
       AppLogger.log('Starting download: $endpoint → $filePath');
 
+      var lastLoggedPercent = -1;
+
       // Download with progress
       final response = await _dio.download(
         endpoint,
         filePath,
         onReceiveProgress: (received, total) {
           if (total > 0) {
-            final percentage = (received / total * 100).toStringAsFixed(0);
-            AppLogger.debug('Download progress: $percentage%');
+            final percentage = ((received / total) * 100).floor();
+            if (percentage ~/ 10 > lastLoggedPercent ~/ 10 || percentage == 100) {
+              lastLoggedPercent = percentage;
+              AppLogger.debug('Download progress: $percentage%');
+            }
             onProgress?.call(received, total);
           }
         },

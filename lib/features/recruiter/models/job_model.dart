@@ -34,7 +34,7 @@ class Job {
     this.applicationCount = 0,
   });
 
-  bool get isActive => status == 'active';
+  bool get isActive => status == 'approved' || status == 'active';
   bool get isClosed => status == 'closed';
   bool get isArchived => status == 'archived';
 

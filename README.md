@@ -2,6 +2,86 @@
 
 **Unified Full-Stack Job Platform with Flutter Frontend + Node.js Backend**
 
+## Docker Quick Start
+
+Before running Docker, review and update [.env.docker](.env.docker) with local secrets and credentials.
+
+Run the full stack in Docker Desktop (frontend, API, MySQL, nginx, phpMyAdmin, Mailpit):
+
+```powershell
+./scripts/docker-up.ps1
+```
+
+Optional flags:
+
+```powershell
+./scripts/docker-up.ps1 -NoBuild
+./scripts/docker-up.ps1 -FollowLogs
+```
+
+Stop all containers:
+
+```powershell
+./scripts/docker-down.ps1
+```
+
+Service URLs:
+
+- Frontend: http://localhost:3000
+- API: http://localhost:8000
+- phpMyAdmin: http://localhost:8080
+- Mailpit: http://localhost:8025
+- MySQL from host tools: localhost:3307
+
+## Deployment Pipeline (GitHub Actions)
+
+This repository includes a full deployment workflow at [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
+It also includes a manual rollback workflow at [.github/workflows/rollback.yml](.github/workflows/rollback.yml).
+For live environment checks, use runtime smoke workflow at [.github/workflows/runtime-smoke.yml](.github/workflows/runtime-smoke.yml).
+
+How it works:
+
+- Automatic staging deploy after successful `Full Codebase CI` on `develop`
+- Manual deploy to `staging` or `production` via `workflow_dispatch`
+- Optional post-deploy Laravel migrations (`run_migrations` input)
+- Environment gates use GitHub Environments (`staging` and `production`) for approval protection rules
+
+Required environment secrets (configure in each environment):
+
+- `DEPLOY_HOST`
+- `DEPLOY_USER`
+- `DEPLOY_PATH`
+- `DEPLOY_SSH_PRIVATE_KEY`
+
+Detailed setup runbook: [docs/DEPLOYMENT_PIPELINE_SETUP.md](docs/DEPLOYMENT_PIPELINE_SETUP.md)
+
+## Scalability Profile (5k+ Users)
+
+This stack is tuned for higher concurrent load while preserving behavior:
+
+- Redis enabled for sessions, cache, and queues
+- Dedicated queue worker container for background jobs
+- PHP-FPM process manager tuned for higher concurrency
+- OPcache enabled with larger memory and file cache limits
+- MySQL tuned with larger connection/cache/buffer settings
+- Nginx API gateway tuned with higher worker connections and fastcgi buffers
+
+Operational commands:
+
+```powershell
+# Start or refresh all services (including queue worker + redis)
+docker compose up -d --build
+
+# Check health
+docker compose ps
+
+# Scale API containers horizontally (when needed)
+docker compose up -d --scale api=2
+
+# Follow queue worker logs
+docker compose logs -f queue-worker
+```
+
 ## 🏗️ Architecture
 
 ```

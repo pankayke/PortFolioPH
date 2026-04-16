@@ -107,7 +107,7 @@
                                     <td class="px-4 py-2.5 text-sm text-slate-600">{{ $app->created_at->format('M d, Y H:i') }}</td>
                                     <td class="px-4 py-2.5">
                                         <div class="cc-quick-actions inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
-                                            <a href="{{ route('admin.applications.index') }}" class="rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Inspect</a>
+                                            <a href="{{ route('admin.applications.show', $app) }}" class="rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Inspect</a>
                                             @if($app->job)
                                                 <a href="{{ route('admin.jobs.show', $app->job) }}" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Job</a>
                                             @endif

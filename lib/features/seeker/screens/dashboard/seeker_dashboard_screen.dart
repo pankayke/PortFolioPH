@@ -28,6 +28,7 @@ class SeekerDashboardScreen extends StatefulWidget {
 class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
   int _selectedIndex = 0;
   bool _compactHeader = false;
+  final TextEditingController _jobSearchController = TextEditingController();
 
   @override
   void initState() {
@@ -36,6 +37,12 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
       if (!mounted) return;
       _primeData();
     });
+  }
+
+  @override
+  void dispose() {
+    _jobSearchController.dispose();
+    super.dispose();
   }
 
   Future<void> _primeData() async {
@@ -73,6 +80,24 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
     }
   }
 
+  Future<void> _performJobSearch(String query) async {
+    final jobsProvider = context.read<SeekerJobListProvider>();
+    final trimmed = query.trim();
+
+    if (_selectedIndex != 1) {
+      setState(() => _selectedIndex = 1);
+    }
+
+    if (trimmed.isEmpty) {
+      _jobSearchController.clear();
+      await jobsProvider.clearFilters();
+      return;
+    }
+
+    _jobSearchController.text = trimmed;
+    await jobsProvider.searchJobs(trimmed);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
@@ -95,7 +120,7 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
               userName: userName,
               compact: _compactHeader,
               onSearchTap: () => _onTabChanged(1),
-              onSearchSubmitted: (_) => _onTabChanged(1),
+                onSearchSubmitted: _performJobSearch,
               onNotificationTap: () =>
                   context.push(AppRoutes.notificationSettings),
               onProfileTap: () => _onTabChanged(3),
@@ -351,17 +376,16 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
           );
         }
 
-        if (jobsProvider.jobs.isEmpty) {
-          return const Center(
-            child: Text('No jobs available right now. Pull down to refresh.'),
-          );
-        }
-
         return RefreshIndicator(
-          onRefresh: () => jobsProvider.loadJobs(refresh: true),
+          onRefresh: () => jobsProvider.loadJobs(
+            refresh: true,
+            search: jobsProvider.searchQuery,
+          ),
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: jobsProvider.jobs.length + 1,
+            itemCount: jobsProvider.jobs.isEmpty
+                ? 2
+                : jobsProvider.jobs.length + 1,
             separatorBuilder: (_, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -372,28 +396,28 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextField(
+                          controller: _jobSearchController,
                           textInputAction: TextInputAction.search,
                           decoration: InputDecoration(
                             hintText: 'Search jobs by title or keyword',
                             prefixIcon: const Icon(Icons.search),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.north_east),
+                              onPressed: () =>
+                                  _performJobSearch(_jobSearchController.text),
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onSubmitted: (value) {
-                            if (value.trim().isEmpty) {
-                              jobsProvider.clearFilters();
-                            } else {
-                              jobsProvider.searchJobs(value.trim());
-                            }
-                          },
+                          onSubmitted: _performJobSearch,
                         ),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton.icon(
-                              onPressed: jobsProvider.clearFilters,
+                              onPressed: () => _performJobSearch(''),
                               icon: const Icon(Icons.filter_alt_off_outlined),
                               label: const Text('Clear Filters'),
                             ),
@@ -412,6 +436,20 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                           ],
                         ),
                       ],
+                    ),
+                  ),
+                );
+              }
+
+              if (jobsProvider.jobs.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      jobsProvider.searchQuery?.isNotEmpty == true
+                          ? 'No jobs found for "${jobsProvider.searchQuery}".'
+                          : 'No jobs available right now. Pull down to refresh.',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                 );

@@ -5,12 +5,18 @@
 
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/features/recruiter/models/application_model.dart';
+import 'package:portfolioph/features/recruiter/models/recruiter_dashboard_summary.dart';
 import 'package:portfolioph/features/recruiter/models/job_model.dart';
 
 class RecruiterRepositoryImpl {
   final ApiService _apiService;
 
   RecruiterRepositoryImpl(this._apiService);
+
+  Future<RecruiterDashboardSummary> getDashboardSummary() async {
+    final response = await _apiService.get('/recruiter/dashboard');
+    return RecruiterDashboardSummary.fromJson(response as Map<String, dynamic>);
+  }
 
   Future<List<Job>> getJobs({
     int page = 1,

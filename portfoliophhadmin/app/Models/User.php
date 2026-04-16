@@ -32,6 +32,8 @@ class User extends Authenticatable
         'resume_path',
         'role',
         'active',
+        'last_login_ip',
+        'last_user_agent',
     ];
 
     /**

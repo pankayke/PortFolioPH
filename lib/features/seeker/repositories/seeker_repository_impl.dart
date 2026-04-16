@@ -120,7 +120,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
       };
 
       final response = await _apiService.get(
-        '/seeker/applications',
+        '/applications',
         queryParameters: queryParams,
       );
 
@@ -140,7 +140,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   Future<SeekerApplication> getApplicationById(int applicationId) async {
     try {
       final response = await _apiService.get(
-        '/seeker/applications/$applicationId',
+        '/applications/$applicationId',
       );
       return SeekerApplication.fromJson(response as Map<String, dynamic>);
     } catch (e) {
@@ -152,7 +152,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   Future<SeekerApplication> applyForJob(int jobId) async {
     try {
       final response = await _apiService.post(
-        '/seeker/applications',
+        '/applications',
         data: {'job_id': jobId},
       );
       return SeekerApplication.fromJson(response as Map<String, dynamic>);
@@ -164,7 +164,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   @override
   Future<void> withdrawApplication(int applicationId) async {
     try {
-      await _apiService.post('/seeker/applications/$applicationId/withdraw');
+      await _apiService.post('/applications/$applicationId/withdraw');
     } catch (e) {
       rethrow;
     }
@@ -177,7 +177,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   ) async {
     try {
       await _apiService.post(
-        '/seeker/applications/$applicationId/resume',
+        '/applications/$applicationId/resume',
         data: {'resume': resumeFile},
       );
     } catch (e) {

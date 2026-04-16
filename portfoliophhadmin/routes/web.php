@@ -98,13 +98,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Applications Analytics
     Route::prefix('applications')->name('applications.')->group(function () {
         Route::get('/', [AdminWebController::class, 'applications'])->name('index');
-        
-        // Download CV for applicant
-        Route::get('/{application}/download-cv', [AdminWebController::class, 'downloadApplicantCV'])->name('download-cv');
-        
+
         // Export routes
         Route::get('/export/excel', [AdminWebController::class, 'exportApplications'])->name('export-excel');
         Route::get('/export/csv', [AdminWebController::class, 'exportApplicationsCSV'])->name('export-csv');
+
+        Route::get('/{application}', [AdminWebController::class, 'showApplication'])->name('show');
+        
+        // Download CV for applicant
+        Route::get('/{application}/download-cv', [AdminWebController::class, 'downloadApplicantCV'])->name('download-cv');
     });
 
     // Settings

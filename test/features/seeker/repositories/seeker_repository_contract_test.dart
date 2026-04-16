@@ -113,7 +113,7 @@ void main() {
 
       expect(result, hasLength(1));
       expect(result.first.id, 99);
-      expect(apiService.lastGetPath, '/seeker/applications');
+      expect(apiService.lastGetPath, '/applications');
       expect(apiService.lastGetQuery?['status'], 'applied');
     });
 

@@ -1,0 +1,114 @@
+name: Manual Rollback Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Rollback target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      backup_selector:
+        description: 'Backup file name (for example predeploy-20260416102030.tar.gz) or latest'
+        required: true
+        default: latest
+        type: string
+      verify_healthcheck:
+        description: 'Verify health endpoint after rollback (requires DEPLOY_HEALTHCHECK_URL secret)'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rollback-${{ github.event.inputs.target_environment }}
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    name: Roll back ${{ github.event.inputs.target_environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.target_environment }}
+    steps:
+      - name: Validate rollback secrets
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_HEALTHCHECK_URL: ${{ secrets.DEPLOY_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          [[ -n "${DEPLOY_HOST}" ]] || { echo "Missing DEPLOY_HOST secret"; exit 1; }
+          [[ -n "${DEPLOY_USER}" ]] || { echo "Missing DEPLOY_USER secret"; exit 1; }
+          [[ -n "${DEPLOY_PATH}" ]] || { echo "Missing DEPLOY_PATH secret"; exit 1; }
+          [[ -n "${DEPLOY_SSH_PRIVATE_KEY}" ]] || { echo "Missing DEPLOY_SSH_PRIVATE_KEY secret"; exit 1; }
+
+          if [[ "${{ github.event.inputs.verify_healthcheck }}" == "true" ]]; then
+            [[ -n "${DEPLOY_HEALTHCHECK_URL}" ]] || { echo "Missing DEPLOY_HEALTHCHECK_URL secret while health check verification is enabled"; exit 1; }
+          fi
+
+      - name: Validate production rollback policy
+        if: github.event.inputs.target_environment == 'production'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.actor }}" == "" ]]; then
+            echo "Unable to resolve actor"
+            exit 1
+          fi
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Add remote host to known_hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Restore selected backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          selector="${{ github.event.inputs.backup_selector }}"
+
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            mkdir -p .deploy-backups
+
+            if [ \"$selector\" = 'latest' ]; then
+              backup_file=\"\$(ls -1t .deploy-backups/predeploy-*.tar.gz 2>/dev/null | head -n 1)\"
+            else
+              backup_file=\".deploy-backups/$selector\"
+            fi
+
+            [ -n \"$backup_file\" ] || { echo 'No rollback backups available'; exit 1; }
+            [ -f \"$backup_file\" ] || { echo \"Backup not found: $backup_file\"; exit 1; }
+
+            find . -mindepth 1 -maxdepth 1 \
+              ! -name '.deploy-backups' \
+              ! -name 'release.tar.gz' \
+              -exec rm -rf {} +
+
+            tar -xzf \"$backup_file\"
+            docker compose --env-file .env.docker config >/dev/null
+            docker compose --env-file .env.docker up -d --build
+            docker compose ps
+          "
+
+      - name: Verify health endpoint
+        if: github.event.inputs.verify_healthcheck == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent "${{ secrets.DEPLOY_HEALTHCHECK_URL }}" >/dev/null

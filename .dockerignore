@@ -27,11 +27,22 @@ Thumbs.db
 docs/
 scripts/
 README.md
+*.md
+*.txt
+*.ps1
+*.sh
+
+# ── Backend workspace and server-only assets ────────────────────────────────
+portfoliophhadmin/
+docker/
+nginx.conf
+docker-compose.yml
+docker-compose.*
+*.sql
 
 # ── Docker files themselves (avoid recursive COPY issues) ────────────────────
 Dockerfile
 .dockerignore
-docker-compose.yml
 
 # ── Test files ────────────────────────────────────────────────────────────────
 test/

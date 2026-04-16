@@ -2,6 +2,17 @@
 
 > Log every correction, failed attempt, or preventable defect.
 
+- Date: 2026-04-13
+- Task/Jira: Repo Context + Optimization Pass
+- Mistake pattern (exact): Several high-traffic pages were still loading broad relations or relying on random factory roles in tests.
+- Root cause: View code and controller data shaping drifted slightly apart, and a test used the factory default role instead of an explicit job seeker.
+- Prevention rules (min 3):
+  1. Match eager-loaded columns to the exact fields rendered in the Blade template.
+  2. Make role-sensitive API tests explicit instead of depending on factory defaults.
+  3. Re-run the full suite after touching shared controllers, because unrelated-looking changes can expose latent test assumptions.
+- Validation on next similar task: Confirm the rendered view still has all required fields and the suite stays green after the data-shape trim.
+- Outcome: Dashboard and admin pages now fetch less data, and the application-create test is deterministic.
+
 - Date: 2026-04-11
 - Task/Jira: Admin List Aggregate Count Cleanup
 - Mistake pattern (exact): Admin list summary cards still derived counts from paginated collection slices instead of query aggregates.

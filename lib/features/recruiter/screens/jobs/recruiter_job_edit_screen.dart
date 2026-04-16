@@ -52,190 +52,198 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<RecruiterJobManagerProvider>();
+    final pageTheme = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF2563EB),
+        brightness: Brightness.light,
+      ),
+      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+    );
 
-    return PremiumAppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text('Edit Job'),
-          backgroundColor: Colors.transparent,
-        ),
-        body: FutureBuilder(
-          future: provider.getJob(widget.jobId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+    return Theme(
+      data: pageTheme,
+      child: PremiumAppBackground(
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            title: const Text('Edit Job'),
+            backgroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: FutureBuilder(
+            future: provider.getJob(widget.jobId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            if (snapshot.hasError || !snapshot.hasData) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: RecruiterGlassCard(
-                    child: Text(provider.error ?? 'Failed to load job.'),
+              if (snapshot.hasError || !snapshot.hasData) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: RecruiterGlassCard(
+                      child: Text(provider.error ?? 'Failed to load job.'),
+                    ),
                   ),
-                ),
-              );
-            }
+                );
+              }
 
-            final job = snapshot.data!;
-            _populateForm(job);
+              final job = snapshot.data!;
+              _populateForm(job);
 
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                RecruiterGlassCard(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Update Job Posting',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Refine the role details, salary, and publishing status without breaking the existing posting.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.84),
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                RecruiterGlassCard(
-                  child: Form(
-                    key: _formKey,
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  RecruiterGlassCard(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _glassField(
-                          controller: _titleController,
-                          label: 'Job Title',
-                          validator: (v) => (v == null || v.trim().length < 5)
-                              ? 'Title must be at least 5 characters.'
-                              : null,
-                        ),
-                        const SizedBox(height: 12),
-                        _glassField(
-                          controller: _descriptionController,
-                          label: 'Description',
-                          maxLines: 5,
-                          validator: (v) => (v == null || v.trim().length < 20)
-                              ? 'Description must be at least 20 characters.'
-                              : null,
-                        ),
-                        const SizedBox(height: 12),
-                        _glassField(
-                          controller: _locationController,
-                          label: 'Location',
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Location is required.'
-                              : null,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _glassField(
-                                controller: _salaryMinController,
-                                label: 'Salary Min',
-                                keyboardType: TextInputType.number,
+                        Text(
+                          'Update Job Posting',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _glassField(
-                                controller: _salaryMaxController,
-                                label: 'Salary Max',
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                          ],
                         ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String>(
-                          initialValue: _status,
-                          decoration: _glassDecoration('Status'),
-                          dropdownColor: const Color(0xFF0F172A),
-                          items: const [
-                            DropdownMenuItem(value: 'draft', child: Text('Draft')),
-                            DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                            DropdownMenuItem(value: 'approved', child: Text('Approved')),
-                            DropdownMenuItem(value: 'closed', child: Text('Closed')),
-                          ],
-                          onChanged: (value) => setState(() => _status = value ?? _status),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Refine the role details, salary, and publishing status without breaking the existing posting.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _isSaving
-                        ? null
-                        : () async {
-                            if (!_formKey.currentState!.validate()) return;
-                            setState(() => _isSaving = true);
-
-                            try {
-                              await provider.updateJob(job.id, {
-                                'title': _titleController.text.trim(),
-                                'description': _descriptionController.text.trim(),
-                                'location': _locationController.text.trim(),
-                                'salary_min': double.tryParse(
-                                  _salaryMinController.text.trim(),
+                  const SizedBox(height: 14),
+                  RecruiterGlassCard(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          _glassField(
+                            controller: _titleController,
+                            label: 'Job Title',
+                            validator: (v) => (v == null || v.trim().length < 5)
+                                ? 'Title must be at least 5 characters.'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          _glassField(
+                            controller: _descriptionController,
+                            label: 'Description',
+                            maxLines: 5,
+                            validator: (v) => (v == null || v.trim().length < 20)
+                                ? 'Description must be at least 20 characters.'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          _glassField(
+                            controller: _locationController,
+                            label: 'Location',
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Location is required.'
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _glassField(
+                                  controller: _salaryMinController,
+                                  label: 'Salary Min',
+                                  keyboardType: TextInputType.number,
                                 ),
-                                'salary_max': double.tryParse(
-                                  _salaryMaxController.text.trim(),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _glassField(
+                                  controller: _salaryMaxController,
+                                  label: 'Salary Max',
+                                  keyboardType: TextInputType.number,
                                 ),
-                                'status': _status,
-                              });
-
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Job updated successfully.'),
-                                ),
-                              );
-                              context.go(AppRoutes.recruiterJobsList);
-                            } catch (_) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    provider.error ?? 'Failed to update job.',
-                                  ),
-                                ),
-                              );
-                            } finally {
-                              if (mounted) {
-                                setState(() => _isSaving = false);
-                              }
-                            }
-                          },
-                    icon: const Icon(Icons.save_outlined),
-                    label: _isSaving
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Save Changes'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            initialValue: _status,
+                            decoration: _glassDecoration('Status'),
+                            dropdownColor: Colors.white,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            items: const [
+                              DropdownMenuItem(value: 'draft', child: Text('Draft')),
+                              DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                              DropdownMenuItem(value: 'approved', child: Text('Approved')),
+                              DropdownMenuItem(value: 'closed', child: Text('Closed')),
+                            ],
+                            onChanged: (value) => setState(() => _status = value ?? _status),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _isSaving
+                          ? null
+                          : () async {
+                              if (!_formKey.currentState!.validate()) return;
+                              setState(() => _isSaving = true);
+
+                              try {
+                                await provider.updateJob(job.id, {
+                                  'title': _titleController.text.trim(),
+                                  'description': _descriptionController.text.trim(),
+                                  'location': _locationController.text.trim(),
+                                  'salary_min': double.tryParse(
+                                    _salaryMinController.text.trim(),
+                                  ),
+                                  'salary_max': double.tryParse(
+                                    _salaryMaxController.text.trim(),
+                                  ),
+                                  'status': _status,
+                                });
+
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Job updated successfully.'),
+                                  ),
+                                );
+                                context.go(AppRoutes.recruiterJobsList);
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      provider.error ?? 'Failed to update job.',
+                                    ),
+                                  ),
+                                );
+                              } finally {
+                                if (mounted) {
+                                  setState(() => _isSaving = false);
+                                }
+                              }
+                            },
+                      icon: const Icon(Icons.save_outlined),
+                      label: _isSaving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Save Changes'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -245,15 +253,15 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+      fillColor: Colors.white,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.22)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: const Color(0xFF38BDF8).withValues(alpha: 0.9)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF2563EB)),
       ),
     );
   }

@@ -10,7 +10,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        $user = request()->user();
 
         if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard');
@@ -39,7 +39,10 @@ class DashboardController extends Controller
             $recentApplications = Application::whereHas('job', function ($query) use ($user) {
                 $query->where('recruiter_id', $user->id);
             })
-                ->with(['job', 'user'])
+                ->with([
+                    'job:id,title',
+                    'user:id,name,email',
+                ])
                 ->latest()
                 ->take(5)
                 ->get();
@@ -66,7 +69,7 @@ class DashboardController extends Controller
             $rejectedApplications = (int) ($seekerCounts->rejected_applications ?? 0);
 
             $recentApplications = Application::where('user_id', $user->id)
-                ->with(['job', 'user'])
+                ->with(['job:id,title'])
                 ->latest()
                 ->take(5)
                 ->get();

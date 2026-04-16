@@ -3,18 +3,37 @@
 namespace App\Exports;
 
 use App\Models\Application;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ApplicationsExport implements FromCollection, WithHeadings, WithMapping
+class ApplicationsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading
 {
-    /**
-     * @return \Illuminate\Support\Collection
-     */
-    public function collection()
+    public function query(): Builder
     {
-        return Application::with(['user', 'job'])->get();
+        return Application::query()
+            ->select([
+                'id',
+                'user_id',
+                'job_id',
+                'cover_letter',
+                'status',
+                'created_at',
+                'updated_at',
+            ])
+            ->with([
+                'user:id,name,email',
+                'job:id,title,recruiter_id',
+                'job.recruiter:id,name,company_name',
+            ])
+            ->latest('id');
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 
     public function headings(): array

@@ -10,7 +10,7 @@ class JobWebController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        $user = request()->user();
 
         if ($user->role === 'recruiter') {
             // Show recruiter's jobs
@@ -19,7 +19,7 @@ class JobWebController extends Controller
         } else {
             // Show all jobs for job seekers
             $jobs = Job::where('status', 'approved')
-                ->with('recruiter')
+                ->with('recruiter:id,name,email')
                 ->paginate(12);
         }
 
@@ -61,7 +61,7 @@ class JobWebController extends Controller
             'required_skills' => 'nullable|string',
         ]);
 
-        $validated['recruiter_id'] = auth()->user()->id;
+        $validated['recruiter_id'] = request()->user()->id;
         $validated['required_skills'] = $validated['required_skills']
             ? array_map('trim', explode(',', $validated['required_skills']))
             : null;
@@ -131,7 +131,7 @@ class JobWebController extends Controller
     {
         // For job seekers to browse all jobs
         $jobs = Job::where('status', 'approved')
-            ->with('recruiter')
+            ->with('recruiter:id,name,email')
             ->paginate(12);
 
         return view('jobs.index', compact('jobs'));
