@@ -39,34 +39,43 @@ class DashboardJobCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       job.location,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: (_isActive ? Colors.green : Colors.red).withValues(alpha: 0.10),
+                  color: (_isActive ? Colors.green : Colors.red).withValues(
+                    alpha: 0.10,
+                  ),
                   border: Border.all(
-                    color: (_isActive ? Colors.green : Colors.red).withValues(alpha: 0.24),
+                    color: (_isActive ? Colors.green : Colors.red).withValues(
+                      alpha: 0.24,
+                    ),
                   ),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   _isActive ? 'Active' : 'Closed',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: _isActive ? Colors.green.shade700 : Colors.red.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: _isActive
+                        ? Colors.green.shade700
+                        : Colors.red.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -74,7 +83,10 @@ class DashboardJobCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              _MiniMetric(label: 'Applicants', value: job.applicationCount.toString()),
+              _MiniMetric(
+                label: 'Applicants',
+                value: job.applicationCount.toString(),
+              ),
               const SizedBox(width: 10),
               _MiniMetric(
                 label: 'Status',
@@ -87,7 +99,9 @@ class DashboardJobCard extends StatelessWidget {
             children: [
               Expanded(
                 child: FilledButton.tonalIcon(
-                  onPressed: onEdit ?? () => context.push('/recruiter/jobs/${job.id}/edit'),
+                  onPressed:
+                      onEdit ??
+                      () => context.push('/recruiter/jobs/${job.id}/edit'),
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Edit'),
                 ),
@@ -95,7 +109,14 @@ class DashboardJobCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: FilledButton.tonalIcon(
-                  onPressed: onView ?? () => context.push(AppRoutes.recruiterJobDetail.replaceFirst(':id', job.id.toString())),
+                  onPressed:
+                      onView ??
+                      () => context.push(
+                        AppRoutes.recruiterJobDetail.replaceFirst(
+                          ':id',
+                          job.id.toString(),
+                        ),
+                      ),
                   icon: const Icon(Icons.visibility_outlined),
                   label: const Text('View'),
                 ),
@@ -129,16 +150,16 @@ class _MiniMetric extends StatelessWidget {
           children: [
             Text(
               value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

@@ -1,11 +1,16 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\ApiGuard;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\EnsureJsonResponseStructure;
+use App\Http\Middleware\RecruiterMiddleware;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -18,22 +23,22 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'auth' => \App\Http\Middleware\Authenticate::class,
-            'api.guard' => \App\Http\Middleware\ApiGuard::class,
-            'recruiter' => \App\Http\Middleware\RecruiterMiddleware::class,
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'ensure.json.structure' => \App\Http\Middleware\EnsureJsonResponseStructure::class,
+            'auth' => Authenticate::class,
+            'api.guard' => ApiGuard::class,
+            'recruiter' => RecruiterMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'ensure.json.structure' => EnsureJsonResponseStructure::class,
         ]);
 
         $middleware->appendToGroup('api', [
-            \App\Http\Middleware\ApiGuard::class,
-            \App\Http\Middleware\EnsureJsonResponseStructure::class,
+            ApiGuard::class,
+            EnsureJsonResponseStructure::class,
         ]);
-        
+
         // Replace Authenticate middleware for JSON API responses
         $middleware->replace(
-            \Illuminate\Auth\Middleware\Authenticate::class,
-            \App\Http\Middleware\Authenticate::class
+            Illuminate\Auth\Middleware\Authenticate::class,
+            Authenticate::class
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

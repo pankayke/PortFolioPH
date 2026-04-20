@@ -383,6 +383,7 @@ class AdminWebControllerTest extends TestCase
         $response->assertOk();
         $response->assertViewHas('users', function ($users) use ($target): bool {
             $collection = $users->getCollection();
+
             return $collection->count() === 1
                 && (int) $collection->first()->id === (int) $target->id;
         });
@@ -406,6 +407,7 @@ class AdminWebControllerTest extends TestCase
         $response->assertOk();
         $response->assertViewHas('users', function ($users) use ($jobSeeker): bool {
             $collection = $users->getCollection();
+
             return $collection->contains('id', $jobSeeker->id)
                 && $collection->every(fn ($user) => $user->role === 'job_seeker');
         });
@@ -429,6 +431,7 @@ class AdminWebControllerTest extends TestCase
         $response->assertOk();
         $response->assertViewHas('users', function ($users) use ($inactiveUser): bool {
             $collection = $users->getCollection();
+
             return $collection->contains('id', $inactiveUser->id)
                 && $collection->every(fn ($user) => (int) ($user->active ?? 0) === 0);
         });
@@ -496,6 +499,7 @@ class AdminWebControllerTest extends TestCase
         $response->assertOk();
         $response->assertViewHas('users', function ($users) use ($newerUser): bool {
             $first = $users->getCollection()->first();
+
             return $first !== null && (int) $first->id === (int) $newerUser->id;
         });
     }

@@ -10,6 +10,11 @@ on:
         options:
           - staging
           - production
+      production_confirmation:
+        description: "Type DEPLOY_PRODUCTION to confirm a production deployment"
+        required: false
+        default: ''
+        type: string
       deploy_ref:
         description: 'Git ref (branch, tag, or SHA) to deploy'
         required: true
@@ -47,6 +52,7 @@ jobs:
     outputs:
       should_deploy: ${{ steps.resolve.outputs.should_deploy }}
       target_environment: ${{ steps.resolve.outputs.target_environment }}
+      production_confirmation: ${{ steps.resolve.outputs.production_confirmation }}
       deploy_ref: ${{ steps.resolve.outputs.deploy_ref }}
       run_migrations: ${{ steps.resolve.outputs.run_migrations }}
       enforce_healthcheck: ${{ steps.resolve.outputs.enforce_healthcheck }}
@@ -60,6 +66,7 @@ jobs:
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "target_environment=${{ github.event.inputs.target_environment }}" >> "$GITHUB_OUTPUT"
+            echo "production_confirmation=${{ github.event.inputs.production_confirmation }}" >> "$GITHUB_OUTPUT"
             echo "deploy_ref=${{ github.event.inputs.deploy_ref }}" >> "$GITHUB_OUTPUT"
             echo "run_migrations=${{ github.event.inputs.run_migrations }}" >> "$GITHUB_OUTPUT"
             echo "enforce_healthcheck=${{ github.event.inputs.enforce_healthcheck }}" >> "$GITHUB_OUTPUT"
@@ -69,12 +76,14 @@ jobs:
           if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
             echo "target_environment=staging" >> "$GITHUB_OUTPUT"
+            echo "production_confirmation=" >> "$GITHUB_OUTPUT"
             echo "deploy_ref=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
             echo "run_migrations=true" >> "$GITHUB_OUTPUT"
             echo "enforce_healthcheck=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_deploy=false" >> "$GITHUB_OUTPUT"
             echo "target_environment=staging" >> "$GITHUB_OUTPUT"
+            echo "production_confirmation=" >> "$GITHUB_OUTPUT"
             echo "deploy_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
             echo "run_migrations=false" >> "$GITHUB_OUTPUT"
             echo "enforce_healthcheck=false" >> "$GITHUB_OUTPUT"
@@ -116,6 +125,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ needs.resolve.outputs.production_confirmation }}" != "DEPLOY_PRODUCTION" ]]; then
+            echo "Production deployment confirmation missing. Re-run workflow_dispatch and set production_confirmation=DEPLOY_PRODUCTION."
+            exit 1
+          fi
+
           ref="${{ needs.resolve.outputs.deploy_ref }}"
           if [[ "$ref" != "main" && ! "$ref" =~ ^refs/tags/ ]]; then
             echo "Production deploys are limited to 'main' branch or a tag ref. Received: $ref"
@@ -235,6 +249,22 @@ jobs:
             cd '${{ secrets.DEPLOY_PATH }}'
             rm -f release.tar.gz
           "
+
+      - name: Publish deployment summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '## Deployment Summary'
+            echo "- Environment: ${{ needs.resolve.outputs.target_environment }}"
+            echo "- Ref: ${{ needs.resolve.outputs.deploy_ref }}"
+            echo "- Migrations: ${{ needs.resolve.outputs.run_migrations }}"
+            echo "- Health check: ${{ needs.resolve.outputs.enforce_healthcheck }}"
+            if [[ "${{ needs.resolve.outputs.target_environment }}" == "production" ]]; then
+              echo '- Production confirmation: received'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prune old rollback backups
         if: always()

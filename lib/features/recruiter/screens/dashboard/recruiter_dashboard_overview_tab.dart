@@ -44,7 +44,9 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
 
         if (summary == null) {
           return _DashboardErrorState(
-            message: dashboardProvider.error ?? 'Unable to load recruiter dashboard.',
+            message:
+                dashboardProvider.error ??
+                'Unable to load recruiter dashboard.',
             onRetry: () async {
               await dashboardProvider.loadDashboard(refresh: true);
             },
@@ -53,7 +55,9 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
 
         final user = authProvider.currentUser;
         final activityFeed = _buildActivityFeed(summary);
-        final topJobs = summary.topJobs.isNotEmpty ? summary.topJobs : summary.recentJobs.take(3).toList();
+        final topJobs = summary.topJobs.isNotEmpty
+            ? summary.topJobs
+            : summary.recentJobs.take(3).toList();
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -155,7 +159,8 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                   children: [
                     _SectionHeader(
                       title: 'Analytics Widget',
-                      subtitle: 'Applications over the last 7 days and your top roles.',
+                      subtitle:
+                          'Applications over the last 7 days and your top roles.',
                     ),
                     const SizedBox(height: 14),
                     _ApplicationsChart(stats: summary.applicationStatsByDay),
@@ -163,14 +168,15 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                     Text(
                       'Top 3 Jobs by Applicants',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     if (topJobs.isEmpty)
                       _EmptyInlineState(
                         title: 'No live jobs yet',
-                        subtitle: 'Post the first role to populate performance trends.',
+                        subtitle:
+                            'Post the first role to populate performance trends.',
                         onTap: () => context.push(AppRoutes.recruiterJobCreate),
                       )
                     else
@@ -191,7 +197,8 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                   children: [
                     _SectionHeader(
                       title: 'Recent Activity Feed',
-                      subtitle: 'Latest applicants and recent job postings in one place.',
+                      subtitle:
+                          'Latest applicants and recent job postings in one place.',
                       actionLabel: 'ATS',
                       onAction: onJumpToAts,
                     ),
@@ -199,7 +206,8 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                     if (activityFeed.isEmpty)
                       _EmptyInlineState(
                         title: 'No recent activity',
-                        subtitle: 'Activity will appear here once you post jobs and receive applicants.',
+                        subtitle:
+                            'Activity will appear here once you post jobs and receive applicants.',
                         onTap: () => context.push(AppRoutes.recruiterJobCreate),
                       )
                     else
@@ -226,13 +234,15 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                   children: [
                     _SectionHeader(
                       title: 'Job Performance Cards',
-                      subtitle: 'Quick action cards for your strongest and newest roles.',
+                      subtitle:
+                          'Quick action cards for your strongest and newest roles.',
                     ),
                     const SizedBox(height: 12),
                     if (topJobs.isEmpty)
                       _EmptyInlineState(
                         title: 'No jobs to review yet',
-                        subtitle: 'Once you post roles, they will appear here with applicant counts.',
+                        subtitle:
+                            'Once you post roles, they will appear here with applicant counts.',
                         onTap: () => context.push(AppRoutes.recruiterJobCreate),
                       )
                     else
@@ -242,10 +252,16 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                           child: DashboardJobCard(
                             job: job,
                             onEdit: () => context.push(
-                              AppRoutes.recruiterJobEdit.replaceFirst(':id', '${job.id}'),
+                              AppRoutes.recruiterJobEdit.replaceFirst(
+                                ':id',
+                                '${job.id}',
+                              ),
                             ),
                             onView: () => context.push(
-                              AppRoutes.recruiterJobDetail.replaceFirst(':id', '${job.id}'),
+                              AppRoutes.recruiterJobDetail.replaceFirst(
+                                ':id',
+                                '${job.id}',
+                              ),
                             ),
                           ),
                         ),
@@ -261,7 +277,8 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                   children: [
                     _SectionHeader(
                       title: 'ATS Snapshot',
-                      subtitle: 'A fast read on where candidates are in the pipeline.',
+                      subtitle:
+                          'A fast read on where candidates are in the pipeline.',
                       actionLabel: 'Open ATS',
                       onAction: onJumpToAts,
                     ),
@@ -274,10 +291,26 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       childAspectRatio: 1.25,
                       children: [
-                        _AtsMetricCard(label: 'Pending', value: summary.pendingApplications, accent: const Color(0xFFF59E0B)),
-                        _AtsMetricCard(label: 'Reviewed', value: summary.reviewedApplications, accent: const Color(0xFF60A5FA)),
-                        _AtsMetricCard(label: 'Shortlisted', value: summary.shortlistedApplications, accent: const Color(0xFF8B5CF6)),
-                        _AtsMetricCard(label: 'Rejected', value: summary.rejectedApplications, accent: const Color(0xFFEF4444)),
+                        _AtsMetricCard(
+                          label: 'Pending',
+                          value: summary.pendingApplications,
+                          accent: const Color(0xFFF59E0B),
+                        ),
+                        _AtsMetricCard(
+                          label: 'Reviewed',
+                          value: summary.reviewedApplications,
+                          accent: const Color(0xFF60A5FA),
+                        ),
+                        _AtsMetricCard(
+                          label: 'Shortlisted',
+                          value: summary.shortlistedApplications,
+                          accent: const Color(0xFF8B5CF6),
+                        ),
+                        _AtsMetricCard(
+                          label: 'Rejected',
+                          value: summary.rejectedApplications,
+                          accent: const Color(0xFFEF4444),
+                        ),
                       ],
                     ),
                   ],
@@ -292,15 +325,19 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
     );
   }
 
-  List<_DashboardActivityEntry> _buildActivityFeed(RecruiterDashboardSummary summary) {
+  List<_DashboardActivityEntry> _buildActivityFeed(
+    RecruiterDashboardSummary summary,
+  ) {
     final entries = <_DashboardActivityEntry>[];
 
     for (final application in summary.recentApplications.take(5)) {
       final accent = _statusColor(application.status);
       entries.add(
         _DashboardActivityEntry(
-          title: '${application.applicantName} applied for ${application.jobTitle}',
-          subtitle: '${application.statusDisplay} · ${application.applicantEmail}',
+          title:
+              '${application.applicantName} applied for ${application.jobTitle}',
+          subtitle:
+              '${application.statusDisplay} · ${application.applicantEmail}',
           meta: _relativeLabel(application.createdAt),
           icon: Icons.person_add_alt_1_rounded,
           accent: accent,
@@ -316,7 +353,9 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
           subtitle: '${job.location} · ${job.applicationCount} applicants',
           meta: _relativeLabel(job.createdAt),
           icon: Icons.work_outline_rounded,
-          accent: job.isClosed ? const Color(0xFFEF4444) : const Color(0xFF34D399),
+          accent: job.isClosed
+              ? const Color(0xFFEF4444)
+              : const Color(0xFF34D399),
           sortKey: job.createdAt,
         ),
       );
@@ -380,17 +419,15 @@ class _HeroCard extends StatelessWidget {
                   children: [
                     Text(
                       'Jobs & Opportunities',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            height: 1.05,
-                          ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w900, height: 1.05),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Welcome back, $recruiterName. Track your hiring pipeline at a glance.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -404,7 +441,10 @@ class _HeroCard extends StatelessWidget {
                   color: const Color(0xFFEFF6FF),
                   border: Border.all(color: const Color(0xFFDBEAFE)),
                 ),
-                child: const Icon(Icons.apartment_rounded, color: Color(0xFF2563EB)),
+                child: const Icon(
+                  Icons.apartment_rounded,
+                  color: Color(0xFF2563EB),
+                ),
               ),
             ],
           ),
@@ -448,25 +488,22 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
         ),
         if (actionLabel != null && onAction != null)
-          TextButton(
-            onPressed: onAction,
-            child: Text(actionLabel!),
-          ),
+          TextButton(onPressed: onAction, child: Text(actionLabel!)),
       ],
     );
   }
@@ -520,20 +557,23 @@ class _ActionButton extends StatelessWidget {
                     Text(
                       label,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: colorScheme.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),
@@ -549,7 +589,10 @@ class _ApplicationsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxCount = stats.fold<int>(0, (previous, stat) => stat.count > previous ? stat.count : previous);
+    final maxCount = stats.fold<int>(
+      0,
+      (previous, stat) => stat.count > previous ? stat.count : previous,
+    );
 
     return Column(
       children: [
@@ -563,8 +606,8 @@ class _ApplicationsChart extends StatelessWidget {
                   Text(
                     'Applications over time',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -577,9 +620,9 @@ class _ApplicationsChart extends StatelessWidget {
             Text(
               maxCount == 0 ? '0 apps' : '$maxCount peak',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: const Color(0xFF60A5FA),
-                    fontWeight: FontWeight.w800,
-                  ),
+                color: const Color(0xFF60A5FA),
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ),
@@ -613,11 +656,16 @@ class _ApplicationsChart extends StatelessWidget {
                           children: [
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              height: maxCount == 0 ? 8 : 20 + ((stat.count / maxCount) * 90),
+                              height: maxCount == 0
+                                  ? 8
+                                  : 20 + ((stat.count / maxCount) * 90),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(14),
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF38BDF8), Color(0xFF2563EB)],
+                                  colors: [
+                                    Color(0xFF38BDF8),
+                                    Color(0xFF2563EB),
+                                  ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ),
@@ -630,9 +678,8 @@ class _ApplicationsChart extends StatelessWidget {
                             ),
                             Text(
                               stat.count.toString(),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),
@@ -674,26 +721,35 @@ class _TopJobRow extends StatelessWidget {
                   job.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: (isActive ? Colors.green : Colors.red).withValues(alpha: 0.10),
+                  color: (isActive ? Colors.green : Colors.red).withValues(
+                    alpha: 0.10,
+                  ),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: (isActive ? Colors.green : Colors.red).withValues(alpha: 0.24),
+                    color: (isActive ? Colors.green : Colors.red).withValues(
+                      alpha: 0.24,
+                    ),
                   ),
                 ),
                 child: Text(
                   isActive ? 'Active' : 'Closed',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: isActive ? Colors.green.shade700 : Colors.red.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: isActive
+                        ? Colors.green.shade700
+                        : Colors.red.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -713,7 +769,9 @@ class _TopJobRow extends StatelessWidget {
               minHeight: 8,
               value: job.applicationCount / maxApplicants,
               backgroundColor: Colors.grey.shade200,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF38BDF8),
+              ),
             ),
           ),
         ],
@@ -753,9 +811,9 @@ class _AtsMetricCard extends StatelessWidget {
           const Spacer(),
           Text(
             value.toString(),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 4),
           Text(label, style: Theme.of(context).textTheme.bodySmall),
@@ -777,15 +835,24 @@ class _FooterPulse extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _PulseStat(label: 'Jobs with applicants', value: summary.jobsWithApplicationCount.toString()),
+            child: _PulseStat(
+              label: 'Jobs with applicants',
+              value: summary.jobsWithApplicationCount.toString(),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: _PulseStat(label: 'New applicants', value: summary.newApplicationsCount.toString()),
+            child: _PulseStat(
+              label: 'New applicants',
+              value: summary.newApplicationsCount.toString(),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: _PulseStat(label: 'ATS pending', value: summary.pendingApplications.toString()),
+            child: _PulseStat(
+              label: 'ATS pending',
+              value: summary.pendingApplications.toString(),
+            ),
           ),
         ],
       ),
@@ -813,16 +880,16 @@ class _PulseStat extends StatelessWidget {
         children: [
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -854,11 +921,19 @@ class _EmptyInlineState extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 4),
           Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 10),
-          FilledButton.tonal(onPressed: onTap, child: const Text('Create a job')),
+          FilledButton.tonal(
+            onPressed: onTap,
+            child: const Text('Create a job'),
+          ),
         ],
       ),
     );
@@ -928,12 +1003,17 @@ class _DashboardErrorState extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Dashboard unavailable',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),
               Text(message, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              FilledButton(onPressed: () => onRetry(), child: const Text('Retry')),
+              FilledButton(
+                onPressed: () => onRetry(),
+                child: const Text('Retry'),
+              ),
             ],
           ),
         ),
@@ -959,9 +1039,9 @@ class _Badge extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

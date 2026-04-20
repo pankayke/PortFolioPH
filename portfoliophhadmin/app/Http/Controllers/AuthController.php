@@ -39,8 +39,8 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $user = $this->authService->authenticate($request->validated());
-        
-        if (!$user) {
+
+        if (! $user) {
             return ApiResponse::error('Invalid credentials', 401);
         }
 
@@ -121,7 +121,7 @@ class AuthController extends Controller
             $request->string('new_password')->toString(),
         );
 
-        if (!$ok) {
+        if (! $ok) {
             return ApiResponse::error('Invalid or expired reset token.', 422);
         }
 
@@ -134,7 +134,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return ApiResponse::error('Not authenticated', 401);
         }
 

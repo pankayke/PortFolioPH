@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class JobsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading
+class JobsExport implements FromQuery, WithChunkReading, WithHeadings, WithMapping
 {
     public function query(): Builder
     {
@@ -61,8 +61,8 @@ class JobsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReadi
 
     public function map($job): array
     {
-        $skills = is_array($job->required_skills) 
-            ? implode(', ', $job->required_skills) 
+        $skills = is_array($job->required_skills)
+            ? implode(', ', $job->required_skills)
             : $job->required_skills;
 
         return [
@@ -70,7 +70,7 @@ class JobsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReadi
             $job->title,
             $job->recruiter?->name ?? 'N/A',
             $job->recruiter?->company_name ?? 'N/A',
-            substr($job->description ?? '', 0, 100) . '...',
+            substr($job->description ?? '', 0, 100).'...',
             $job->location ?? 'N/A',
             $job->salary_min ?? 'N/A',
             $job->salary_max ?? 'N/A',

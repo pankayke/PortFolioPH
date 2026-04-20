@@ -32,7 +32,10 @@ class CertificationRepository {
 
     final id = _nextId++;
     final created = cert.copyWith(id: id);
-    final list = _localByUser.putIfAbsent(cert.userId, () => <CertificationModel>[]);
+    final list = _localByUser.putIfAbsent(
+      cert.userId,
+      () => <CertificationModel>[],
+    );
     list.insert(0, created);
     return id;
   }
@@ -50,15 +53,14 @@ class CertificationRepository {
       // Fallback below.
     }
 
-    return List<CertificationModel>.unmodifiable(_localByUser[userId] ?? const <CertificationModel>[]);
+    return List<CertificationModel>.unmodifiable(
+      _localByUser[userId] ?? const <CertificationModel>[],
+    );
   }
 
   Future<int> update(CertificationModel cert) async {
     try {
-      await _apiService.put(
-        '/certifications/${cert.id}',
-        data: cert.toMap(),
-      );
+      await _apiService.put('/certifications/${cert.id}', data: cert.toMap());
       return 1;
     } catch (_) {
       final list = _localByUser[cert.userId] ?? <CertificationModel>[];

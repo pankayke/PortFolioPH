@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Exports\UsersExport;
-use App\Exports\JobsExport;
 use App\Exports\ApplicationsExport;
-use App\Models\User;
+use App\Exports\JobsExport;
+use App\Exports\UsersExport;
 use App\Models\Application;
+use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -18,8 +18,8 @@ class ExportService
     public function exportUsers(string $format = 'xlsx'): BinaryFileResponse
     {
         return Excel::download(
-            new UsersExport(),
-            'users_export_' . now()->format('Y-m-d_H-i-s') . '.' . $format,
+            new UsersExport,
+            'users_export_'.now()->format('Y-m-d_H-i-s').'.'.$format,
             $format === 'csv' ? 'Csv' : 'Xlsx'
         );
     }
@@ -30,8 +30,8 @@ class ExportService
     public function exportJobs(string $format = 'xlsx'): BinaryFileResponse
     {
         return Excel::download(
-            new JobsExport(),
-            'jobs_export_' . now()->format('Y-m-d_H-i-s') . '.' . $format,
+            new JobsExport,
+            'jobs_export_'.now()->format('Y-m-d_H-i-s').'.'.$format,
             $format === 'csv' ? 'Csv' : 'Xlsx'
         );
     }
@@ -42,8 +42,8 @@ class ExportService
     public function exportApplications(string $format = 'xlsx'): BinaryFileResponse
     {
         return Excel::download(
-            new ApplicationsExport(),
-            'applications_export_' . now()->format('Y-m-d_H-i-s') . '.' . $format,
+            new ApplicationsExport,
+            'applications_export_'.now()->format('Y-m-d_H-i-s').'.'.$format,
             $format === 'csv' ? 'Csv' : 'Xlsx'
         );
     }
@@ -55,13 +55,13 @@ class ExportService
     {
         $cvPath = $user->resume_path;
 
-        if (!$cvPath || !file_exists(storage_path("app/$cvPath"))) {
+        if (! $cvPath || ! file_exists(storage_path("app/$cvPath"))) {
             abort(404, 'CV not found');
         }
 
         return response()->download(
             storage_path("app/$cvPath"),
-            'CV_' . $user->name . '_' . now()->format('Y-m-d') . '.pdf'
+            'CV_'.$user->name.'_'.now()->format('Y-m-d').'.pdf'
         );
     }
 
@@ -73,13 +73,13 @@ class ExportService
         $user = $application->user;
         $cvPath = $user->resume_path;
 
-        if (!$cvPath || !file_exists(storage_path("app/$cvPath"))) {
+        if (! $cvPath || ! file_exists(storage_path("app/$cvPath"))) {
             abort(404, 'Applicant CV not found');
         }
 
         return response()->download(
             storage_path("app/$cvPath"),
-            'CV_' . $user->name . '_' . now()->format('Y-m-d') . '.pdf'
+            'CV_'.$user->name.'_'.now()->format('Y-m-d').'.pdf'
         );
     }
 
@@ -90,8 +90,8 @@ class ExportService
     public function exportApplicantsWithCVs(string $jobId): BinaryFileResponse
     {
         return Excel::download(
-            new ApplicationsExport(),
-            'applicants_job_' . $jobId . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+            new ApplicationsExport,
+            'applicants_job_'.$jobId.'_'.now()->format('Y-m-d_H-i-s').'.xlsx'
         );
     }
 }

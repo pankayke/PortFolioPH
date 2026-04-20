@@ -32,7 +32,10 @@ class ExperienceRepository {
 
     final id = _nextId++;
     final created = experience.copyWith(id: id);
-    final list = _localByUser.putIfAbsent(experience.userId, () => <ExperienceModel>[]);
+    final list = _localByUser.putIfAbsent(
+      experience.userId,
+      () => <ExperienceModel>[],
+    );
     list.insert(0, created);
     return id;
   }
@@ -50,7 +53,9 @@ class ExperienceRepository {
       // Fallback below.
     }
 
-    return List<ExperienceModel>.unmodifiable(_localByUser[userId] ?? const <ExperienceModel>[]);
+    return List<ExperienceModel>.unmodifiable(
+      _localByUser[userId] ?? const <ExperienceModel>[],
+    );
   }
 
   Future<int> update(ExperienceModel experience) async {

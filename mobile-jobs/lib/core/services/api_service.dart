@@ -8,6 +8,8 @@ class ApiService {
   late FlutterSecureStorage _secureStorage;
   static const String _tokenKey = 'auth_token';
   final VoidCallback? onUnauthorized;
+  String? _cachedToken;
+  bool _isTokenLoaded = false;
 
   ApiService({this.onUnauthorized}) {
     _secureStorage = const FlutterSecureStorage();
@@ -33,10 +35,10 @@ class ApiService {
           }
           return handler.next(options);
         },
-        onError: (error, handler) {
+        onError: (error, handler) async {
           // Handle 401 - token expired
           if (error.response?.statusCode == 401) {
-            clearToken();
+            await clearToken();
             onUnauthorized?.call();
           }
           return handler.next(error);
@@ -238,14 +240,24 @@ class ApiService {
   // Token management
   Future<void> saveToken(String token) async {
     await _secureStorage.write(key: _tokenKey, value: token);
+    _cachedToken = token;
+    _isTokenLoaded = true;
   }
 
   Future<String?> getToken() async {
-    return await _secureStorage.read(key: _tokenKey);
+    if (_isTokenLoaded) {
+      return _cachedToken;
+    }
+
+    _cachedToken = await _secureStorage.read(key: _tokenKey);
+    _isTokenLoaded = true;
+    return _cachedToken;
   }
 
   Future<void> clearToken() async {
     await _secureStorage.delete(key: _tokenKey);
+    _cachedToken = null;
+    _isTokenLoaded = true;
   }
 
   Future<bool> hasToken() async {

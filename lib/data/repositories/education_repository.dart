@@ -32,7 +32,10 @@ class EducationRepository {
 
     final id = _nextId++;
     final created = education.copyWith(id: id);
-    final list = _localByUser.putIfAbsent(education.userId, () => <EducationModel>[]);
+    final list = _localByUser.putIfAbsent(
+      education.userId,
+      () => <EducationModel>[],
+    );
     list.insert(0, created);
     return id;
   }
@@ -50,7 +53,9 @@ class EducationRepository {
       // Fallback below.
     }
 
-    return List<EducationModel>.unmodifiable(_localByUser[userId] ?? const <EducationModel>[]);
+    return List<EducationModel>.unmodifiable(
+      _localByUser[userId] ?? const <EducationModel>[],
+    );
   }
 
   Future<int> update(EducationModel education) async {

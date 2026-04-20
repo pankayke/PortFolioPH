@@ -403,10 +403,22 @@ class _DashboardScreenState extends State<DashboardScreen>
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    _buildStatPill('Live Jobs: $liveJobsCount', colorScheme, isDark),
-                    _buildStatPill('Saved: $savedJobsCount', colorScheme, isDark),
+                    _buildStatPill(
+                      'Live Jobs: $liveJobsCount',
+                      colorScheme,
+                      isDark,
+                    ),
+                    _buildStatPill(
+                      'Saved: $savedJobsCount',
+                      colorScheme,
+                      isDark,
+                    ),
                     _buildStatPill('Skills: $skillsCount', colorScheme, isDark),
-                    _buildStatPill('Portfolio: $portfoliosCount', colorScheme, isDark),
+                    _buildStatPill(
+                      'Portfolio: $portfoliosCount',
+                      colorScheme,
+                      isDark,
+                    ),
                   ],
                 ),
               ],
@@ -502,14 +514,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                         children: [
                           Text(
                             'Momentum Board',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'A live snapshot of your job hunt this week.',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: isDark
                                       ? const Color(0xFFD7E0EA)
                                       : const Color(0xFF475569),
@@ -519,7 +531,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withAlpha(isDark ? 18 : 160),
                         borderRadius: BorderRadius.circular(999),
@@ -530,8 +545,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                       child: Text(
                         '${jobsProvider.jobs.length} live roles',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -561,9 +576,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(height: 12),
                 Text(
                   'Featured roles',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -576,7 +591,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                           separatorBuilder: (_, _) => const SizedBox(width: 10),
                           itemBuilder: (context, index) {
                             final job = featuredJobs[index];
-                            final score = jobsProvider.getJobScore(job.id ?? -1);
+                            final score = jobsProvider.getJobScore(
+                              job.id ?? -1,
+                            );
                             return _featuredRoleCard(
                               title: job.title,
                               company: job.company,
@@ -611,9 +628,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           const SizedBox(height: 8),
           Text(
             'No live roles yet.',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
@@ -651,9 +668,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
@@ -690,9 +707,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Text(
               scoreLabel,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -1456,14 +1473,15 @@ class _JobCategoriesCarouselState extends State<_JobCategoriesCarousel> {
                               child: Text(
                                 category,
                                 textAlign: TextAlign.center,
-                                style: (textTheme.bodyMedium ?? const TextStyle())
-                                    .copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: isActive
-                                          ? widget.colorScheme.primary
-                                          : null,
-                                    ),
+                                style:
+                                    (textTheme.bodyMedium ?? const TextStyle())
+                                        .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: isActive
+                                              ? widget.colorScheme.primary
+                                              : null,
+                                        ),
                               ),
                             ),
                           ),

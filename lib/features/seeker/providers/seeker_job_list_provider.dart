@@ -75,6 +75,7 @@ class SeekerJobListProvider extends ChangeNotifier {
 
     _isLoading = true;
     _error = null;
+    notifyListeners();
 
     try {
       final loadedJobs = await _repository.getJobs(
@@ -191,6 +192,7 @@ class SeekerJobListProvider extends ChangeNotifier {
 
     _isLoading = true;
     _error = null;
+    notifyListeners();
 
     try {
       final loadedJobs = await _repository.getSavedJobs(page: page);

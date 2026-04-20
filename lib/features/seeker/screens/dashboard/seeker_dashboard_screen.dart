@@ -120,7 +120,7 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
               userName: userName,
               compact: _compactHeader,
               onSearchTap: () => _onTabChanged(1),
-                onSearchSubmitted: _performJobSearch,
+              onSearchSubmitted: _performJobSearch,
               onNotificationTap: () =>
                   context.push(AppRoutes.notificationSettings),
               onProfileTap: () => _onTabChanged(3),
@@ -556,7 +556,9 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
 
         if (applicationProvider.applications.isEmpty) {
           return const Center(
-            child: Text('No applications yet. Apply to a job to track progress here.'),
+            child: Text(
+              'No applications yet. Apply to a job to track progress here.',
+            ),
           );
         }
 

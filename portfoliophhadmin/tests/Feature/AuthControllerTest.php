@@ -25,7 +25,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test successful user registration
-     * 
+     *
      * Verifies:
      * - Status 201 (Created)
      * - Response includes token
@@ -81,7 +81,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test registration with duplicate email fails
-     * 
+     *
      * Verifies:
      * - Status 422 (Validation error)
      * - Specific email error message
@@ -103,7 +103,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test registration with invalid email fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Email validation error
@@ -123,7 +123,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test registration with weak password fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Password regex validation (must have uppercase, lowercase, digit)
@@ -143,7 +143,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test registration with missing required fields fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - All missing fields reported
@@ -189,7 +189,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test successful user login
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Response includes token
@@ -233,7 +233,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test login with invalid credentials fails
-     * 
+     *
      * Verifies:
      * - Status 401 (Unauthorized)
      * - Generic error message (don't leak if user exists)
@@ -257,7 +257,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test login with non-existent email fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Generic error (no user enumeration)
@@ -275,7 +275,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test login with missing email fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Email required validation
@@ -292,7 +292,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test login with invalid email format fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Email format validation
@@ -314,7 +314,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test successful logout
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Token is revoked
@@ -339,7 +339,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test logout without authentication fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Requires valid token
@@ -354,7 +354,7 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test logout with invalid token fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Token validation

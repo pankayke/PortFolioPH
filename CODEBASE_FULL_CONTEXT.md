@@ -5,6 +5,8 @@
 **Current Stage**: MVP with role-based dashboards (Recruiter + Seeker)  
 **Status**: 🔴 Production-ready but requires optimization (see CRITICAL ISSUES)
 
+> Historical context snapshot. Current verified status is documented in [CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md).
+
 ---
 
 ## 📊 Project Overview

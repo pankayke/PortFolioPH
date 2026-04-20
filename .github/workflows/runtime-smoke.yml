@@ -17,6 +17,13 @@ on:
         type: boolean
   schedule:
     - cron: '30 2 * * *'
+  workflow_run:
+    workflows:
+      - Deployment Pipeline
+    types:
+      - completed
+    branches:
+      - develop
 
 permissions:
   contents: read
@@ -27,6 +34,7 @@ concurrency:
 
 jobs:
   smoke:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'develop' && github.event.workflow_run.conclusion == 'success')
     name: Runtime smoke on ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}
     runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}

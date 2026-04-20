@@ -25,7 +25,7 @@ class JobFactory extends Factory
             'recruiter_id' => User::factory()->recruiter(),
             'title' => fake()->jobTitle(),
             'description' => fake()->sentences(5, true),
-            'location' => fake()->city() . ', ' . fake()->state(),
+            'location' => fake()->city().', '.fake()->state(),
             'salary_min' => fake()->numberBetween(25000, 75000),
             'salary_max' => fake()->numberBetween(80000, 150000),
             'job_type' => fake()->randomElement($jobTypes),

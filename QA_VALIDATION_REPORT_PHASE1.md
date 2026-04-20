@@ -2,6 +2,8 @@
 **Date:** April 5, 2026  
 **Status:** ❌ **NOT PRODUCTION READY** (54% Pass Rate)
 
+> Historical runtime report. Current verified status is documented in [CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md).
+
 ---
 
 ## Executive Summary

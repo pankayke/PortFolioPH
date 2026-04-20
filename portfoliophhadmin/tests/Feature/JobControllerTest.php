@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Job;
 use App\Models\Application;
+use App\Models\Job;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +18,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test retrieve jobs list with pagination
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Paginated response structure
@@ -58,7 +58,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test jobs list pagination
-     * 
+     *
      * Verifies:
      * - Per-page parameter limits results
      * - Next page offset works
@@ -84,7 +84,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test jobs list only shows approved jobs
-     * 
+     *
      * Verifies:
      * - Draft/pending jobs excluded
      */
@@ -103,7 +103,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test list jobs without authentication
-     * 
+     *
      * Verifies:
      * - Public endpoint, returns 200
      */
@@ -129,7 +129,7 @@ class JobControllerTest extends TestCase
             'job_id' => $job->id,
         ]);
 
-        $response = $this->getJson('/api/jobs/' . $job->id);
+        $response = $this->getJson('/api/jobs/'.$job->id);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.id', $job->id)
@@ -198,13 +198,26 @@ class JobControllerTest extends TestCase
             ->assertJsonCount(100, 'data');
     }
 
+    public function test_non_recruiter_cannot_access_jobs_mine(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+        $token = $jobSeeker->createToken('api-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->getJson('/api/jobs/mine');
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Only recruiters can access this endpoint.');
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Show Tests (GET /api/jobs/{id})
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Test retrieve single job
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Full job details returned
@@ -240,7 +253,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test show non-existent job returns 404
-     * 
+     *
      * Verifies:
      * - Status 404
      * - Appropriate error message
@@ -259,7 +272,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test create job as recruiter successfully
-     * 
+     *
      * Verifies:
      * - Status 201
      * - Job created in database
@@ -307,7 +320,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test create job as job seeker fails (authorization)
-     * 
+     *
      * Verifies:
      * - Status 403 (Forbidden)
      * - Only recruiters can create jobs
@@ -332,7 +345,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test create job without authentication fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Requires token
@@ -369,7 +382,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test create job with missing title fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Validation error for missing title
@@ -391,7 +404,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test create job with title too short fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Min length validation
@@ -414,7 +427,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test create job with description too short fails
-     * 
+     *
      * Verifies:
      * - Description min length validation
      */
@@ -440,7 +453,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test update own job successfully
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Job updated in database
@@ -475,7 +488,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test update someone else's job fails (authorization)
-     * 
+     *
      * Verifies:
      * - Status 403
      * - Recruiters can only update their own jobs
@@ -499,7 +512,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test update non-existent job returns 404
-     * 
+     *
      * Verifies:
      * - Status 404
      */
@@ -509,7 +522,7 @@ class JobControllerTest extends TestCase
         $token = $recruiter->createToken('api-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-            ->putJson("/api/jobs/99999", [
+            ->putJson('/api/jobs/99999', [
                 'title' => 'Updated Title',
                 'description' => 'Updated description',
             ]);
@@ -523,7 +536,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test delete own job successfully
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Job deleted from database
@@ -545,7 +558,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test delete someone else's job fails (authorization)
-     * 
+     *
      * Verifies:
      * - Status 403
      */
@@ -568,7 +581,7 @@ class JobControllerTest extends TestCase
 
     /**
      * Test delete non-existent job returns 404
-     * 
+     *
      * Verifies:
      * - Status 404
      */
@@ -578,7 +591,7 @@ class JobControllerTest extends TestCase
         $token = $recruiter->createToken('api-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-            ->deleteJson("/api/jobs/99999");
+            ->deleteJson('/api/jobs/99999');
 
         $response->assertStatus(404);
     }

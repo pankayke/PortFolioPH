@@ -45,15 +45,14 @@ class SkillsRepository {
       // Fallback below.
     }
 
-    return List<SkillsModel>.unmodifiable(_localByUser[userId] ?? const <SkillsModel>[]);
+    return List<SkillsModel>.unmodifiable(
+      _localByUser[userId] ?? const <SkillsModel>[],
+    );
   }
 
   Future<int> update(SkillsModel skill) async {
     try {
-      await _apiService.put(
-        '/skill-tracker/${skill.id}',
-        data: skill.toMap(),
-      );
+      await _apiService.put('/skill-tracker/${skill.id}', data: skill.toMap());
       return 1;
     } catch (_) {
       final list = _localByUser[skill.userId] ?? <SkillsModel>[];

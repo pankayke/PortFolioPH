@@ -30,7 +30,10 @@ class PortfolioRepository {
 
     final id = _nextId++;
     final created = portfolio.copyWith(id: id);
-    final list = _localByUser.putIfAbsent(portfolio.userId, () => <PortfolioModel>[]);
+    final list = _localByUser.putIfAbsent(
+      portfolio.userId,
+      () => <PortfolioModel>[],
+    );
     list.removeWhere((item) => item.id == id);
     list.insert(0, created);
     return id;
@@ -67,12 +70,17 @@ class PortfolioRepository {
       // Fallback to local cache.
     }
 
-    return List<PortfolioModel>.unmodifiable(_localByUser[userId] ?? const <PortfolioModel>[]);
+    return List<PortfolioModel>.unmodifiable(
+      _localByUser[userId] ?? const <PortfolioModel>[],
+    );
   }
 
   Future<int> update(PortfolioModel portfolio) async {
     try {
-      await _apiService.put('/portfolios/${portfolio.id}', data: portfolio.toMap());
+      await _apiService.put(
+        '/portfolios/${portfolio.id}',
+        data: portfolio.toMap(),
+      );
       return 1;
     } catch (_) {
       final list = _localByUser[portfolio.userId] ?? <PortfolioModel>[];

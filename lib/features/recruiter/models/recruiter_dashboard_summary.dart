@@ -77,16 +77,14 @@ class RecruiterDashboardSummary {
               .whereType<Map<String, dynamic>>()
               .map(RecruiterDashboardDayStat.fromJson)
               .toList(),
-      topJobs:
-          (json['top_jobs'] as List<dynamic>? ?? const [])
-              .whereType<Map<String, dynamic>>()
-              .map((job) => Job.fromJson(job))
-              .toList(),
-      recentJobs:
-          (json['recent_jobs'] as List<dynamic>? ?? const [])
-              .whereType<Map<String, dynamic>>()
-              .map((job) => Job.fromJson(job))
-              .toList(),
+      topJobs: (json['top_jobs'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map((job) => Job.fromJson(job))
+          .toList(),
+      recentJobs: (json['recent_jobs'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map((job) => Job.fromJson(job))
+          .toList(),
       recentApplications:
           (json['recent_applications'] as List<dynamic>? ?? const [])
               .whereType<Map<String, dynamic>>()

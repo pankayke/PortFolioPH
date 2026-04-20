@@ -81,9 +81,7 @@ class AppProviderRegistry {
     ),
 
     /// Shared secure storage instance for auth token and persisted secrets
-    Provider<FlutterSecureStorage>(
-      create: (_) => const FlutterSecureStorage(),
-    ),
+    Provider<FlutterSecureStorage>(create: (_) => const FlutterSecureStorage()),
 
     // ────────────────────────────────────────────────────────────────────────
     // API & REPOSITORY PROVIDERS — Backend communication
@@ -162,9 +160,8 @@ class AppProviderRegistry {
       RecruiterRepositoryImpl,
       RecruiterDashboardProvider
     >(
-      create: (context) => RecruiterDashboardProvider(
-        context.read<RecruiterRepositoryImpl>(),
-      ),
+      create: (context) =>
+          RecruiterDashboardProvider(context.read<RecruiterRepositoryImpl>()),
       update: (_, repo, previous) =>
           previous ?? RecruiterDashboardProvider(repo),
     ),

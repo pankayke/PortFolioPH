@@ -7,8 +7,8 @@ use App\Http\Requests\UpdateJobRequest;
 use App\Http\Resources\ApiResponse;
 use App\Models\Job;
 use App\Services\JobService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class JobController extends Controller
 {
@@ -32,7 +32,7 @@ class JobController extends Controller
     public function store(StoreJobRequest $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return ApiResponse::unauthorized('Unauthenticated');
         }
 
@@ -65,8 +65,12 @@ class JobController extends Controller
     public function mine(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return ApiResponse::unauthorized('Unauthenticated');
+        }
+
+        if ($user->role !== 'recruiter') {
+            return ApiResponse::forbidden('Only recruiters can access this endpoint.');
         }
 
         $filters = $request->only(['search', 'status']);
@@ -110,6 +114,7 @@ class JobController extends Controller
     private function resolvePerPage(Request $request): int
     {
         $perPage = (int) $request->input('per_page', 15);
+
         return max(1, min(100, $perPage));
     }
 }

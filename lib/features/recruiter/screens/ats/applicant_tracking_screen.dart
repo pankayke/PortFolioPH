@@ -132,8 +132,8 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                       child: Text(
                         'Talent Queue',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     Container(
@@ -148,8 +148,8 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                       child: Text(
                         '${applications.length} live',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -158,8 +158,8 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                 Text(
                   'Move quickly through incoming applicants and keep the flow visible.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),

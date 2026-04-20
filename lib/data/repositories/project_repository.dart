@@ -90,15 +90,19 @@ class ProjectRepository {
       // Fallback to local cache.
     }
 
-    final source = List<ProjectModel>.from(_localByPortfolio[portfolioId] ?? const <ProjectModel>[]);
+    final source = List<ProjectModel>.from(
+      _localByPortfolio[portfolioId] ?? const <ProjectModel>[],
+    );
     final hasSearch = searchQuery != null && searchQuery.trim().isNotEmpty;
     final filtered = hasSearch
-        ? source.where((item) {
-        final q = searchQuery.toLowerCase();
-            return item.title.toLowerCase().contains(q) ||
-                (item.description?.toLowerCase().contains(q) ?? false) ||
-                (item.techStack?.toLowerCase().contains(q) ?? false);
-          }).toList(growable: false)
+        ? source
+              .where((item) {
+                final q = searchQuery.toLowerCase();
+                return item.title.toLowerCase().contains(q) ||
+                    (item.description?.toLowerCase().contains(q) ?? false) ||
+                    (item.techStack?.toLowerCase().contains(q) ?? false);
+              })
+              .toList(growable: false)
         : source;
 
     final start = (offset ?? 0).clamp(0, filtered.length);
@@ -178,9 +182,13 @@ class ProjectRepository {
     return null;
   }
 
-  Future<List<ProjectModel>> _loadPortfolioProjectsSafely(int portfolioId) async {
+  Future<List<ProjectModel>> _loadPortfolioProjectsSafely(
+    int portfolioId,
+  ) async {
     try {
-      final projectsData = await _apiService.get('/portfolios/$portfolioId/projects');
+      final projectsData = await _apiService.get(
+        '/portfolios/$portfolioId/projects',
+      );
       if (projectsData is! List) return const <ProjectModel>[];
       return projectsData
           .whereType<Map<String, dynamic>>()
@@ -239,8 +247,5 @@ class _FeaturedCacheEntry {
   final List<ProjectModel> projects;
   final DateTime expiresAt;
 
-  const _FeaturedCacheEntry({
-    required this.projects,
-    required this.expiresAt,
-  });
+  const _FeaturedCacheEntry({required this.projects, required this.expiresAt});
 }

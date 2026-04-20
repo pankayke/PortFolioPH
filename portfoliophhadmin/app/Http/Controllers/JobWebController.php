@@ -43,6 +43,7 @@ class JobWebController extends Controller
     public function create()
     {
         Gate::authorize('create', Job::class);
+
         return view('jobs.form');
     }
 
@@ -75,6 +76,7 @@ class JobWebController extends Controller
     public function edit(Job $job)
     {
         Gate::authorize('update', $job);
+
         return view('jobs.form', compact('job'));
     }
 

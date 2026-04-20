@@ -9,12 +9,7 @@ import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
 import 'package:portfolioph/core/services/file_download_service.dart';
 import 'package:portfolioph/core/utils/logging_utils.dart';
 
-enum DownloadState {
-  idle,
-  downloading,
-  success,
-  error,
-}
+enum DownloadState { idle, downloading, success, error }
 
 class FileDownloadProvider extends ChangeNotifier {
   final FileDownloadService _downloadService;
@@ -31,7 +26,8 @@ class FileDownloadProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String? get lastDownloadPath => _lastDownloadPath;
 
-  double get downloadProgress => _totalBytes <= 0 ? 0 : _downloadedBytes / _totalBytes;
+  double get downloadProgress =>
+      _totalBytes <= 0 ? 0 : _downloadedBytes / _totalBytes;
   bool get isDownloading => _state == DownloadState.downloading;
 
   FileDownloadProvider(this._downloadService);

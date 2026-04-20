@@ -69,6 +69,7 @@ class SeekerApplicationProvider extends ChangeNotifier {
 
     _isLoading = true;
     _error = null;
+    notifyListeners();
 
     try {
       final loadedApplications = await _repository.getApplications(

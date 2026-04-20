@@ -9,10 +9,7 @@ class ApiResponse
     /**
      * Success response format
      *
-     * @param mixed $data
-     * @param string $message
-     * @param int $statusCode
-     * @return JsonResponse
+     * @param  mixed  $data
      */
     public static function success(
         $data = null,
@@ -29,11 +26,6 @@ class ApiResponse
 
     /**
      * Error response format
-     *
-     * @param string $message
-     * @param int $statusCode
-     * @param array|null $errors
-     * @return JsonResponse
      */
     public static function error(
         string $message = 'Error',
@@ -50,10 +42,6 @@ class ApiResponse
 
     /**
      * Validation error response
-     *
-     * @param array $errors
-     * @param int $statusCode
-     * @return JsonResponse
      */
     public static function validationError(
         array $errors,
@@ -68,9 +56,6 @@ class ApiResponse
 
     /**
      * Not found response
-     *
-     * @param string $resource
-     * @return JsonResponse
      */
     public static function notFound(string $resource = 'Resource'): JsonResponse
     {
@@ -79,9 +64,6 @@ class ApiResponse
 
     /**
      * Unauthorized response
-     *
-     * @param string $message
-     * @return JsonResponse
      */
     public static function unauthorized(string $message = 'Unauthorized'): JsonResponse
     {
@@ -90,9 +72,6 @@ class ApiResponse
 
     /**
      * Forbidden response
-     *
-     * @param string $message
-     * @return JsonResponse
      */
     public static function forbidden(string $message = 'Forbidden'): JsonResponse
     {
@@ -102,10 +81,7 @@ class ApiResponse
     /**
      * Paginated response
      *
-     * @param mixed $paginator
-     * @param string $message
-     * @param int $statusCode
-     * @return JsonResponse
+     * @param  mixed  $paginator
      */
     public static function paginated(
         $paginator,

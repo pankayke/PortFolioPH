@@ -110,14 +110,20 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                   borderRadius: BorderRadius.circular(24),
                   gradient: LinearGradient(
                     colors: [
-                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.14),
-                      Theme.of(context).colorScheme.surface.withValues(alpha: 0.82),
+                      Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.14),
+                      Theme.of(
+                        context,
+                      ).colorScheme.surface.withValues(alpha: 0.82),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.70),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant.withValues(alpha: 0.70),
                   ),
                 ),
                 child: Column(
@@ -126,8 +132,8 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                     Text(
                       'Upload your resume in PDF format.',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -138,10 +144,14 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.62),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.62),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.68),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.outlineVariant.withValues(alpha: 0.68),
                         ),
                       ),
                       child: Column(
@@ -152,7 +162,9 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Icon(
@@ -167,7 +179,10 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                                   children: [
                                     Text(
                                       _selectedFileName ?? 'No file selected',
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
                                             fontWeight: FontWeight.w700,
                                           ),
                                       maxLines: 1,
@@ -175,8 +190,12 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      kIsWeb ? 'Web upload will use in-memory file bytes.' : 'Local file path selected from your device.',
-                                      style: Theme.of(context).textTheme.bodySmall,
+                                      kIsWeb
+                                          ? 'Web upload will use in-memory file bytes.'
+                                          : 'Local file path selected from your device.',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -188,7 +207,9 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                             children: [
                               Expanded(
                                 child: OutlinedButton.icon(
-                                  onPressed: profileProvider.isLoading ? null : _pickPdf,
+                                  onPressed: profileProvider.isLoading
+                                      ? null
+                                      : _pickPdf,
                                   icon: const Icon(Icons.attach_file_outlined),
                                   label: const Text('Select PDF File'),
                                 ),
@@ -196,15 +217,19 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: FilledButton.icon(
-                                  onPressed: profileProvider.isLoading ||
-                                          (_selectedFile == null && _selectedFileBytes == null)
+                                  onPressed:
+                                      profileProvider.isLoading ||
+                                          (_selectedFile == null &&
+                                              _selectedFileBytes == null)
                                       ? null
                                       : _upload,
                                   icon: profileProvider.isLoading
                                       ? const SizedBox(
                                           width: 16,
                                           height: 16,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
                                         )
                                       : const Icon(Icons.upload_file_outlined),
                                   label: const Text('Upload CV'),

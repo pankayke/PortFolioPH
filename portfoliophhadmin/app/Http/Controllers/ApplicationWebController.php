@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Job;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class ApplicationWebController extends Controller
 {
@@ -39,6 +38,7 @@ class ApplicationWebController extends Controller
     public function show(Application $application)
     {
         $this->authorize('view', $application);
+
         return view('applications.show', compact('application'));
     }
 
@@ -84,6 +84,7 @@ class ApplicationWebController extends Controller
     public function edit(Application $application)
     {
         $this->authorize('updateStatus', $application);
+
         return view('applications.edit', compact('application'));
     }
 

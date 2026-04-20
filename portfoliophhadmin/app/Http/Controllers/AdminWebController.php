@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Job;
 use App\Models\Application;
+use App\Models\Job;
+use App\Models\User;
 use App\Services\ExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,11 +80,11 @@ class AdminWebController extends Controller
         }
 
         $allowedSorts = ['created_at', 'name', 'email', 'role', 'active'];
-        if (!in_array($sortBy, $allowedSorts, true)) {
+        if (! in_array($sortBy, $allowedSorts, true)) {
             $sortBy = 'created_at';
         }
 
-        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+        if (! in_array($sortDir, ['asc', 'desc'], true)) {
             $sortDir = 'desc';
         }
 
@@ -103,6 +103,7 @@ class AdminWebController extends Controller
             ->when($role !== '' && $role !== 'all', function ($query) use ($role) {
                 if ($role === 'job_seeker') {
                     $query->whereIn('role', ['job_seeker', 'job seeker', 'job-seeker']);
+
                     return;
                 }
 
@@ -111,6 +112,7 @@ class AdminWebController extends Controller
             ->when($status !== '' && $status !== 'all', function ($query) use ($status) {
                 if ($status === 'active') {
                     $query->where('active', 1);
+
                     return;
                 }
 
@@ -199,7 +201,7 @@ class AdminWebController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:admin,recruiter,job_seeker',
         ]);
 
@@ -309,6 +311,7 @@ class AdminWebController extends Controller
     public function suspendJob(Job $job)
     {
         $job->update(['status' => 'closed']);
+
         return redirect()->route('admin.jobs.show', $job)->with('success', 'Job closed. Recruiter can no longer accept applications.');
     }
 
@@ -330,6 +333,7 @@ class AdminWebController extends Controller
     public function approveJob(Job $job)
     {
         $job->update(['status' => 'approved']);
+
         return redirect()->route('admin.jobs.show', $job)->with('success', 'Job approved and now visible to job seekers.');
     }
 
@@ -359,6 +363,7 @@ class AdminWebController extends Controller
             'accepted' => (int) ($statusCounts->accepted ?? 0),
             'rejected' => (int) ($statusCounts->rejected ?? 0),
         ];
+
         return view('admin.applications.index', compact('applications', 'stats'));
     }
 
@@ -523,7 +528,7 @@ class AdminWebController extends Controller
      */
     public function downloadCV(User $user, ExportService $exportService)
     {
-        if (!$user->resume_path) {
+        if (! $user->resume_path) {
             return redirect()->back()->with('error', 'This user has not uploaded a CV yet.');
         }
 

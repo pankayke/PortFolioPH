@@ -73,14 +73,8 @@ class DownloadProgressCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: onDismiss,
-                ),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                IconButton(icon: const Icon(Icons.close), onPressed: onDismiss),
               ],
             ),
             const SizedBox(height: 16),
@@ -163,15 +157,17 @@ class _DownloadDialogState extends State<DownloadDialog> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: widget.formats.map((format) {
-                  return ChoiceChip(
-                    label: Text(format.toUpperCase()),
-                    selected: _selectedFormat == format,
-                    onSelected: isLoading
-                        ? null
-                        : (_) => setState(() => _selectedFormat = format),
-                  );
-                }).toList(growable: false),
+                children: widget.formats
+                    .map((format) {
+                      return ChoiceChip(
+                        label: Text(format.toUpperCase()),
+                        selected: _selectedFormat == format,
+                        onSelected: isLoading
+                            ? null
+                            : (_) => setState(() => _selectedFormat = format),
+                      );
+                    })
+                    .toList(growable: false),
               ),
               if (provider.isDownloading)
                 Padding(
@@ -208,9 +204,11 @@ class _DownloadDialogState extends State<DownloadDialog> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: isLoading ? null : () {
-                widget.onDownload(_selectedFormat);
-              },
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      widget.onDownload(_selectedFormat);
+                    },
               child: isLoading
                   ? const SizedBox(
                       width: 20,
@@ -271,10 +269,7 @@ class ExportMenu extends StatelessWidget {
           ),
         ),
       ],
-      child: Tooltip(
-        message: title,
-        child: const Icon(Icons.download_sharp),
-      ),
+      child: Tooltip(message: title, child: const Icon(Icons.download_sharp)),
     );
   }
 }

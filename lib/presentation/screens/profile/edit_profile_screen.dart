@@ -57,9 +57,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _nameController = TextEditingController(text: currentUser?.fullName ?? '');
     _emailController = TextEditingController(text: currentUser?.email ?? '');
     _bioController = TextEditingController(text: currentUser?.bio ?? '');
-    _locationController = TextEditingController(text: currentUser?.location ?? '');
-    _websiteController = TextEditingController(text: currentUser?.websiteUrl ?? '');
-    _phoneController = TextEditingController(text: currentUser?.phoneNumber ?? '');
+    _locationController = TextEditingController(
+      text: currentUser?.location ?? '',
+    );
+    _websiteController = TextEditingController(
+      text: currentUser?.websiteUrl ?? '',
+    );
+    _phoneController = TextEditingController(
+      text: currentUser?.phoneNumber ?? '',
+    );
   }
 
   Future<void> _pickAvatar() async {
@@ -70,9 +76,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       AppLogger.error('Avatar picker error', error: e);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
     }
   }
 
@@ -173,13 +179,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     _AvatarCard(
                       avatarFile: _selectedAvatar,
                       avatarPath: currentUser.avatarPath,
-                      onPickAvatar: profileProvider.isLoading ? null : _pickAvatar,
+                      onPickAvatar: profileProvider.isLoading
+                          ? null
+                          : _pickAvatar,
                       colorScheme: colorScheme,
                     ),
                     const SizedBox(height: AppConstants.spacingMd),
                     _SectionPanel(
                       title: 'Identity',
-                      subtitle: 'These details help recruiters and collaborators find you.',
+                      subtitle:
+                          'These details help recruiters and collaborators find you.',
                       child: Column(
                         children: [
                           TextFormField(
@@ -207,7 +216,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email is required';
                               }
-                              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                              if (!RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                              ).hasMatch(value)) {
                                 return 'Enter a valid email';
                               }
                               return null;
@@ -249,7 +260,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                             keyboardType: TextInputType.url,
                             validator: (value) {
-                              if (value != null && value.isNotEmpty &&
+                              if (value != null &&
+                                  value.isNotEmpty &&
                                   !value.startsWith('http://') &&
                                   !value.startsWith('https://')) {
                                 return 'URL must start with http:// or https://';
@@ -270,7 +282,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           color: colorScheme.surface.withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: colorScheme.outlineVariant.withValues(alpha: 0.65),
+                            color: colorScheme.outlineVariant.withValues(
+                              alpha: 0.65,
+                            ),
                           ),
                         ),
                         child: Column(
@@ -281,7 +295,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.primary.withValues(alpha: 0.12),
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.12,
+                                    ),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Icon(
@@ -292,20 +308,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         _selectedResume != null
-                                            ? _selectedResume!.path.split('/').last
+                                            ? _selectedResume!.path
+                                                  .split('/')
+                                                  .last
                                             : 'No resume selected',
-                                        style: Theme.of(context).textTheme.bodyMedium,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         'PDF only, max 5MB',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
                                               color: colorScheme.outline,
                                             ),
                                       ),
@@ -316,7 +340,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                             const SizedBox(height: 12),
                             FilledButton.tonalIcon(
-                              onPressed: profileProvider.isLoading ? null : _pickResume,
+                              onPressed: profileProvider.isLoading
+                                  ? null
+                                  : _pickResume,
                               icon: const Icon(Icons.upload_file_outlined),
                               label: const Text('Choose PDF'),
                             ),
@@ -331,11 +357,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              colorScheme.errorContainer.withValues(alpha: 0.42),
+                              colorScheme.errorContainer.withValues(
+                                alpha: 0.42,
+                              ),
                               colorScheme.surface.withValues(alpha: 0.82),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusLg,
+                          ),
                           border: Border.all(
                             color: colorScheme.error.withValues(alpha: 0.4),
                           ),
@@ -367,9 +397,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ? const SizedBox(
                                   width: 24,
                                   height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
-                              : const Text('Save Changes', style: TextStyle(fontSize: 16)),
+                              : const Text(
+                                  'Save Changes',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
                     ),
@@ -413,14 +448,18 @@ class _EditProfileHeaderCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.72)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.72),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Edit Profile',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
@@ -435,7 +474,8 @@ class _EditProfileHeaderCard extends StatelessWidget {
               _miniChip(context, name),
               _miniChip(context, email),
               _miniChip(context, role),
-              if (location != null && location!.trim().isNotEmpty) _miniChip(context, location!),
+              if (location != null && location!.trim().isNotEmpty)
+                _miniChip(context, location!),
             ],
           ),
         ],
@@ -450,12 +490,16 @@ class _EditProfileHeaderCard extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.62),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.72),
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.72),
         ),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -476,7 +520,8 @@ class _AvatarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAvatar = avatarFile != null || (avatarPath?.trim().isNotEmpty ?? false);
+    final hasAvatar =
+        avatarFile != null || (avatarPath?.trim().isNotEmpty ?? false);
 
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacingMd),
@@ -490,7 +535,9 @@ class _AvatarCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.68)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.68),
+        ),
       ),
       child: Column(
         children: [
@@ -500,9 +547,15 @@ class _AvatarCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: colorScheme.surfaceContainerHighest,
-              border: Border.all(color: colorScheme.primary.withValues(alpha: 0.22), width: 2),
+              border: Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.22),
+                width: 2,
+              ),
               image: avatarFile != null
-                  ? DecorationImage(image: FileImage(avatarFile!), fit: BoxFit.cover)
+                  ? DecorationImage(
+                      image: FileImage(avatarFile!),
+                      fit: BoxFit.cover,
+                    )
                   : (avatarPath != null && avatarPath!.trim().isNotEmpty
                         ? DecorationImage(
                             image: CachedNetworkImageProvider(
@@ -513,7 +566,11 @@ class _AvatarCard extends StatelessWidget {
                         : null),
             ),
             child: !hasAvatar
-                ? Icon(Icons.person_outline, size: 50, color: colorScheme.primary)
+                ? Icon(
+                    Icons.person_outline,
+                    size: 50,
+                    color: colorScheme.primary,
+                  )
                 : null,
           ),
           const SizedBox(height: 16),
@@ -554,7 +611,9 @@ class _SectionPanel extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.68)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.68),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -564,12 +623,17 @@ class _SectionPanel extends StatelessWidget {
               Container(
                 width: 10,
                 height: 10,
-                decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
               ),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -577,8 +641,8 @@ class _SectionPanel extends StatelessWidget {
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 16),
           child,

@@ -102,15 +102,17 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                       children: [
                         Text(
                           'Update Job Posting',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Refine the role details, salary, and publishing status without breaking the existing posting.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                         ),
                       ],
@@ -134,7 +136,8 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                             controller: _descriptionController,
                             label: 'Description',
                             maxLines: 5,
-                            validator: (v) => (v == null || v.trim().length < 20)
+                            validator: (v) =>
+                                (v == null || v.trim().length < 20)
                                 ? 'Description must be at least 20 characters.'
                                 : null,
                           ),
@@ -173,12 +176,25 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                             dropdownColor: Colors.white,
                             style: Theme.of(context).textTheme.bodyMedium,
                             items: const [
-                              DropdownMenuItem(value: 'draft', child: Text('Draft')),
-                              DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                              DropdownMenuItem(value: 'approved', child: Text('Approved')),
-                              DropdownMenuItem(value: 'closed', child: Text('Closed')),
+                              DropdownMenuItem(
+                                value: 'draft',
+                                child: Text('Draft'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'pending',
+                                child: Text('Pending'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'approved',
+                                child: Text('Approved'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'closed',
+                                child: Text('Closed'),
+                              ),
                             ],
-                            onChanged: (value) => setState(() => _status = value ?? _status),
+                            onChanged: (value) =>
+                                setState(() => _status = value ?? _status),
                           ),
                         ],
                       ),
@@ -197,7 +213,8 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                               try {
                                 await provider.updateJob(job.id, {
                                   'title': _titleController.text.trim(),
-                                  'description': _descriptionController.text.trim(),
+                                  'description': _descriptionController.text
+                                      .trim(),
                                   'location': _locationController.text.trim(),
                                   'salary_min': double.tryParse(
                                     _salaryMinController.text.trim(),

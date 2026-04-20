@@ -14,11 +14,11 @@ class CVAndExportEndpointsTest extends TestCase
 
     private function writeResumeFile(string $filename = 'test_cv.pdf'): string
     {
-        $relative = 'resumes/' . $filename;
-        $absolute = storage_path('app/public/' . $relative);
+        $relative = 'resumes/'.$filename;
+        $absolute = storage_path('app/public/'.$relative);
         $directory = dirname($absolute);
 
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             mkdir($directory, 0777, true);
         }
 

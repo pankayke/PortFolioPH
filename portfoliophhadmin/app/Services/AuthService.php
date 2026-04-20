@@ -13,9 +13,6 @@ class AuthService
 {
     /**
      * Register a new user
-     *
-     * @param array $validated
-     * @return User
      */
     public function register(array $validated): User
     {
@@ -29,9 +26,6 @@ class AuthService
 
     /**
      * Authenticate user with credentials
-     *
-     * @param array $credentials
-     * @return User|null
      */
     public function authenticate(array $credentials): ?User
     {
@@ -43,11 +37,11 @@ class AuthService
         }
 
         $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
-        if (!Hash::check($password, $user->password)) {
+        if (! Hash::check($password, $user->password)) {
             return null;
         }
 
@@ -59,16 +53,12 @@ class AuthService
 
     /**
      * Reset password by email.
-     *
-     * @param string $email
-     * @param string $newPassword
-     * @return bool
      */
     public function resetPasswordByEmail(string $email, string $newPassword): bool
     {
         $user = User::whereRaw('LOWER(email) = ?', [mb_strtolower(trim($email))])->first();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -87,7 +77,7 @@ class AuthService
         $normalizedEmail = mb_strtolower(trim($email));
         $user = User::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first();
 
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
@@ -112,7 +102,7 @@ class AuthService
         $normalizedEmail = mb_strtolower(trim($email));
 
         $user = User::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -120,17 +110,18 @@ class AuthService
             ->where('email', $normalizedEmail)
             ->first();
 
-        if (!$record || !is_string($record->token)) {
+        if (! $record || ! is_string($record->token)) {
             return false;
         }
 
         $createdAt = Carbon::parse($record->created_at);
         if ($createdAt->lt(Carbon::now()->subMinutes(60))) {
             DB::table('password_reset_tokens')->where('email', $normalizedEmail)->delete();
+
             return false;
         }
 
-        if (!Hash::check($token, $record->token)) {
+        if (! Hash::check($token, $record->token)) {
             return false;
         }
 
@@ -144,9 +135,6 @@ class AuthService
 
     /**
      * Create API token for user
-     *
-     * @param User $user
-     * @return string
      */
     public function createToken(User $user): string
     {
@@ -155,9 +143,6 @@ class AuthService
 
     /**
      * Logout user
-     *
-     * @param User $user
-     * @return void
      */
     public function logout(User $user): void
     {

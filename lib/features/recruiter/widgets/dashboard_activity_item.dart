@@ -44,9 +44,9 @@ class DashboardActivityItem extends StatelessWidget {
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -54,16 +54,16 @@ class DashboardActivityItem extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   meta,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: accent,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: accent,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),

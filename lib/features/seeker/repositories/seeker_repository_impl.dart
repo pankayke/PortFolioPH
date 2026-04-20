@@ -139,9 +139,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   @override
   Future<SeekerApplication> getApplicationById(int applicationId) async {
     try {
-      final response = await _apiService.get(
-        '/applications/$applicationId',
-      );
+      final response = await _apiService.get('/applications/$applicationId');
       return SeekerApplication.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       rethrow;

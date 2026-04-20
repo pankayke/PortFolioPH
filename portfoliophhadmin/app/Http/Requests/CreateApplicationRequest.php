@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Application;
+use App\Models\Job;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateApplicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        return $this->user() !== null;
     }
 
     public function rules(): array
@@ -19,8 +21,15 @@ class CreateApplicationRequest extends FormRequest
                 'integer',
                 'exists:jobs,id',
                 function ($attribute, $value, $fail) {
+                    $job = Job::query()->select(['id', 'status'])->find($value);
+                    if ($job && $job->status !== 'approved') {
+                        $fail('Job is not open for applications.');
+
+                        return;
+                    }
+
                     // Check if user already applied to this job
-                    $exists = \App\Models\Application::where('user_id', auth()->id())
+                    $exists = Application::where('user_id', $this->user()?->id)
                         ->where('job_id', $value)
                         ->exists();
 

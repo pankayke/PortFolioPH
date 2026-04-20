@@ -63,7 +63,9 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.70)),
+                  border: Border.all(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.70),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,12 +74,15 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                       children: [
                         CircleAvatar(
                           radius: 28,
-                          backgroundColor: colorScheme.primary.withValues(alpha: 0.14),
+                          backgroundColor: colorScheme.primary.withValues(
+                            alpha: 0.14,
+                          ),
                           child: Text(
                             application.applicantName.isNotEmpty
                                 ? application.applicantName[0].toUpperCase()
                                 : '?',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
                                   color: colorScheme.primary,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -90,14 +95,14 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                             children: [
                               Text(
                                 application.applicantName,
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.w800),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 application.applicantEmail,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                     ),
                               ),
@@ -106,7 +111,9 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: [
-                                  GlassGlowChip(label: application.statusDisplay),
+                                  GlassGlowChip(
+                                    label: application.statusDisplay,
+                                  ),
                                   if (application.applicantLocation.isNotEmpty)
                                     GlassGlowChip(
                                       label: application.applicantLocation,
@@ -126,7 +133,9 @@ class _CandidateProfileViewState extends State<CandidateProfileView>
                                 isLoading: downloadProvider.isDownloading,
                                 onPressed: () async {
                                   if (downloadProvider.isDownloading) return;
-                                  await downloadProvider.downloadApplicantCV(application.id);
+                                  await downloadProvider.downloadApplicantCV(
+                                    application.id,
+                                  );
                                 },
                               );
                             },
@@ -289,15 +298,12 @@ class _MetricPill extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
         ],
       ),
     );

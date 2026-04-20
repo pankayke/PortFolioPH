@@ -5,6 +5,8 @@
 **QA Lead:** Senior DevOps/QA Engineer  
 **Status:** 🔴 **NOT PRODUCTION READY**
 
+> Historical report. Current verified status is documented in [CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md).
+
 ---
 
 ## TL;DR

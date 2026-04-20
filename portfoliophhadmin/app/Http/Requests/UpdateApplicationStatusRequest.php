@@ -17,7 +17,7 @@ class UpdateApplicationStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in('pending', 'reviewed', 'shortlisted', 'accepted', 'rejected')],
+            'status' => ['required', Rule::in(['pending', 'reviewed', 'shortlisted', 'accepted', 'rejected'])],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
     }

@@ -41,7 +41,7 @@ class ProfileController extends Controller
     {
         // Get authenticated user
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(
                 ['success' => false, 'message' => 'Unauthorized'],
                 401
@@ -51,7 +51,7 @@ class ProfileController extends Controller
         // Validate input
         $validated = $request->validate([
             'name' => 'string|max:255',
-            'email' => 'string|email|unique:users,email,' . $user->id,
+            'email' => 'string|email|unique:users,email,'.$user->id,
             'bio' => 'string|max:1000',
             'location' => 'string|max:255',
             'phone_number' => 'string|max:20',
@@ -123,7 +123,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(
                 ['success' => false, 'message' => 'Unauthorized'],
                 401

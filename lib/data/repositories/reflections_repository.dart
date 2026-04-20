@@ -27,7 +27,10 @@ class ReflectionsRepository {
 
     final id = _nextId++;
     final created = reflection.copyWith(id: id);
-    final list = _localByUser.putIfAbsent(reflection.userId, () => <ReflectionModel>[]);
+    final list = _localByUser.putIfAbsent(
+      reflection.userId,
+      () => <ReflectionModel>[],
+    );
     list.insert(0, created);
     return id;
   }
@@ -45,7 +48,9 @@ class ReflectionsRepository {
       // Fallback below.
     }
 
-    return List<ReflectionModel>.unmodifiable(_localByUser[userId] ?? const <ReflectionModel>[]);
+    return List<ReflectionModel>.unmodifiable(
+      _localByUser[userId] ?? const <ReflectionModel>[],
+    );
   }
 
   Future<int> update(ReflectionModel reflection) async {

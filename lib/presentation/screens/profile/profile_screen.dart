@@ -29,8 +29,8 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin {
-
+class _ProfileScreenState extends State<ProfileScreen>
+    with UserAwareScreenMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -82,20 +82,26 @@ class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin
         ? user.fullName!
         : user.username;
     final roleLabel = user.role
-      .split('_')
-      .map((word) => word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1)}')
-      .join(' ');
+        .split('_')
+        .map(
+          (word) => word.isEmpty
+              ? word
+              : '${word[0].toUpperCase()}${word.substring(1)}',
+        )
+        .join(' ');
     final locationBadges = (user.location?.trim().isNotEmpty ?? false)
-      ? user.location!
-          .split(',')
-          .map((item) => item.trim())
-          .where((item) => item.isNotEmpty)
-          .toList(growable: false)
-      : const <String>[];
+        ? user.location!
+              .split(',')
+              .map((item) => item.trim())
+              .where((item) => item.isNotEmpty)
+              .toList(growable: false)
+        : const <String>[];
     final experience = context.watch<ExperienceProvider>().experience;
     final skills = context.watch<SkillsProvider>().skills;
     final education = context.watch<EducationProvider>().education;
-    final certifications = context.watch<CertificationProvider>().certifications;
+    final certifications = context
+        .watch<CertificationProvider>()
+        .certifications;
 
     return PremiumAppBackground(
       child: Scaffold(
@@ -222,7 +228,9 @@ class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin
             _SectionCard(
               title: 'Experience',
               child: experience.isEmpty
-                  ? const Text('No experience added yet. Add your latest role in Resume.')
+                  ? const Text(
+                      'No experience added yet. Add your latest role in Resume.',
+                    )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -235,7 +243,8 @@ class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin
                           '${experience.first.startDate ?? 'Start date not set'}'
                           '${experience.first.isCurrent ? ' - Present' : (experience.first.endDate != null ? ' - ${experience.first.endDate}' : '')}',
                         ),
-                        if (experience.first.description?.trim().isNotEmpty ?? false) ...[
+                        if (experience.first.description?.trim().isNotEmpty ??
+                            false) ...[
                           const SizedBox(height: 6),
                           Text(experience.first.description!),
                         ],
@@ -246,7 +255,9 @@ class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin
             _SectionCard(
               title: 'Skills',
               child: skills.isEmpty
-                  ? const Text('No skills added yet. Add your strongest skills in the Skills tab.')
+                  ? const Text(
+                      'No skills added yet. Add your strongest skills in the Skills tab.',
+                    )
                   : Column(
                       children: skills
                           .map(
@@ -324,16 +335,16 @@ class _ProfileScreenState extends State<ProfileScreen> with UserAwareScreenMixin
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (education.isEmpty && certifications.isEmpty)
-                    const Text('No education or certifications added yet. Add them in Resume to strengthen your profile.'),
+                    const Text(
+                      'No education or certifications added yet. Add them in Resume to strengthen your profile.',
+                    ),
                   if (education.isNotEmpty)
                     Text(
                       '${education.first.degree} - ${education.first.institution}',
                     ),
                   if (certifications.isNotEmpty) ...[
                     const SizedBox(height: 6),
-                    Text(
-                      certifications.take(2).map((c) => c.name).join(' • '),
-                    ),
+                    Text(certifications.take(2).map((c) => c.name).join(' • ')),
                   ],
                 ],
               ),
@@ -463,7 +474,9 @@ class _SectionCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.68)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.68),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -547,8 +560,8 @@ class _ProfileMomentumCard extends StatelessWidget {
                     Text(
                       'Profile Pulse',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -570,10 +583,26 @@ class _ProfileMomentumCard extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _MetricTile(label: 'Experience', value: '$experienceCount', icon: Icons.work_outline),
-              _MetricTile(label: 'Skills', value: '$skillsCount', icon: Icons.star_outline),
-              _MetricTile(label: 'Education', value: '$educationCount', icon: Icons.school_outlined),
-              _MetricTile(label: 'Certs', value: '$certificationCount', icon: Icons.verified_outlined),
+              _MetricTile(
+                label: 'Experience',
+                value: '$experienceCount',
+                icon: Icons.work_outline,
+              ),
+              _MetricTile(
+                label: 'Skills',
+                value: '$skillsCount',
+                icon: Icons.star_outline,
+              ),
+              _MetricTile(
+                label: 'Education',
+                value: '$educationCount',
+                icon: Icons.school_outlined,
+              ),
+              _MetricTile(
+                label: 'Certs',
+                value: '$certificationCount',
+                icon: Icons.verified_outlined,
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -622,7 +651,9 @@ class _MetricTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.60)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.60),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -631,15 +662,12 @@ class _MetricTile extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
         ],
       ),
     );

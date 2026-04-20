@@ -8,6 +8,7 @@ use App\Http\Resources\ApiResponse;
 use App\Models\Application;
 use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
 {
@@ -16,9 +17,10 @@ class ApplicationController extends Controller
     /**
      * Get applications (current user as job seeker, or for recruiter's jobs if recruiter)
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $applications = $this->applicationService->getApplications(auth()->user());
+        $perPage = $this->resolvePerPage($request);
+        $applications = $this->applicationService->getApplications($request->user(), $perPage);
 
         return ApiResponse::paginated($applications, 'Applications retrieved successfully', 200);
     }
@@ -44,13 +46,14 @@ class ApplicationController extends Controller
      */
     public function store(CreateApplicationRequest $request): JsonResponse
     {
-        if (auth()->user()->role !== 'job_seeker') {
+        $user = $request->user();
+        if ($user?->role !== 'job_seeker') {
             return ApiResponse::error('Only job seekers can apply for jobs.', 403);
         }
 
         try {
             $application = $this->applicationService->createApplication(
-                auth()->user(),
+                $user,
                 $request->validated()
             );
 
@@ -101,5 +104,12 @@ class ApplicationController extends Controller
             'Application status updated successfully',
             200
         );
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        $perPage = (int) $request->input('per_page', 15);
+
+        return max(1, min(100, $perPage));
     }
 }

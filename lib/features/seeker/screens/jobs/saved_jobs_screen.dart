@@ -43,7 +43,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                     Text(jobsProvider.error!, textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     FilledButton(
-                      onPressed: () => jobsProvider.loadSavedJobs(refresh: true),
+                      onPressed: () =>
+                          jobsProvider.loadSavedJobs(refresh: true),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -103,7 +104,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                             FilledButton.tonal(
                               onPressed: job.hasApplied
                                   ? null
-                                  : () => applicationProvider.applyForJob(job.id),
+                                  : () =>
+                                        applicationProvider.applyForJob(job.id),
                               child: Text(job.hasApplied ? 'Applied' : 'Apply'),
                             ),
                           ],

@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ApplicationsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading
+class ApplicationsExport implements FromQuery, WithChunkReading, WithHeadings, WithMapping
 {
     public function query(): Builder
     {
@@ -61,7 +61,7 @@ class ApplicationsExport implements FromQuery, WithHeadings, WithMapping, WithCh
             $application->user?->email ?? 'N/A',
             $application->job?->recruiter?->name ?? 'N/A',
             $application->job?->recruiter?->company_name ?? 'N/A',
-            substr($application->cover_letter ?? '', 0, 100) . (strlen($application->cover_letter ?? '') > 100 ? '...' : ''),
+            substr($application->cover_letter ?? '', 0, 100).(strlen($application->cover_letter ?? '') > 100 ? '...' : ''),
             ucfirst($application->status ?? 'pending'),
             $application->created_at->format('Y-m-d H:i:s'),
             $application->updated_at->format('Y-m-d H:i:s'),

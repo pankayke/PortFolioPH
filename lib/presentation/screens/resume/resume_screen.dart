@@ -704,7 +704,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.reflections.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No reflections yet. Tap + to add your first entry.',
+                          message:
+                              'No reflections yet. Tap + to add your first entry.',
                         );
                       }
                       return ListView(
@@ -766,7 +767,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.education.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No education entries yet. Tap + to add your school history.',
+                          message:
+                              'No education entries yet. Tap + to add your school history.',
                         );
                       }
                       return ListView(
@@ -795,7 +797,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.experience.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No work experience entries yet. Tap + to add your latest role.',
+                          message:
+                              'No work experience entries yet. Tap + to add your latest role.',
                         );
                       }
                       return ListView(
@@ -859,7 +862,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.achievements.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No achievements recorded yet. Tap + to add one.',
+                          message:
+                              'No achievements recorded yet. Tap + to add one.',
                         );
                       }
                       return ListView(

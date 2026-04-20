@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Add profile fields to users table for complete user profile support.
-     * 
+     *
      * Fields added:
      *   - username: Unique username for the user
      *   - full_name: Alternative to 'name' field

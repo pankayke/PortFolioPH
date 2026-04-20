@@ -39,7 +39,7 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'string|max:255',
-            'email' => 'string|email|unique:users,email,' . $user->id,
+            'email' => 'string|email|unique:users,email,'.$user->id,
         ]);
 
         $user->update($validated);

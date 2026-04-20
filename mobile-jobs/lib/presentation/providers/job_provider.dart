@@ -76,6 +76,7 @@ class JobProvider extends ChangeNotifier {
       _jobs.addAll(jobs);
     }
     _jobsPagination = pagination;
+    notifyListeners();
   }
 
   // Get job detail
@@ -90,6 +91,7 @@ class JobProvider extends ChangeNotifier {
     if (job != null) {
       _selectedJob = job;
       _jobDetailCache[jobId] = job;
+      notifyListeners();
     }
   }
 
@@ -168,6 +170,7 @@ class JobProvider extends ChangeNotifier {
     } else {
       _myApplications.addAll(applications);
     }
+    notifyListeners();
   }
 
   // Withdraw application

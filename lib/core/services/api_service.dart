@@ -34,6 +34,8 @@ class ApiService {
 
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage;
+  String? _cachedToken;
+  bool _isTokenLoaded = false;
 
   ApiService(this._secureStorage) {
     _initializeDio();
@@ -89,8 +91,14 @@ class ApiService {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Add token to headers if available
-    final token = await _secureStorage.read(key: tokenKey);
+    // Add token to headers if available. Cache token in memory to avoid
+    // secure-storage reads on every request.
+    var token = _cachedToken;
+    if (!_isTokenLoaded) {
+      token = await _secureStorage.read(key: tokenKey);
+      _cachedToken = token;
+      _isTokenLoaded = true;
+    }
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
@@ -120,6 +128,8 @@ class ApiService {
     // Handle 401 - token expired or invalid
     if (error.response?.statusCode == 401) {
       await _secureStorage.delete(key: tokenKey);
+      _cachedToken = null;
+      _isTokenLoaded = true;
       AppLogger.warning('Token cleared - unauthorized');
       // Caller should handle logout
     }
@@ -201,14 +211,23 @@ class ApiService {
 
   Future<void> saveToken(String token) async {
     await _secureStorage.write(key: tokenKey, value: token);
+    _cachedToken = token;
+    _isTokenLoaded = true;
   }
 
   Future<String?> getToken() async {
-    return _secureStorage.read(key: tokenKey);
+    if (_isTokenLoaded) {
+      return _cachedToken;
+    }
+    _cachedToken = await _secureStorage.read(key: tokenKey);
+    _isTokenLoaded = true;
+    return _cachedToken;
   }
 
   Future<void> clearToken() async {
     await _secureStorage.delete(key: tokenKey);
+    _cachedToken = null;
+    _isTokenLoaded = true;
   }
 
   Future<bool> hasToken() async {

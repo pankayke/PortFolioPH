@@ -38,11 +38,7 @@ class FileDownloadService {
     );
 
     // Add token interceptor
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: _onRequest,
-      ),
-    );
+    _dio.interceptors.add(InterceptorsWrapper(onRequest: _onRequest));
   }
 
   Future<void> _onRequest(
@@ -96,7 +92,8 @@ class FileDownloadService {
         onReceiveProgress: (received, total) {
           if (total > 0) {
             final percentage = ((received / total) * 100).floor();
-            if (percentage ~/ 10 > lastLoggedPercent ~/ 10 || percentage == 100) {
+            if (percentage ~/ 10 > lastLoggedPercent ~/ 10 ||
+                percentage == 100) {
               lastLoggedPercent = percentage;
               AppLogger.debug('Download progress: $percentage%');
             }
@@ -121,9 +118,7 @@ class FileDownloadService {
   }
 
   /// Download CV for current user
-  Future<String> downloadUserCV({
-    DownloadProgressCallback? onProgress,
-  }) async {
+  Future<String> downloadUserCV({DownloadProgressCallback? onProgress}) async {
     return downloadFile(
       '/profile/cv',
       filename: 'my_cv.pdf',
@@ -158,18 +153,17 @@ class FileDownloadService {
   /// Download export file (Excel/CSV)
   Future<String> downloadExport(
     String exportType, // 'users', 'jobs', 'applications'
-    String format, // 'xlsx' or 'csv'
-    {DownloadProgressCallback? onProgress}
-  ) async {
+    String format, { // 'xlsx' or 'csv'
+    DownloadProgressCallback? onProgress,
+  }) async {
     final endpoint = '/admin/$exportType/export/$format';
-    final timestamp = DateTime.now().toIso8601String().split('.')[0].replaceAll(':', '-');
+    final timestamp = DateTime.now()
+        .toIso8601String()
+        .split('.')[0]
+        .replaceAll(':', '-');
     final filename = '${exportType}_export_$timestamp.$format';
 
-    return downloadFile(
-      endpoint,
-      filename: filename,
-      onProgress: onProgress,
-    );
+    return downloadFile(endpoint, filename: filename, onProgress: onProgress);
   }
 
   /// Extract filename from URL
