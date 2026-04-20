@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminStatsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CVController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecruiterDashboardController;
 use App\Http\Controllers\UserController;
@@ -69,6 +70,11 @@ Route::middleware([
     Route::get('/applications', [ApplicationController::class, 'index']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show'])->whereNumber('application');
     Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->whereNumber('application')->middleware('throttle:10,1');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // Admin exports (token auth + explicit role check)
     Route::prefix('admin')->group(function () {

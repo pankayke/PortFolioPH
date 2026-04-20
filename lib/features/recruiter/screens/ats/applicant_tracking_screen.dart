@@ -88,7 +88,11 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
   List<RecruiterApplication> _filteredApplications(
     List<RecruiterApplication> applications,
   ) {
-    if (_selectedStatus == null) return applications;
+    if (_selectedStatus == null) {
+      return applications
+          .where((app) => app.status != 'rejected')
+          .toList(growable: false);
+    }
     return applications
         .where((app) => app.status == _selectedStatus)
         .toList(growable: false);
@@ -236,10 +240,12 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                 itemBuilder: (context, index) {
                   final application = applications[index];
                   final isSelected = _selectedApplication?.id == application.id;
+                  final canOpen = application.status != 'rejected';
 
                   return InkWell(
-                    onTap: () =>
-                        setState(() => _selectedApplication = application),
+                    onTap: canOpen
+                        ? () => setState(() => _selectedApplication = application)
+                        : null,
                     child: GlassCard(
                       borderRadius: BorderRadius.circular(18),
                       padding: const EdgeInsets.all(14),
@@ -312,10 +318,12 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => setState(
-                                  () => _selectedApplication = application,
-                                ),
-                                child: const Text('Open'),
+                                onPressed: canOpen
+                                    ? () => setState(
+                                        () => _selectedApplication = application,
+                                      )
+                                    : null,
+                                child: Text(canOpen ? 'Open' : 'Locked'),
                               ),
                             ],
                           ),

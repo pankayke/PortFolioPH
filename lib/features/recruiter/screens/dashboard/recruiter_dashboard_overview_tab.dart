@@ -418,12 +418,6 @@ class _HeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Jobs & Opportunities',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w900, height: 1.05),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
                       'Welcome back, $recruiterName. Track your hiring pipeline at a glance.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Application;
 use App\Models\Job;
 use App\Models\User;
+use App\Notifications\ApplicationStatusUpdatedNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ApplicationService
@@ -67,8 +68,20 @@ class ApplicationService
      */
     public function updateApplicationStatus(Application $application, array $validated): Application
     {
+        $previousStatus = $application->status;
         $application->update($validated);
 
-        return $application->fresh();
+        $application->loadMissing('user:id,name,email', 'job:id,title,recruiter_id', 'job.recruiter:id,name');
+
+        $newStatus = (string) $application->status;
+        if (
+            $application->user !== null
+            && $newStatus !== $previousStatus
+            && in_array($newStatus, ['accepted', 'rejected'], true)
+        ) {
+            $application->user->notify(new ApplicationStatusUpdatedNotification($application));
+        }
+
+        return $application->fresh()->load('job:id,title', 'job.recruiter:id,name');
     }
 }

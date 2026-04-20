@@ -25,8 +25,7 @@
 
         @if(auth()->user()->role === 'recruiter')
             <section class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h2 class="text-base font-semibold text-gray-900">Jobs & Opportunities</h2>
-                <p class="mt-1 text-sm text-gray-500">Track your hiring pipeline at a glance.</p>
+                <p class="text-sm text-gray-500">Track your hiring pipeline at a glance.</p>
                 <div class="mt-3 flex flex-wrap gap-2">
                     <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">PortfolioPH Hiring Desk</span>
                     <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">{{ $pendingApplications }} new applicants</span>

@@ -484,6 +484,12 @@ class ApplicationControllerTest extends TestCase
             'id' => $application->id,
             'status' => 'accepted',
         ]);
+
+        $this->assertDatabaseHas('notifications', [
+            'type' => 'App\\Notifications\\ApplicationStatusUpdatedNotification',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $jobSeeker->id,
+        ]);
     }
 
     /**

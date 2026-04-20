@@ -33,7 +33,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin, UserAwareScreenMixin, BokehAnimationMixin {
   late AnimationController _fadeController;
   late AnimationController _scaleController;
+  final TextEditingController _dashboardSearchController =
+      TextEditingController();
   bool _didInitUserLoad = false;
+  String _dashboardJobSearchQuery = '';
 
   static const List<String> _rotationCategories = [
     'Week 1: IT / Dev Jobs',
@@ -62,6 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void dispose() {
     _fadeController.dispose();
     _scaleController.dispose();
+    _dashboardSearchController.dispose();
     disposeBokehAnimation();
     super.dispose();
   }
@@ -722,7 +726,16 @@ class _DashboardScreenState extends State<DashboardScreen>
     bool isDark,
     ColorScheme colorScheme,
   ) {
-    final previewJobs = jobsProvider.jobs.take(2).toList(growable: false);
+    final searchTerm = _dashboardJobSearchQuery.trim().toLowerCase();
+    final filteredJobs = searchTerm.isEmpty
+        ? jobsProvider.jobs
+        : jobsProvider.jobs.where((job) {
+            final haystack =
+                '${job.title} ${job.company} ${job.location} ${job.description}'
+                    .toLowerCase();
+            return haystack.contains(searchTerm);
+          }).toList(growable: false);
+    final previewJobs = filteredJobs.take(2).toList(growable: false);
     final textTheme = Theme.of(context).textTheme;
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
@@ -789,6 +802,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                         ),
                         child: TextField(
+                          controller: _dashboardSearchController,
+                          onChanged: (value) {
+                            setState(() {
+                              _dashboardJobSearchQuery = value;
+                            });
+                          },
+                          onSubmitted: (value) {
+                            setState(() {
+                              _dashboardJobSearchQuery = value;
+                            });
+                          },
                           decoration: InputDecoration(
                             hintText: 'Search jobs, companies, skills...',
                             hintStyle: TextStyle(
@@ -800,6 +824,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                               size: 18,
                               color: Colors.white.withAlpha(isDark ? 127 : 153),
                             ),
+                            suffixIcon: _dashboardJobSearchQuery.trim().isEmpty
+                                ? null
+                                : IconButton(
+                                    icon: const Icon(Icons.close_rounded),
+                                    onPressed: () {
+                                      _dashboardSearchController.clear();
+                                      setState(() {
+                                        _dashboardJobSearchQuery = '';
+                                      });
+                                    },
+                                  ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -818,6 +853,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   colorScheme: colorScheme,
                   isDark: isDark,
                 ),
+                if (searchTerm.isNotEmpty && filteredJobs.isEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'No jobs found for "${_dashboardJobSearchQuery.trim()}".',
+                    style: textTheme.bodyMedium,
+                  ),
+                ],
                 if (previewJobs.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   ...previewJobs.map(
