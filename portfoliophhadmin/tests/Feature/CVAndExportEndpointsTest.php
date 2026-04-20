@@ -118,4 +118,45 @@ class CVAndExportEndpointsTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    public function test_admin_can_access_admin_stats_api(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+
+        $job = Job::factory()->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
+        Application::factory()->create([
+            'user_id' => $jobSeeker->id,
+            'job_id' => $job->id,
+            'status' => 'pending',
+        ]);
+
+        $token = $admin->createToken('api-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->get('/api/admin/stats');
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.users.recruiters', 1)
+            ->assertJsonPath('data.users.job_seekers', 1)
+            ->assertJsonPath('data.jobs.approved', 1)
+            ->assertJsonPath('data.applications.pending', 1);
+    }
+
+    public function test_non_admin_cannot_access_admin_stats_api(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $token = $recruiter->createToken('api-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->get('/api/admin/stats');
+
+        $response->assertStatus(403);
+    }
 }

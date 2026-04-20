@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\AdminStatsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CVController;
 use App\Http\Controllers\JobController;
@@ -71,6 +72,8 @@ Route::middleware([
 
     // Admin exports (token auth + explicit role check)
     Route::prefix('admin')->group(function () {
+        Route::get('/stats', [AdminStatsController::class, 'index']);
+
         Route::get('/users/export/{format}', function (string $format, ExportService $exportService, Request $request) {
             abort_unless($request->user()?->role === 'admin', 403, 'Forbidden');
             abort_unless(in_array($format, ['xlsx', 'csv'], true), 404, 'Unsupported format');
