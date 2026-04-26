@@ -10,7 +10,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/user_model.dart';
@@ -18,8 +17,7 @@ import 'package:portfolioph/data/models/user_model.dart';
 class UserRepository {
   final ApiService _apiService;
 
-  UserRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  UserRepository({required ApiService apiService}) : _apiService = apiService;
 
   // ── Create ──────────────────────────────────────────────────────────────────
   /// Registers a new user via the API (online-only).

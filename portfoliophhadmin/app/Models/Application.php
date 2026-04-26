@@ -16,6 +16,7 @@ class Application extends Model
         'status',
         'source',
         'device',
+        'notes',
     ];
 
     protected $casts = [

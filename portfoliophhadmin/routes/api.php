@@ -1,13 +1,14 @@
 <?php
 
-use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AdminStatsController;
+use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CVController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecruiterDashboardController;
+use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\Authenticate;
 use App\Services\ExportService;
@@ -69,7 +70,14 @@ Route::middleware([
     Route::post('/applications', [ApplicationController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/applications', [ApplicationController::class, 'index']);
     Route::get('/applications/{application}', [ApplicationController::class, 'show'])->whereNumber('application');
+    Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])->whereNumber('application');
     Route::put('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])->whereNumber('application')->middleware('throttle:10,1');
+    Route::post('/applications/bulk-status', [ApplicationController::class, 'bulkUpdateStatus'])->middleware('throttle:10,1');
+
+    // Saved Jobs
+    Route::get('/saved-jobs', [SavedJobController::class, 'index']);
+    Route::post('/saved-jobs', [SavedJobController::class, 'store'])->middleware('throttle:20,1');
+    Route::delete('/saved-jobs/{jobId}', [SavedJobController::class, 'destroy'])->whereNumber('jobId');
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);

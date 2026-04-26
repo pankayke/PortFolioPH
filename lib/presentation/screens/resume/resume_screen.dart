@@ -35,6 +35,7 @@ class ResumeScreen extends StatefulWidget {
 class _ResumeScreenState extends State<ResumeScreen>
     with TickerProviderStateMixin, BokehAnimationMixin, UserAwareScreenMixin {
   late final TabController _tabController;
+  bool _didInitUserLoad = false;
 
   static const BorderRadius _dialogRadius = BorderRadius.all(
     Radius.circular(20),
@@ -57,6 +58,8 @@ class _ResumeScreenState extends State<ResumeScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_didInitUserLoad) return;
+    _didInitUserLoad = true;
     loadDataForUserWithId((userId) {
       context.read<CertificationProvider>().loadForUser(userId);
       context.read<EducationProvider>().loadForUser(userId);

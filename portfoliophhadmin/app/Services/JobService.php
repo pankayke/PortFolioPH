@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Job;
 use App\Models\User;
+use App\Notifications\JobPendingApprovalNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class JobService
 {
@@ -14,7 +16,23 @@ class JobService
     public function getApprovedJobs(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Job::query()
+            ->select([
+                'id',
+                'recruiter_id',
+                'title',
+                'description',
+                'location',
+                'salary_min',
+                'salary_max',
+                'job_type',
+                'status',
+                'required_skills',
+                'deadline',
+                'created_at',
+                'updated_at',
+            ])
             ->with('recruiter:id,name,email')
+            ->withCount('applications')
             ->where('status', 'approved');
 
         if (! empty($filters['search'])) {
@@ -46,9 +64,19 @@ class JobService
      */
     public function createJob(User $recruiter, array $validated): Job
     {
-        $job = $recruiter->jobs()->create($validated);
+        return DB::transaction(function () use ($recruiter, $validated) {
+            $job = $recruiter->jobs()->create($validated);
 
-        return $job->load('recruiter:id,name,email');
+            // Notify admins if job is pending
+            if ($job->status === 'pending') {
+                $admins = User::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    $admin->notify(new JobPendingApprovalNotification($job));
+                }
+            }
+
+            return $job->load('recruiter:id,name,email');
+        });
     }
 
     /**
@@ -60,8 +88,24 @@ class JobService
         $search = trim((string) ($filters['search'] ?? ''));
 
         $query = Job::query()
+            ->select([
+                'id',
+                'recruiter_id',
+                'title',
+                'description',
+                'location',
+                'salary_min',
+                'salary_max',
+                'job_type',
+                'status',
+                'required_skills',
+                'deadline',
+                'created_at',
+                'updated_at',
+            ])
             ->where('recruiter_id', $recruiter->id)
             ->with('recruiter:id,name,email')
+            ->withCount('applications')
             ->latest();
 
         if ($status !== '' && in_array($status, ['draft', 'pending', 'approved', 'closed'], true)) {

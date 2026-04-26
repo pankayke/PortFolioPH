@@ -36,6 +36,10 @@ class SeekerApplicationProvider extends ChangeNotifier {
   int _currentPage = 1;
   bool _hasMore = true;
   String _sortBy = 'applied_at';
+  int _pendingCount = 0;
+  int _shortlistedCount = 0;
+  int _acceptedCount = 0;
+  int _rejectedCount = 0;
 
   // ─────── Getters ──────────────────────────────────────────────────────────
 
@@ -44,12 +48,10 @@ class SeekerApplicationProvider extends ChangeNotifier {
   String? get error => _error;
   String? get selectedStatus => _selectedStatus;
   int get applicationCount => _applications.length;
-  int get pendingCount =>
-      _applications.where((a) => a.isApplied || a.isReviewing).length;
-  int get shortlistedCount =>
-      _applications.where((a) => a.isShortlisted).length;
-  int get acceptedCount => _applications.where((a) => a.isAccepted).length;
-  int get rejectedCount => _applications.where((a) => a.isRejected).length;
+  int get pendingCount => _pendingCount;
+  int get shortlistedCount => _shortlistedCount;
+  int get acceptedCount => _acceptedCount;
+  int get rejectedCount => _rejectedCount;
   int get currentPage => _currentPage;
   bool get hasMore => _hasMore;
 
@@ -88,6 +90,7 @@ class SeekerApplicationProvider extends ChangeNotifier {
 
       _selectedStatus = status;
       _hasMore = loadedApplications.isNotEmpty;
+      _recalculateCounts();
       _isLoading = false;
       notifyListeners();
     } on DioException catch (e) {
@@ -139,6 +142,7 @@ class SeekerApplicationProvider extends ChangeNotifier {
         _applications[index] = _applications[index].copyWith(
           status: 'withdrawn',
         );
+        _recalculateCounts();
         notifyListeners();
       }
       ToastService.showSuccess('Application withdrawn! ✅');
@@ -183,5 +187,32 @@ class SeekerApplicationProvider extends ChangeNotifier {
       notifyListeners();
       return null;
     }
+  }
+
+  void _recalculateCounts() {
+    var pending = 0;
+    var shortlisted = 0;
+    var accepted = 0;
+    var rejected = 0;
+
+    for (final application in _applications) {
+      if (application.isApplied || application.isReviewing) {
+        pending++;
+      }
+      if (application.isShortlisted) {
+        shortlisted++;
+      }
+      if (application.isAccepted) {
+        accepted++;
+      }
+      if (application.isRejected) {
+        rejected++;
+      }
+    }
+
+    _pendingCount = pending;
+    _shortlistedCount = shortlisted;
+    _acceptedCount = accepted;
+    _rejectedCount = rejected;
   }
 }

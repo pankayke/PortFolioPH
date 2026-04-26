@@ -1,4 +1,3 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/skills_model.dart';
 
@@ -9,8 +8,7 @@ class SkillsRepository {
   static final Map<int, List<SkillsModel>> _localByUser =
       <int, List<SkillsModel>>{};
 
-  SkillsRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  SkillsRepository({required ApiService apiService}) : _apiService = apiService;
 
   Future<int> insert(SkillsModel skill) async {
     try {

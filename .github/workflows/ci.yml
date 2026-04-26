@@ -174,5 +174,8 @@ jobs:
           cp -n .env.example .env || true
           php artisan key:generate --ansi --force
 
+      - name: Enforce Laravel style (Pint)
+        run: vendor/bin/pint --test
+
       - name: Run Laravel tests
         run: php artisan test

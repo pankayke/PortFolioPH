@@ -14,6 +14,7 @@ import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashb
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
+import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class RecruiterDashboardScreen extends StatefulWidget {
@@ -74,247 +75,225 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isPostTab = _selectedIndex == 3;
-    final dashboardTheme =
-        ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.light,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2563EB),
-            brightness: Brightness.light,
-          ),
-          scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        ).copyWith(
-          textTheme: Theme.of(context).textTheme.apply(
-            bodyColor: const Color(0xFF111827),
-            displayColor: const Color(0xFF111827),
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Color(0xFF111827),
-            elevation: 0,
-          ),
-        );
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return Theme(
-      data: dashboardTheme,
-      child: PremiumAppBackground(
-        child: Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
-          appBar: AppBar(
-            title: Opacity(
-              opacity: 0.85,
-              child: Text(
-                _selectedIndex == 0
-                    ? 'Jobs & Opportunities'
-                    : _tabs[_selectedIndex].label,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-              ),
+    return PremiumAppBackground(
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        appBar: AppBar(
+          title: Opacity(
+            opacity: 0.85,
+            child: Text(
+              _selectedIndex == 0
+                  ? 'Jobs & Opportunities'
+                  : _tabs[_selectedIndex].label,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
-            backgroundColor: Colors.white,
-            elevation: 0,
-            actions: [
-              Consumer<RecruiterDashboardProvider>(
-                builder: (context, dashboardProvider, _) {
-                  final count = dashboardProvider.notificationCount;
-                  return IconButton(
-                    onPressed: () =>
-                        context.push(AppRoutes.notificationSettings),
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(Icons.notifications_outlined),
-                        if (count > 0)
-                          Positioned(
-                            right: -4,
-                            top: -4,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEF4444),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Text(
-                                count > 9 ? '9+' : '$count',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
+          ),
+          backgroundColor: colorScheme.surface,
+          elevation: 0,
+          actions: [
+            Consumer<RecruiterDashboardProvider>(
+              builder: (context, dashboardProvider, _) {
+                final count = dashboardProvider.notificationCount;
+                return IconButton(
+                  onPressed: () => context.push(AppRoutes.notificationSettings),
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.notifications_outlined),
+                      if (count > 0)
+                        Positioned(
+                          right: -4,
+                          top: -4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              count > 9 ? '9+' : '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                      ],
+                        ),
+                    ],
+                  ),
+                  tooltip: count > 0
+                      ? '$count new applications'
+                      : 'Notifications',
+                );
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Consumer2<AuthProvider, ThemeProvider>(
+                builder: (context, authProvider, themeProvider, _) {
+                  final user = authProvider.currentUser;
+                  final initial = (user?.fullName ?? 'R').trim().isNotEmpty
+                      ? (user?.fullName ?? 'R').trim()[0].toUpperCase()
+                      : 'R';
+                  final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+                  return PopupMenuButton<String>(
+                    tooltip: 'Profile',
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'theme':
+                          final nextIsDark =
+                              themeProvider.themeMode != ThemeMode.dark;
+                          themeProvider.toggleDarkMode();
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  nextIsDark
+                                      ? 'Dark mode enabled'
+                                      : 'Light mode enabled',
+                                ),
+                                duration: const Duration(milliseconds: 1400),
+                              ),
+                            );
+                          break;
+                        case 'company':
+                          _goToTab(4);
+                          break;
+                        case 'logout':
+                          _logout(context);
+                          break;
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'theme',
+                        child: Row(
+                          children: [
+                            Icon(
+                              isDark
+                                  ? Icons.light_mode_outlined
+                                  : Icons.dark_mode_outlined,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              isDark
+                                  ? 'Switch to Light Mode'
+                                  : 'Switch to Dark Mode',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem<String>(
+                        value: 'company',
+                        child: Row(
+                          children: const [
+                            Icon(Icons.business_outlined, size: 18),
+                            SizedBox(width: 10),
+                            Text('Company Profile'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Row(
+                          children: const [
+                            Icon(Icons.logout, size: 18),
+                            SizedBox(width: 10),
+                            Text('Logout'),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: const Color(0xFF2563EB),
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
-                    tooltip: count > 0
-                        ? '$count new applications'
-                        : 'Notifications',
                   );
                 },
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Consumer2<AuthProvider, ThemeProvider>(
-                  builder: (context, authProvider, themeProvider, _) {
-                    final user = authProvider.currentUser;
-                    final initial = (user?.fullName ?? 'R').trim().isNotEmpty
-                        ? (user?.fullName ?? 'R').trim()[0].toUpperCase()
-                        : 'R';
-                    final isDark = themeProvider.themeMode == ThemeMode.dark;
-
-                    return PopupMenuButton<String>(
-                      tooltip: 'Profile',
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'theme':
-                            final nextIsDark =
-                                themeProvider.themeMode != ThemeMode.dark;
-                            themeProvider.toggleDarkMode();
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    nextIsDark
-                                        ? 'Dark mode enabled'
-                                        : 'Light mode enabled',
-                                  ),
-                                  duration: const Duration(milliseconds: 1400),
-                                ),
-                              );
-                            break;
-                          case 'company':
-                            _goToTab(4);
-                            break;
-                          case 'logout':
-                            _logout(context);
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem<String>(
-                          value: 'theme',
-                          child: Row(
-                            children: [
-                              Icon(
-                                isDark
-                                    ? Icons.light_mode_outlined
-                                    : Icons.dark_mode_outlined,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                isDark
-                                    ? 'Switch to Light Mode'
-                                    : 'Switch to Dark Mode',
-                              ),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        PopupMenuItem<String>(
-                          value: 'company',
-                          child: Row(
-                            children: [
-                              Icon(Icons.business_outlined, size: 18),
-                              SizedBox(width: 10),
-                              Text('Company Profile'),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'logout',
-                          child: Row(
-                            children: [
-                              Icon(Icons.logout, size: 18),
-                              SizedBox(width: 10),
-                              Text('Logout'),
-                            ],
-                          ),
-                        ),
-                      ],
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: CircleAvatar(
-                          radius: 16,
-                          backgroundColor: const Color(0xFF2563EB),
-                          child: Text(
-                            initial,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+            ),
+          ],
+        ),
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 260),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          child: IndexedStack(
+            key: ValueKey(_selectedIndex),
+            index: _selectedIndex,
+            children: [
+              RecruiterDashboardOverviewTab(onJumpToAts: () => _goToTab(2)),
+              const _RecruiterJobsTab(),
+              const ApplicantTrackingScreen(compactMode: true),
+              _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+              const _RecruiterCompanyProfileTab(),
             ],
           ),
-          body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            child: IndexedStack(
-              key: ValueKey(_selectedIndex),
-              index: _selectedIndex,
-              children: [
-                RecruiterDashboardOverviewTab(onJumpToAts: () => _goToTab(2)),
-                const _RecruiterJobsTab(),
-                const ApplicantTrackingScreen(compactMode: true),
-                _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
-                const _RecruiterCompanyProfileTab(),
-              ],
-            ),
-          ),
-          floatingActionButton: isPostTab
-              ? null
-              : Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0A66C2), Color(0xFF0284C7)],
+        ),
+        floatingActionButton: isPostTab
+            ? null
+            : Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0A66C2), Color(0xFF0284C7)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0A66C2).withValues(alpha: 0.38),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0A66C2).withValues(alpha: 0.38),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: FloatingActionButton.extended(
-                    onPressed: () => _goToTab(3),
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Post Job'),
-                  ),
+                  ],
                 ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: _GlassCard(
-              padding: EdgeInsets.zero,
-              child: NavigationBar(
-                selectedIndex: _selectedIndex,
-                backgroundColor: Colors.white,
-                onDestinationSelected: _goToTab,
-                destinations: _tabs
-                    .map(
-                      (tab) => NavigationDestination(
-                        icon: Icon(tab.icon),
-                        selectedIcon: Icon(tab.activeIcon),
-                        label: tab.label,
-                      ),
-                    )
-                    .toList(growable: false),
+                child: FloatingActionButton.extended(
+                  onPressed: () => _goToTab(3),
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Post Job'),
+                ),
               ),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: _GlassCard(
+            padding: EdgeInsets.zero,
+            child: NavigationBar(
+              selectedIndex: _selectedIndex,
+              backgroundColor: colorScheme.surfaceContainer,
+              onDestinationSelected: _goToTab,
+              destinations: _tabs
+                  .map(
+                    (tab) => NavigationDestination(
+                      icon: Icon(tab.icon),
+                      selectedIcon: Icon(tab.activeIcon),
+                      label: tab.label,
+                    ),
+                  )
+                  .toList(growable: false),
             ),
           ),
         ),
@@ -716,18 +695,19 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
   }
 
   InputDecoration _inputDecoration(String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: colorScheme.surfaceContainerHighest,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF2563EB)),
+        borderSide: BorderSide(color: colorScheme.primary),
       ),
     );
   }
@@ -975,8 +955,12 @@ class _JobCard extends StatelessWidget {
             Row(
               children: [
                 TextButton.icon(
-                  onPressed: () =>
-                      context.push('/recruiter/jobs/${job.id}/edit'),
+                  onPressed: () => context.push(
+                    AppRoutes.recruiterJobEdit.replaceFirst(
+                      ':id',
+                      job.id.toString(),
+                    ),
+                  ),
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Edit'),
                 ),
@@ -1136,20 +1120,15 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassContainer(
       padding: padding,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+      borderRadius: 18,
+      blurStrength: 22,
+      opacity: 0.30,
+      borderOpacity: 0.18,
+      shadowIntensity: 0.22,
+      backgroundGradient: gradient,
+      enableGlow: true,
       child: child,
     );
   }

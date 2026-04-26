@@ -16,8 +16,8 @@ import 'package:portfolioph/data/repositories/user_repository.dart';
 class ProfileService {
   final UserRepository _userRepository;
 
-  ProfileService({UserRepository? userRepository})
-    : _userRepository = userRepository ?? UserRepository();
+  ProfileService({required UserRepository userRepository})
+    : _userRepository = userRepository;
 
   // ── Read ──────────────────────────────────────────────────────────────────────
   /// Returns the [UserModel] for [userId], or `null` if not found.

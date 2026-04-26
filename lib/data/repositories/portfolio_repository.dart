@@ -1,7 +1,6 @@
 // lib/data/repositories/portfolio_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/portfolio_model.dart';
 
@@ -12,8 +11,8 @@ class PortfolioRepository {
   static final Map<int, List<PortfolioModel>> _localByUser =
       <int, List<PortfolioModel>>{};
 
-  PortfolioRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  PortfolioRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(PortfolioModel portfolio) async {
     try {

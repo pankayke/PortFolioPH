@@ -2,12 +2,34 @@
 
 // Quick API diagnostic test
 
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit("This script can only run from CLI.\n");
+}
+
+$baseUrl = rtrim((string) (getenv('DIAGNOSTIC_API_BASE_URL') ?: 'http://localhost:8000'), '/');
+$host = parse_url($baseUrl, PHP_URL_HOST);
+$env = strtolower((string) getenv('APP_ENV'));
+$allowMutations = in_array('--allow-mutations', $argv ?? [], true);
+
+if (in_array($env, ['production', 'prod', 'staging'], true)) {
+    exit("Blocked: diagnostics are disabled when APP_ENV={$env}.\n");
+}
+
+if (! in_array($host, ['localhost', '127.0.0.1'], true)) {
+    exit("Blocked: DIAGNOSTIC_API_BASE_URL must target localhost/127.0.0.1.\n");
+}
+
+if (! $allowMutations) {
+    exit("Blocked: this script performs write operations. Re-run with --allow-mutations.\n");
+}
+
 echo "=== API DIAGNOSTIC TEST ===\n\n";
 
 // Test 1: Can we reach the server?
 echo "1. Testing API connectivity...\n";
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/api/jobs');
+curl_setopt($ch, CURLOPT_URL, $baseUrl.'/api/jobs');
 curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -25,7 +47,7 @@ if ($error) {
 // Test 2: Try registration
 echo "\n2. Testing registration endpoint...\n";
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/api/register');
+curl_setopt($ch, CURLOPT_URL, $baseUrl.'/api/register');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -62,14 +84,14 @@ echo "\n3. Checking available routes...\n";
 $routes = [
     '/api/register' => 'POST',
     '/api/login' => 'POST',
-    '/api/logout' => 'POST',
+    '/api/auth/logout' => 'POST',
     '/api/auth/me' => 'GET',
     '/api/jobs' => 'GET',
 ];
 
 foreach ($routes as $route => $method) {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000'.$route);
+    curl_setopt($ch, CURLOPT_URL, $baseUrl.$route);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);

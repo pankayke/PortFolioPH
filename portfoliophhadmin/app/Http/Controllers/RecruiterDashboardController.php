@@ -35,6 +35,7 @@ class RecruiterDashboardController extends Controller
             ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending")
             ->selectRaw("SUM(CASE WHEN status = 'reviewed' THEN 1 ELSE 0 END) as reviewed")
             ->selectRaw("SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END) as shortlisted")
+            ->selectRaw("SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted")
             ->selectRaw("SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected")
             ->first();
 
@@ -72,6 +73,7 @@ class RecruiterDashboardController extends Controller
                 'pending' => (int) ($atsCounts->pending ?? 0),
                 'reviewed' => (int) ($atsCounts->reviewed ?? 0),
                 'shortlisted' => (int) ($atsCounts->shortlisted ?? 0),
+                'accepted' => (int) ($atsCounts->accepted ?? 0),
                 'rejected' => (int) ($atsCounts->rejected ?? 0),
             ],
             'application_stats_by_day' => $applicationStatsByDay,

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\AuditLog;
 use App\Models\Job;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\ExportService;
 use Illuminate\Http\Request;
@@ -199,8 +201,14 @@ class AdminWebController extends Controller
     // Users Management: Update user (real-time reflection)
     public function updateUser(Request $request, User $user)
     {
+        // Prevent admins from changing their own role — self-lockout protection
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.show', $user)
+                ->with('error', 'You cannot change your own role. Ask another admin.');
+        }
+
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:admin,recruiter,job_seeker',
         ]);
@@ -208,19 +216,20 @@ class AdminWebController extends Controller
         $oldRole = $user->role;
         $user->update($validated);
 
-        // Real-time reflection: If changing recruiter to job_seeker, suspend their jobs
+        // If changing recruiter to job_seeker, close all their job listings
         if ($oldRole === 'recruiter' && $validated['role'] === 'job_seeker') {
             $user->jobs()->update(['status' => 'closed']);
         }
 
-        // If demoting admin or recruiter, notify affected applications
-        if (in_array($oldRole, ['admin', 'recruiter']) && $validated['role'] !== 'admin') {
+        // If demoting a recruiter, set their pending applications to a neutral state
+        if ($oldRole === 'recruiter' && $validated['role'] !== 'recruiter') {
             Application::whereHas('job', function ($q) use ($user) {
                 $q->where('recruiter_id', $user->id);
-            })->update(['status' => 'reviewed']); // Neutral status
+            })->where('status', 'pending')->update(['status' => 'reviewed']);
         }
 
-        return redirect()->route('admin.users.show', $user)->with('success', 'User updated successfully. Changes reflected immediately.');
+        return redirect()->route('admin.users.show', $user)
+            ->with('success', 'User updated successfully.');
     }
 
     // Users Management: Suspend user (disable their account)
@@ -307,13 +316,7 @@ class AdminWebController extends Controller
         return view('admin.jobs.show', compact('job', 'applications', 'applicationCount'));
     }
 
-    // Jobs Management: Suspend/close job (reflects on recruiter's view)
-    public function suspendJob(Job $job)
-    {
-        $job->update(['status' => 'closed']);
-
-        return redirect()->route('admin.jobs.show', $job)->with('success', 'Job closed. Recruiter can no longer accept applications.');
-    }
+    // Old suspendJob removed to avoid redeclaration
 
     // Jobs Management: Delete job (with cascading)
     public function deleteJob(Job $job)
@@ -329,10 +332,28 @@ class AdminWebController extends Controller
         return redirect()->route('admin.jobs.index')->with('success', "Job '{$jobTitle}' and all applications removed.");
     }
 
+    // Jobs Management: Suspend/close job (reflects on recruiter's view)
+    public function suspendJob(Request $request, Job $job)
+    {
+        $validated = $request->validate([
+            'rejection_reason' => 'nullable|string|max:1000',
+        ]);
+
+        $job->update([
+            'status' => 'closed',
+            'rejection_reason' => $validated['rejection_reason'] ?? null,
+        ]);
+
+        return redirect()->route('admin.jobs.show', $job)->with('success', 'Job suspended.');
+    }
+
     // Jobs Management: Approve/activate job (reflects on recruiter's view)
     public function approveJob(Job $job)
     {
-        $job->update(['status' => 'approved']);
+        $job->update([
+            'status' => 'approved',
+            'rejection_reason' => null, // Clear reason if it was previously rejected
+        ]);
 
         return redirect()->route('admin.jobs.show', $job)->with('success', 'Job approved and now visible to job seekers.');
     }
@@ -400,12 +421,12 @@ class AdminWebController extends Controller
         ];
 
         $settings = [
-            'maintenance_mode' => (bool) $request->session()->get('admin_settings.maintenance_mode', false),
-            'new_user_alerts' => (bool) $request->session()->get('admin_settings.new_user_alerts', true),
-            'moderation_alerts' => (bool) $request->session()->get('admin_settings.moderation_alerts', true),
-            'digest_frequency' => (string) $request->session()->get('admin_settings.digest_frequency', 'daily'),
-            'dashboard_density' => (string) $request->session()->get('admin_settings.dashboard_density', 'high'),
-            'session_timeout' => (int) $request->session()->get('admin_settings.session_timeout', 30),
+            'maintenance_mode' => Setting::get('maintenance_mode', false),
+            'new_user_alerts' => Setting::get('new_user_alerts', true),
+            'moderation_alerts' => Setting::get('moderation_alerts', true),
+            'digest_frequency' => Setting::get('digest_frequency', 'daily'),
+            'dashboard_density' => Setting::get('dashboard_density', 'high'),
+            'session_timeout' => Setting::get('session_timeout', 30),
         ];
 
         $metrics = [
@@ -430,14 +451,12 @@ class AdminWebController extends Controller
             'session_timeout' => 'required|integer|min:5|max:240',
         ]);
 
-        $request->session()->put('admin_settings', [
-            'maintenance_mode' => (bool) ($validated['maintenance_mode'] ?? false),
-            'new_user_alerts' => (bool) ($validated['new_user_alerts'] ?? false),
-            'moderation_alerts' => (bool) ($validated['moderation_alerts'] ?? false),
-            'digest_frequency' => $validated['digest_frequency'],
-            'dashboard_density' => $validated['dashboard_density'],
-            'session_timeout' => (int) $validated['session_timeout'],
-        ]);
+        Setting::set('maintenance_mode', (bool) ($validated['maintenance_mode'] ?? false));
+        Setting::set('new_user_alerts', (bool) ($validated['new_user_alerts'] ?? false));
+        Setting::set('moderation_alerts', (bool) ($validated['moderation_alerts'] ?? false));
+        Setting::set('digest_frequency', $validated['digest_frequency']);
+        Setting::set('dashboard_density', $validated['dashboard_density']);
+        Setting::set('session_timeout', (int) $validated['session_timeout']);
 
         return redirect()->route('admin.settings')->with('success', 'Admin command center settings updated.');
     }
@@ -445,34 +464,15 @@ class AdminWebController extends Controller
     // Audit Log: View admin actions (optional - can expand later)
     public function auditLog()
     {
-        // This can be expanded with actual audit table
-        // For now, shows activity via timestamps
-        $recentActions = [
-            'User edits' => User::latest()->limit(5)->get(),
-            'Job changes' => Job::query()
-                ->with('recruiter:id,name')
-                ->latest()
-                ->limit(5)
-                ->get(),
-            'Application updates' => Application::query()
-                ->with([
-                    'job:id,title,recruiter_id',
-                    'user:id,name',
-                ])
-                ->latest()
-                ->limit(5)
-                ->get(),
-        ];
+        $auditLogs = AuditLog::with('user')->latest()->paginate(20);
 
         $activeSessions = max(
             3,
-            $recentActions['User edits']->count()
-                + $recentActions['Job changes']->count()
-                + $recentActions['Application updates']->count()
+            $auditLogs->total()
         );
         $serverLoad = min(84, max(26, (int) round($activeSessions * 7.5)));
 
-        return view('admin.audit', compact('recentActions', 'activeSessions', 'serverLoad'));
+        return view('admin.audit', compact('auditLogs', 'activeSessions', 'serverLoad'));
     }
 
     /**

@@ -20,6 +20,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/core/services/file_download_service.dart';
+import 'package:portfolioph/data/services/auth_service.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_dashboard_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
@@ -27,6 +28,7 @@ import 'package:portfolioph/features/recruiter/providers/recruiter_application_m
 import 'package:portfolioph/features/seeker/repositories/seeker_repository_impl.dart';
 import 'package:portfolioph/features/seeker/providers/seeker_job_list_provider.dart';
 import 'package:portfolioph/features/seeker/providers/seeker_application_provider.dart';
+import 'package:portfolioph/features/notifications/providers/notification_provider.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/navigation_provider.dart';
 import 'package:portfolioph/presentation/providers/file_download_provider.dart';
@@ -43,6 +45,15 @@ import 'package:portfolioph/presentation/providers/student_essays_provider.dart'
 import 'package:portfolioph/presentation/providers/student_achievements_provider.dart';
 import 'package:portfolioph/presentation/providers/student_skills_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
+import 'package:portfolioph/data/repositories/portfolio_repository.dart';
+import 'package:portfolioph/data/repositories/project_repository.dart';
+import 'package:portfolioph/data/repositories/skills_repository.dart';
+import 'package:portfolioph/data/repositories/education_repository.dart';
+import 'package:portfolioph/data/repositories/experience_repository.dart';
+import 'package:portfolioph/data/repositories/certification_repository.dart';
+import 'package:portfolioph/data/repositories/student_skills_repository.dart';
+import 'package:portfolioph/data/repositories/user_repository.dart';
+import 'package:portfolioph/data/repositories/student_reflections_repository.dart';
 
 /// Centralized provider registry for all app-wide state providers.
 ///
@@ -68,12 +79,6 @@ class AppProviderRegistry {
 
     /// Theme provider (pre-initialized to prevent flicker)
     ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
-
-    /// Authentication provider — handles user login, registration, session
-    ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-
-    /// Profile provider — handles user profile updates (upload avatar, edit bio, etc.)
-    ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
 
     /// Navigation provider — manages app-wide navigation state
     ChangeNotifierProvider<NavigationProvider>(
@@ -189,31 +194,114 @@ class AppProviderRegistry {
           previous ?? SeekerApplicationProvider(repo),
     ),
 
+    /// Notification provider — loads unread notification feed and mark-read actions
+    ChangeNotifierProxyProvider<ApiService, NotificationProvider>(
+      create: (context) => NotificationProvider(context.read<ApiService>()),
+      update: (_, apiService, previous) =>
+          previous ?? NotificationProvider(apiService),
+    ),
+
+    // Shared repositories using a single ApiService instance.
+    ProxyProvider<ApiService, PortfolioRepository>(
+      update: (_, apiService, _) => PortfolioRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, ProjectRepository>(
+      update: (_, apiService, _) => ProjectRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, SkillsRepository>(
+      update: (_, apiService, _) => SkillsRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, EducationRepository>(
+      update: (_, apiService, _) => EducationRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, ExperienceRepository>(
+      update: (_, apiService, _) => ExperienceRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, CertificationRepository>(
+      update: (_, apiService, _) =>
+          CertificationRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, StudentSkillsRepository>(
+      update: (_, apiService, _) =>
+          StudentSkillsRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, UserRepository>(
+      update: (_, apiService, _) => UserRepository(apiService: apiService),
+    ),
+    ProxyProvider<ApiService, StudentReflectionsRepository>(
+      update: (_, apiService, _) =>
+          StudentReflectionsRepository(apiService: apiService),
+    ),
+    ProxyProvider2<UserRepository, ApiService, AuthService>(
+      update: (_, userRepository, apiService, _) =>
+          AuthService(userRepository: userRepository, apiService: apiService),
+    ),
+    ChangeNotifierProxyProvider<AuthService, AuthProvider>(
+      create: (context) =>
+          AuthProvider(authService: context.read<AuthService>()),
+      update: (_, authService, previous) =>
+          previous ?? AuthProvider(authService: authService),
+    ),
+    ChangeNotifierProxyProvider<UserRepository, ProfileProvider>(
+      create: (context) =>
+          ProfileProvider(userRepository: context.read<UserRepository>()),
+      update: (_, userRepository, previous) =>
+          previous ?? ProfileProvider(userRepository: userRepository),
+    ),
+
     // ────────────────────────────────────────────────────────────────────────
     // FEATURE PROVIDERS — Domain-specific state
     // ────────────────────────────────────────────────────────────────────────
 
     /// Portfolio provider — manages user portfolios, projects, overall portfolio state
-    ChangeNotifierProvider<PortfolioProvider>(
-      create: (_) => PortfolioProvider(),
+    ChangeNotifierProxyProvider2<
+      PortfolioRepository,
+      ProjectRepository,
+      PortfolioProvider
+    >(
+      create: (context) => PortfolioProvider(
+        portfolioRepository: context.read<PortfolioRepository>(),
+        projectRepository: context.read<ProjectRepository>(),
+      ),
+      update: (_, portfolioRepo, projectRepo, previous) =>
+          previous ??
+          PortfolioProvider(
+            portfolioRepository: portfolioRepo,
+            projectRepository: projectRepo,
+          ),
     ),
 
     /// Skills provider — manages user skills, skill ratings, skill organization
-    ChangeNotifierProvider<SkillsProvider>(create: (_) => SkillsProvider()),
+    ChangeNotifierProxyProvider<SkillsRepository, SkillsProvider>(
+      create: (context) =>
+          SkillsProvider(repository: context.read<SkillsRepository>()),
+      update: (_, repository, previous) =>
+          previous ?? SkillsProvider(repository: repository),
+    ),
 
     /// Certification provider — manages user certifications and credentials
-    ChangeNotifierProvider<CertificationProvider>(
-      create: (_) => CertificationProvider(),
+    ChangeNotifierProxyProvider<CertificationRepository, CertificationProvider>(
+      create: (context) => CertificationProvider(
+        repository: context.read<CertificationRepository>(),
+      ),
+      update: (_, repository, previous) =>
+          previous ?? CertificationProvider(repository: repository),
     ),
 
     /// Education provider — manages education history, degrees, courses
-    ChangeNotifierProvider<EducationProvider>(
-      create: (_) => EducationProvider(),
+    ChangeNotifierProxyProvider<EducationRepository, EducationProvider>(
+      create: (context) =>
+          EducationProvider(repository: context.read<EducationRepository>()),
+      update: (_, repository, previous) =>
+          previous ?? EducationProvider(repository: repository),
     ),
 
     /// Experience provider — manages work experience, roles, employment history
-    ChangeNotifierProvider<ExperienceProvider>(
-      create: (_) => ExperienceProvider(),
+    ChangeNotifierProxyProvider<ExperienceRepository, ExperienceProvider>(
+      create: (context) =>
+          ExperienceProvider(repository: context.read<ExperienceRepository>()),
+      update: (_, repository, previous) =>
+          previous ?? ExperienceProvider(repository: repository),
     ),
 
     /// Job feed provider — manages job listings, recommendations, job search
@@ -229,8 +317,15 @@ class AppProviderRegistry {
     ),
 
     /// Student reflections provider — manages student-specific reflections
-    ChangeNotifierProvider<StudentReflectionsProvider>(
-      create: (_) => StudentReflectionsProvider(),
+    ChangeNotifierProxyProvider<
+      StudentReflectionsRepository,
+      StudentReflectionsProvider
+    >(
+      create: (context) => StudentReflectionsProvider(
+        repository: context.read<StudentReflectionsRepository>(),
+      ),
+      update: (_, repository, previous) =>
+          previous ?? StudentReflectionsProvider(repository: repository),
     ),
 
     /// Student essays provider — manages student essay submissions and content
@@ -244,8 +339,11 @@ class AppProviderRegistry {
     ),
 
     /// Student skills provider — manages student-specific skills and competencies
-    ChangeNotifierProvider<StudentSkillsProvider>(
-      create: (_) => StudentSkillsProvider(),
+    ChangeNotifierProxyProvider<StudentSkillsRepository, StudentSkillsProvider>(
+      create: (context) =>
+          StudentSkillsProvider(repository: context.read<StudentSkillsRepository>()),
+      update: (_, repository, previous) =>
+          previous ?? StudentSkillsProvider(repository: repository),
     ),
   ];
 }

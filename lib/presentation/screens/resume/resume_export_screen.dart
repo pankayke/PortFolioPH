@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:portfolioph/core/utils/file_download_helper.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/certification_provider.dart';
 import 'package:portfolioph/presentation/providers/education_provider.dart';
@@ -117,13 +118,20 @@ class _ResumeExportScreenState extends State<ResumeExportScreen> {
 
       // ── Save to device (or show download message for web) ─────────────────
       if (kIsWeb) {
+        final downloaded = await FileDownloadHelper.saveBytes(
+          bytes: bytes,
+          fileName: fileName,
+          mimeType: 'application/pdf',
+        );
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'PDF generated successfully! Web download will be implemented next. '
-              '($fileName - ${(bytes.length / 1024).toStringAsFixed(2)} KB)',
+              downloaded
+                  ? 'Downloaded $fileName (${(bytes.length / 1024).toStringAsFixed(2)} KB)'
+                  : 'PDF generated ($fileName), but browser download is unavailable.',
             ),
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 4),
           ),
         );
       } else {

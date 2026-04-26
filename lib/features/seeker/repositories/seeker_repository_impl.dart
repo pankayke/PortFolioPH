@@ -65,7 +65,7 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
   @override
   Future<void> saveJob(int jobId) async {
     try {
-      await _apiService.post('/jobs/$jobId/save');
+      await _apiService.post('/saved-jobs', data: {'job_id': jobId});
     } catch (e) {
       rethrow;
     }
@@ -74,7 +74,7 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
   @override
   Future<void> unsaveJob(int jobId) async {
     try {
-      await _apiService.delete('/jobs/$jobId/save');
+      await _apiService.delete('/saved-jobs/$jobId');
     } catch (e) {
       rethrow;
     }
@@ -84,7 +84,7 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
   Future<List<SeekerJob>> getSavedJobs({int page = 1}) async {
     try {
       final response = await _apiService.get(
-        '/seeker/saved-jobs',
+        '/saved-jobs',
         queryParameters: {'page': page},
       );
 
@@ -162,7 +162,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   @override
   Future<void> withdrawApplication(int applicationId) async {
     try {
-      await _apiService.post('/applications/$applicationId/withdraw');
+      await _apiService.delete('/applications/$applicationId');
     } catch (e) {
       rethrow;
     }

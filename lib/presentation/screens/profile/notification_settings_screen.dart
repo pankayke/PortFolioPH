@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
-import 'package:portfolioph/core/services/api_service.dart';
+import 'package:portfolioph/features/notifications/providers/notification_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -38,16 +38,16 @@ class _NotificationSettingsScreenState
   bool _messageNotifications = true;
   bool _newMatchNotifications = true;
   String _emailFrequency = 'daily'; // daily, weekly, never
-  bool _isLoadingNotificationFeed = true;
   bool _isMarkingAllRead = false;
-  String? _notificationFeedError;
-  List<_UserNotificationItem> _notificationFeed = const [];
 
   @override
   void initState() {
     super.initState();
     _loadPreferences();
-    _loadNotificationFeed();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<NotificationProvider>().loadNotifications();
+    });
   }
 
   Future<void> _loadPreferences() async {
@@ -80,62 +80,9 @@ class _NotificationSettingsScreenState
     );
   }
 
-  Future<void> _loadNotificationFeed() async {
-    setState(() {
-      _isLoadingNotificationFeed = true;
-      _notificationFeedError = null;
-    });
-
-    try {
-      final response = await context.read<ApiService>().get(
-        '/notifications',
-        queryParameters: {'per_page': 30},
-      );
-
-      final rawItems = response is List ? response : const <dynamic>[];
-      final notifications = rawItems
-          .whereType<Map>()
-          .map(
-            (item) => _UserNotificationItem.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
-          )
-          .toList(growable: false);
-
-      if (!mounted) return;
-      setState(() {
-        _notificationFeed = notifications;
-        _isLoadingNotificationFeed = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _notificationFeedError =
-            'Could not load notifications right now. Pull to retry later.';
-        _isLoadingNotificationFeed = false;
-      });
-    }
-  }
-
   Future<void> _markNotificationAsRead(String id) async {
-    final targetIndex = _notificationFeed.indexWhere((item) => item.id == id);
-    if (targetIndex == -1 || _notificationFeed[targetIndex].isRead) return;
-
     try {
-      await context.read<ApiService>().post('/notifications/$id/read');
-      if (!mounted) return;
-      setState(() {
-        _notificationFeed = _notificationFeed
-            .map(
-              (item) => item.id == id
-                  ? item.copyWith(
-                      isRead: true,
-                      readAt: DateTime.now(),
-                    )
-                  : item,
-            )
-            .toList(growable: false);
-      });
+      await context.read<NotificationProvider>().markAsRead(id);
     } catch (_) {
       if (!mounted) return;
       _showSuccessMessage('Unable to mark notification as read.');
@@ -147,18 +94,7 @@ class _NotificationSettingsScreenState
 
     setState(() => _isMarkingAllRead = true);
     try {
-      await context.read<ApiService>().post('/notifications/read-all');
-      if (!mounted) return;
-      setState(() {
-        _notificationFeed = _notificationFeed
-            .map(
-              (item) => item.copyWith(
-                isRead: true,
-                readAt: item.readAt ?? DateTime.now(),
-              ),
-            )
-            .toList(growable: false);
-      });
+      await context.read<NotificationProvider>().markAllAsRead();
       _showSuccessMessage('All notifications marked as read');
     } catch (_) {
       if (!mounted) return;
@@ -172,6 +108,10 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final notificationProvider = context.watch<NotificationProvider>();
+    final notificationFeed = notificationProvider.notifications;
+    final notificationFeedError = notificationProvider.error;
+
     if (!_isInitialized) {
       return Scaffold(
         appBar: AppBar(title: const Text('Notification Settings')),
@@ -194,12 +134,12 @@ class _NotificationSettingsScreenState
               // ── Recent Application Updates ───────────────────────────────
               _buildSectionTitle('Recent Application Updates'),
               const SizedBox(height: 12),
-              if (_isLoadingNotificationFeed)
+              if (notificationProvider.isLoading && notificationFeed.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(child: CircularProgressIndicator()),
                 )
-              else if (_notificationFeedError != null)
+              else if (notificationFeedError != null)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -213,19 +153,19 @@ class _NotificationSettingsScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _notificationFeedError!,
+                        notificationFeedError,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 10),
                       TextButton.icon(
-                        onPressed: _loadNotificationFeed,
+                        onPressed: () => notificationProvider.refreshNotifications(),
                         icon: const Icon(Icons.refresh),
                         label: const Text('Retry'),
                       ),
                     ],
                   ),
                 )
-              else if (_notificationFeed.isEmpty)
+              else if (notificationFeed.isEmpty)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -251,14 +191,16 @@ class _NotificationSettingsScreenState
                               ? const SizedBox(
                                   width: 14,
                                   height: 14,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.done_all),
                           label: const Text('Mark all read'),
                         ),
                       ],
                     ),
-                    ..._notificationFeed.map(_buildNotificationCard),
+                    ...notificationFeed.map(_buildNotificationCard),
                   ],
                 ),
               const SizedBox(height: 24),
@@ -536,7 +478,7 @@ class _NotificationSettingsScreenState
     );
   }
 
-  Widget _buildNotificationCard(_UserNotificationItem item) {
+  Widget _buildNotificationCard(AppNotificationItem item) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
@@ -551,7 +493,9 @@ class _NotificationSettingsScreenState
                 : Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: Row(
@@ -672,54 +616,5 @@ class _NotificationSettingsScreenState
 extension on String {
   String capitalize() {
     return '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
-  }
-}
-
-class _UserNotificationItem {
-  final String id;
-  final String title;
-  final String message;
-  final String status;
-  final bool isRead;
-  final DateTime createdAt;
-  final DateTime? readAt;
-
-  const _UserNotificationItem({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.status,
-    required this.isRead,
-    required this.createdAt,
-    required this.readAt,
-  });
-
-  factory _UserNotificationItem.fromJson(Map<String, dynamic> json) {
-    final createdAtRaw = json['created_at']?.toString();
-    final readAtRaw = json['read_at']?.toString();
-    return _UserNotificationItem(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? 'Application update',
-      message: json['message']?.toString() ?? '',
-      status: json['status']?.toString() ?? 'pending',
-      isRead: json['is_read'] == true,
-      createdAt: DateTime.tryParse(createdAtRaw ?? '') ?? DateTime.now(),
-      readAt: DateTime.tryParse(readAtRaw ?? ''),
-    );
-  }
-
-  _UserNotificationItem copyWith({
-    bool? isRead,
-    DateTime? readAt,
-  }) {
-    return _UserNotificationItem(
-      id: id,
-      title: title,
-      message: message,
-      status: status,
-      isRead: isRead ?? this.isRead,
-      createdAt: createdAt,
-      readAt: readAt ?? this.readAt,
-    );
   }
 }

@@ -31,9 +31,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with UserAwareScreenMixin {
+  bool _didInitUserLoad = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_didInitUserLoad) return;
+    _didInitUserLoad = true;
     loadDataForUserWithId((userId) {
       context.read<ExperienceProvider>().loadForUser(userId);
       context.read<SkillsProvider>().loadForUser(userId);
@@ -65,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     await context.read<AuthProvider>().logout();
     if (!context.mounted) return;
-    context.go('/login');
+    context.go(AppRoutes.login);
   }
 
   @override
@@ -376,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     leading: const Icon(Icons.settings_outlined),
                     title: const Text('Settings'),
                     subtitle: const Text('Theme, display, and app preferences'),
-                    onTap: () => context.push('/settings'),
+                    onTap: () => context.push(AppRoutes.settings),
                   ),
                   if (user.role == AppConstants.roleAdmin) ...[
                     const Divider(height: 8),
@@ -385,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       leading: const Icon(Icons.admin_panel_settings_outlined),
                       title: const Text('Admin dashboard'),
                       subtitle: const Text('Manage platform-level features'),
-                      onTap: () => context.push('/admin-dashboard'),
+                      onTap: () => context.push(AppRoutes.adminDashboard),
                     ),
                   ],
                   if (user.role == AppConstants.roleTeacher ||
@@ -399,7 +403,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       subtitle: const Text(
                         'View student progress by class and section',
                       ),
-                      onTap: () => context.push('/teacher-dashboard'),
+                      onTap: () => context.push(AppRoutes.teacherDashboard),
                     ),
                   ],
                 ],
@@ -618,7 +622,7 @@ class _ProfileMomentumCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => context.push('/settings'),
+                  onPressed: () => context.push(AppRoutes.settings),
                   icon: const Icon(Icons.tune_outlined),
                   label: const Text('Settings'),
                 ),

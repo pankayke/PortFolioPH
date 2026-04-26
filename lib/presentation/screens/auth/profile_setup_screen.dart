@@ -26,6 +26,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/data/repositories/user_repository.dart';
 import 'package:portfolioph/data/services/profile_service.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 
@@ -53,7 +54,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _linkedinUrlController = TextEditingController();
   final _salaryExpectationController = TextEditingController();
 
-  final _profileService = ProfileService();
+  late ProfileService _profileService;
+  bool _didInitService = false;
   final _imagePicker = ImagePicker();
 
   String? _avatarPath;
@@ -85,6 +87,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     'Available in 1 month',
     'Not currently available',
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitService) return;
+    _profileService = ProfileService(
+      userRepository: context.read<UserRepository>(),
+    );
+    _didInitService = true;
+  }
 
   @override
   void dispose() {

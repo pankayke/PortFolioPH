@@ -20,6 +20,28 @@
 | Production Hardening | Complete | ✅ |
 | Documentation | Extensive | ✅ |
 
+## 🧭 RECOMMENDED PRIORITIES
+
+If the goal is to move this system from "working" to "reliable at scale", the recommended order is:
+
+1. **Lock the core data path first**
+  - Complete real API integration for login, jobs, applications, and token persistence.
+  - Replace remaining stub services (`ApiService`, `DatabaseService`, `LocalStorageService`) with verified implementations.
+  - Keep route contracts and auth flow tests as release blockers.
+
+2. **Fix user-visible failure modes next**
+  - Add global error UI handling so network, validation, and authorization failures are visible everywhere.
+  - Add pagination and lazy loading to all high-volume lists before data volume grows.
+  - Finish upload flows for resumes, profiles, and supporting documents.
+
+3. **Close engagement and scale gaps after that**
+  - Add notifications, badges, and email delivery for job/application events.
+  - Add analytics and admin visibility so growth decisions are data-driven.
+  - Add CI/CD and automated regression checks so fixes stay fixed.
+
+4. **Defer nice-to-have expansion until the platform is stable**
+  - Recommendation systems, templates, offline sync, and richer personalization should follow the operational basics above.
+
 ---
 
 # PART 1: FLUTTER APP (lib/)

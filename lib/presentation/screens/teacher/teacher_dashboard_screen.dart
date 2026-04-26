@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/user_model.dart';
 import 'package:portfolioph/data/repositories/student_reflections_repository.dart';
 import 'package:portfolioph/data/repositories/student_skills_repository.dart';
 import 'package:portfolioph/data/repositories/user_repository.dart';
+import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
+import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
+import 'package:provider/provider.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -14,10 +18,9 @@ class TeacherDashboardScreen extends StatefulWidget {
 }
 
 class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
-  final UserRepository _userRepository = UserRepository();
-  final StudentReflectionsRepository _reflectionsRepository =
-      StudentReflectionsRepository();
-  final StudentSkillsRepository _skillsRepository = StudentSkillsRepository();
+  late final UserRepository _userRepository;
+  late final StudentReflectionsRepository _reflectionsRepository;
+  late final StudentSkillsRepository _skillsRepository;
 
   bool _isLoading = true;
   String? _error;
@@ -27,7 +30,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final api = context.read<ApiService>();
+      _userRepository = UserRepository(apiService: api);
+      _reflectionsRepository = StudentReflectionsRepository(apiService: api);
+      _skillsRepository = StudentSkillsRepository(apiService: api);
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
@@ -90,24 +100,25 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       ..._allRows.map((item) => item.user.location ?? 'Unassigned'),
     }.toList(growable: false);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Teacher & Coordinator Dashboard'),
-        actions: [
-          IconButton(
-            onPressed: _loadData,
-            icon: const Icon(Icons.refresh_outlined),
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacingMd),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-            ? Center(child: Text('Failed to load dashboard: $_error'))
-            : Column(
+    return PremiumAppBackground(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Teacher & Coordinator Dashboard'),
+          actions: [
+            IconButton(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh_outlined),
+              tooltip: 'Refresh',
+            ),
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(AppConstants.spacingMd),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+              ? Center(child: Text('Failed to load dashboard: $_error'))
+              : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DropdownButtonFormField<String>(
@@ -148,7 +159,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                                 const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final row = filteredRows[index];
-                              return Card(
+                              return GlassContainer(
+                                borderRadius: 16,
+                                blurStrength: 20,
+                                opacity: 0.26,
+                                borderOpacity: 0.18,
+                                enableGlow: false,
                                 child: ListTile(
                                   leading: const Icon(Icons.school_outlined),
                                   title: Text(
@@ -176,6 +192,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                   ),
                 ],
               ),
+        ),
       ),
     );
   }

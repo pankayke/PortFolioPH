@@ -3,7 +3,6 @@
 // API-First Repository: Education records stored on backend only
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/education_model.dart';
 
@@ -14,8 +13,8 @@ class EducationRepository {
   static final Map<int, List<EducationModel>> _localByUser =
       <int, List<EducationModel>>{};
 
-  EducationRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  EducationRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(EducationModel education) async {
     try {

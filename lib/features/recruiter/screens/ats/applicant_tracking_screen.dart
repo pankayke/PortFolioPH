@@ -244,7 +244,8 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
 
                   return InkWell(
                     onTap: canOpen
-                        ? () => setState(() => _selectedApplication = application)
+                        ? () =>
+                              setState(() => _selectedApplication = application)
                         : null,
                     child: GlassCard(
                       borderRadius: BorderRadius.circular(18),
@@ -320,7 +321,8 @@ class _ApplicantTrackingScreenState extends State<ApplicantTrackingScreen> {
                               TextButton(
                                 onPressed: canOpen
                                     ? () => setState(
-                                        () => _selectedApplication = application,
+                                        () =>
+                                            _selectedApplication = application,
                                       )
                                     : null,
                                 child: Text(canOpen ? 'Open' : 'Locked'),

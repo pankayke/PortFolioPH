@@ -106,10 +106,62 @@ class ApplicationController extends Controller
         );
     }
 
+    /**
+     * Bulk update application status (recruiter only)
+     */
+    public function bulkUpdateStatus(Request $request): JsonResponse
+    {
+        $request->validate([
+            'application_ids' => 'required|array',
+            'application_ids.*' => 'integer|exists:applications,id',
+            'status' => 'required|in:pending,reviewed,shortlisted,accepted,rejected',
+        ]);
+
+        $status = $request->input('status');
+        $applicationIds = $request->input('application_ids');
+
+        $applications = Application::whereIn('id', $applicationIds)->get();
+
+        $updatedCount = 0;
+
+        foreach ($applications as $application) {
+            // Check authorization for each application
+            if ($request->user()->can('updateStatus', $application)) {
+                $this->applicationService->updateApplicationStatus(
+                    $application,
+                    ['status' => $status]
+                );
+                $updatedCount++;
+            }
+        }
+
+        return ApiResponse::success(
+            ['updated_count' => $updatedCount],
+            "Successfully updated {$updatedCount} applications",
+            200
+        );
+    }
+
     private function resolvePerPage(Request $request): int
     {
         $perPage = (int) $request->input('per_page', 15);
 
         return max(1, min(100, $perPage));
+    }
+
+    /**
+     * Withdraw an application
+     */
+    public function destroy(Request $request, Application $application): JsonResponse
+    {
+        $this->authorize('delete', $application);
+
+        if ($application->status !== 'pending') {
+            return ApiResponse::error('You can only withdraw pending applications.', 400);
+        }
+
+        $application->delete();
+
+        return ApiResponse::success(null, 'Application withdrawn successfully', 200);
     }
 }

@@ -26,6 +26,15 @@
 - ❌ No email system (can't contact users)
 - ❌ No CI/CD (manual deployment)
 
+### Recommended Gap-Fix Order
+
+1. **Release blockers**: error UI, pagination, and real API/session handling.
+2. **Engagement gaps**: notifications, email, and real-time updates.
+3. **Scale gaps**: analytics, CI/CD, and rate limiting.
+4. **Expansion gaps**: offline sync, recommendation system, and richer personalization.
+
+This order keeps the work focused on failures users can feel immediately before investing in differentiators.
+
 ### Market Impact Analysis
 
 | Gap | User Impact | Business Impact | Effort | Priority |

@@ -38,6 +38,26 @@ class AdminStatsController extends Controller
             ->selectRaw("SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected")
             ->first();
 
+        $thirtyDaysAgo = now()->subDays(30);
+
+        $registrationTrend = User::query()
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->date => (int) $item->count])
+            ->toArray();
+
+        $applicationTrend = Application::query()
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->date => (int) $item->count])
+            ->toArray();
+
         return ApiResponse::success([
             'users' => [
                 'total' => (int) ($users->total ?? 0),
@@ -59,6 +79,10 @@ class AdminStatsController extends Controller
                 'shortlisted' => (int) ($applications->shortlisted ?? 0),
                 'accepted' => (int) ($applications->accepted ?? 0),
                 'rejected' => (int) ($applications->rejected ?? 0),
+            ],
+            'trends' => [
+                'registrations' => $registrationTrend,
+                'applications' => $applicationTrend,
             ],
         ], 'Admin stats retrieved successfully');
     }

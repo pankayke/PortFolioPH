@@ -24,10 +24,10 @@ class PortfolioProvider extends ChangeNotifier {
   String? _errorMessage;
 
   PortfolioProvider({
-    PortfolioRepository? portfolioRepository,
-    ProjectRepository? projectRepository,
-  }) : _portfolioRepo = portfolioRepository ?? PortfolioRepository(),
-       _projectRepo = projectRepository ?? ProjectRepository();
+    required PortfolioRepository portfolioRepository,
+    required ProjectRepository projectRepository,
+  }) : _portfolioRepo = portfolioRepository,
+       _projectRepo = projectRepository;
 
   // ── Getters ──────────────────────────────────────────────────────────────────
   List<PortfolioModel> get portfolios => List.unmodifiable(_portfolios);

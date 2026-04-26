@@ -14,6 +14,7 @@ import 'package:portfolioph/presentation/providers/certification_provider.dart';
 import 'package:portfolioph/presentation/providers/education_provider.dart';
 import 'package:portfolioph/presentation/providers/experience_provider.dart';
 import 'package:portfolioph/presentation/providers/job_feed_provider.dart';
+import 'package:portfolioph/presentation/providers/navigation_provider.dart';
 import 'package:portfolioph/presentation/providers/portfolio_provider.dart';
 import 'package:portfolioph/presentation/providers/reflections_provider.dart';
 import 'package:portfolioph/presentation/providers/skills_provider.dart';
@@ -277,7 +278,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             IconButton(
               icon: const Icon(Icons.settings_outlined),
               tooltip: 'Settings',
-              onPressed: () => context.push('/settings'),
+              onPressed: () => context.push(AppRoutes.settings),
             ),
           ],
         ),
@@ -391,7 +392,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                         const SizedBox(width: 10),
                         IconButton(
                           icon: const Icon(Icons.notifications_none_rounded),
-                          onPressed: () {},
+                          onPressed: () =>
+                              context.push(AppRoutes.notificationSettings),
                           style: IconButton.styleFrom(
                             backgroundColor: isDark
                                 ? Colors.white.withAlpha(18)
@@ -729,12 +731,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     final searchTerm = _dashboardJobSearchQuery.trim().toLowerCase();
     final filteredJobs = searchTerm.isEmpty
         ? jobsProvider.jobs
-        : jobsProvider.jobs.where((job) {
-            final haystack =
-                '${job.title} ${job.company} ${job.location} ${job.description}'
-                    .toLowerCase();
-            return haystack.contains(searchTerm);
-          }).toList(growable: false);
+        : jobsProvider.jobs
+              .where((job) {
+                final haystack =
+                    '${job.title} ${job.company} ${job.location} ${job.description}'
+                        .toLowerCase();
+                return haystack.contains(searchTerm);
+              })
+              .toList(growable: false);
     final previewJobs = filteredJobs.take(2).toList(growable: false);
     final textTheme = Theme.of(context).textTheme;
     return ClipRRect(
@@ -1351,7 +1355,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Icons.description_outlined,
                     'Resume & Portfolio',
                     'Track achievements & build portfolio',
-                    () => context.go('/dashboard'),
+                    () {
+                      context.read<NavigationProvider>().goPortfolio();
+                      if (GoRouterState.of(context).uri.path !=
+                          AppRoutes.dashboard) {
+                        context.go(AppRoutes.dashboard);
+                      }
+                    },
                     colorScheme,
                   ),
                   Divider(height: 1, color: Colors.white.withAlpha(26)),
@@ -1369,7 +1379,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Icons.dark_mode_outlined,
                     'Theme & Display',
                     'Customize appearance & accessibility',
-                    () => context.push('/settings'),
+                    () => context.push(AppRoutes.settings),
                     colorScheme,
                   ),
                 ],

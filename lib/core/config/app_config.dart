@@ -56,6 +56,8 @@ class AppConfig {
         break;
     }
 
+    _validateApiBaseUrl(flavor, _apiBaseUrl);
+
     _isInitialized = true;
   }
 
@@ -79,6 +81,27 @@ class AppConfig {
     }
 
     return 'http://localhost:8000/api';
+  }
+
+  static void _validateApiBaseUrl(Flavor flavor, String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw StateError('Invalid API_BASE_URL: $value');
+    }
+
+    final isLocalHost = uri.host == 'localhost' || uri.host == '127.0.0.1';
+    if (flavor != Flavor.development) {
+      if (uri.scheme != 'https') {
+        throw StateError(
+          'Non-development flavors must use https API endpoints. Received: $value',
+        );
+      }
+      if (isLocalHost) {
+        throw StateError(
+          'Non-development flavors cannot use localhost API endpoints. Received: $value',
+        );
+      }
+    }
   }
 
   /// Check if debug logs are enabled (disabled in prod)

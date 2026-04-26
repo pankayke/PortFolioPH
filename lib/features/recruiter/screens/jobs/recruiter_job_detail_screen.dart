@@ -31,8 +31,12 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
           actions: [
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              onPressed: () =>
-                  context.push('/recruiter/jobs/${widget.jobId}/edit'),
+              onPressed: () => context.push(
+                AppRoutes.recruiterJobEdit.replaceFirst(
+                  ':id',
+                  widget.jobId.toString(),
+                ),
+              ),
             ),
           ],
         ),

@@ -34,8 +34,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  AuthProvider({AuthService? authService})
-    : _authService = authService ?? AuthService();
+  AuthProvider({required AuthService authService}) : _authService = authService;
 
   // ── Getters ───────────────────────────────────────────────────────────────────
   UserModel? get currentUser => _currentUser;

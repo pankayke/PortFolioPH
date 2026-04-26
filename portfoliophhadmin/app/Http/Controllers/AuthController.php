@@ -77,7 +77,7 @@ class AuthController extends Controller
             return ApiResponse::success(null, 'If the email exists, a reset token has been issued.', 200);
         }
 
-        if (app()->environment(['local', 'development', 'testing'])) {
+        if (app()->environment('local')) {
             return ApiResponse::success(
                 ['reset_token' => $token],
                 'Use this reset token to confirm password reset.',
@@ -139,7 +139,11 @@ class AuthController extends Controller
         }
 
         return ApiResponse::success(
-            $user->only(['id', 'name', 'email', 'role']),
+            $user->only([
+                'id', 'name', 'email', 'role', 'username', 'full_name',
+                'bio', 'avatar_path', 'phone_number', 'location',
+                'website_url', 'resume_path', 'active',
+            ]),
             'Current user',
             200
         );

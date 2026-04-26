@@ -1,7 +1,6 @@
 // lib/data/repositories/project_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/project_model.dart';
 
@@ -15,8 +14,7 @@ class ProjectRepository {
   static final Map<int, _FeaturedCacheEntry> _featuredCacheByUser =
       <int, _FeaturedCacheEntry>{};
 
-  ProjectRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  ProjectRepository({required ApiService apiService}) : _apiService = apiService;
 
   Future<int> insert(ProjectModel project) async {
     try {

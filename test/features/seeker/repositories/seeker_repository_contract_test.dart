@@ -11,13 +11,16 @@ class FakeApiService extends ApiService {
 
   dynamic getResponse;
   dynamic postResponse;
+  dynamic deleteResponse;
   Object? getError;
   Object? postError;
+  Object? deleteError;
 
   String? lastGetPath;
   Map<String, dynamic>? lastGetQuery;
   String? lastPostPath;
   dynamic lastPostData;
+  String? lastDeletePath;
 
   @override
   Future<dynamic> get(
@@ -41,9 +44,22 @@ class FakeApiService extends ApiService {
     if (postError != null) throw postError!;
     return postResponse;
   }
+
+  @override
+  Future<dynamic> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    lastDeletePath = path;
+    if (deleteError != null) throw deleteError!;
+    return deleteResponse;
+  }
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  FlutterSecureStorage.setMockInitialValues({});
+
   late FakeApiService apiService;
   late SeekerRepositoryImpl seekerRepo;
   late SeekerApplicationRepositoryImpl applicationRepo;
@@ -127,12 +143,14 @@ void main() {
     });
 
     test('withdrawApplication propagates server errors', () async {
-      apiService.postError = ServerException('Server exploded');
+      apiService.deleteError = ServerException('Server exploded');
 
       expect(
         () => applicationRepo.withdrawApplication(55),
         throwsA(isA<ServerException>()),
       );
+
+      expect(apiService.lastDeletePath, '/applications/55');
     });
   });
 }

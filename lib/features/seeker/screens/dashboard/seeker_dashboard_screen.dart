@@ -10,10 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/features/seeker/screens/jobs/saved_jobs_screen.dart';
 import 'package:portfolioph/features/seeker/screens/profile/cv_upload_screen.dart';
+import 'package:portfolioph/features/notifications/providers/notification_provider.dart';
 import 'package:portfolioph/features/seeker/providers/seeker_application_provider.dart';
 import 'package:portfolioph/features/seeker/providers/seeker_job_list_provider.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/file_download_provider.dart';
+import 'package:portfolioph/presentation/providers/theme_provider.dart';
 import 'package:portfolioph/presentation/widgets/file_download_widgets.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/presentation/widgets/premium_titan_mobile_header.dart';
@@ -29,6 +31,10 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
   int _selectedIndex = 0;
   bool _compactHeader = false;
   final TextEditingController _jobSearchController = TextEditingController();
+  final TextEditingController _locationSearchController =
+      TextEditingController();
+  String? _selectedEmploymentType;
+  bool _remoteOnly = false;
 
   @override
   void initState() {
@@ -42,14 +48,21 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
   @override
   void dispose() {
     _jobSearchController.dispose();
+    _locationSearchController.dispose();
     super.dispose();
   }
 
   Future<void> _primeData() async {
     final jobProvider = context.read<SeekerJobListProvider>();
+    final notificationProvider = context.read<NotificationProvider>();
 
     if (jobProvider.jobs.isEmpty) {
       await jobProvider.loadJobs(refresh: true);
+    }
+
+    if (!notificationProvider.hasLoaded ||
+        notificationProvider.notifications.isEmpty) {
+      await notificationProvider.loadNotifications(refresh: true);
     }
 
     if (!mounted) return;
@@ -81,7 +94,6 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
   }
 
   Future<void> _performJobSearch(String query) async {
-    final jobsProvider = context.read<SeekerJobListProvider>();
     final trimmed = query.trim();
 
     if (_selectedIndex != 1) {
@@ -89,19 +101,51 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
     }
 
     if (trimmed.isEmpty) {
-      _jobSearchController.clear();
-      await jobsProvider.clearFilters();
+      await _clearJobFilters();
       return;
     }
 
     _jobSearchController.text = trimmed;
-    await jobsProvider.searchJobs(trimmed);
+    await _loadJobsWithActiveFilters(refresh: true);
+  }
+
+  Future<void> _loadJobsWithActiveFilters({bool refresh = true}) async {
+    final jobsProvider = context.read<SeekerJobListProvider>();
+    final search = _jobSearchController.text.trim();
+    final location = _locationSearchController.text.trim();
+
+    await jobsProvider.loadJobs(
+      search: search.isEmpty ? null : search,
+      employmentType: _selectedEmploymentType,
+      location: _remoteOnly ? 'Remote' : (location.isEmpty ? null : location),
+      refresh: refresh,
+    );
+  }
+
+  Future<void> _setEmploymentTypeFilter(String? value) async {
+    setState(() => _selectedEmploymentType = value);
+    await _loadJobsWithActiveFilters(refresh: true);
+  }
+
+  Future<void> _setRemoteOnlyFilter(bool value) async {
+    setState(() => _remoteOnly = value);
+    await _loadJobsWithActiveFilters(refresh: true);
+  }
+
+  Future<void> _clearJobFilters() async {
+    setState(() {
+      _selectedEmploymentType = null;
+      _remoteOnly = false;
+    });
+    _jobSearchController.clear();
+    _locationSearchController.clear();
+    await context.read<SeekerJobListProvider>().clearFilters();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
+    return Consumer2<AuthProvider, NotificationProvider>(
+      builder: (context, authProvider, notificationProvider, _) {
         final user = authProvider.currentUser;
         final userName = user?.fullName ?? user?.username ?? 'Job Seeker';
 
@@ -119,6 +163,7 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
               greeting: 'Welcome back',
               userName: userName,
               compact: _compactHeader,
+              unreadNotificationCount: notificationProvider.unreadCount,
               onSearchTap: () => _onTabChanged(1),
               onSearchSubmitted: _performJobSearch,
               onNotificationTap: () =>
@@ -377,10 +422,7 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
         }
 
         return RefreshIndicator(
-          onRefresh: () => jobsProvider.loadJobs(
-            refresh: true,
-            search: jobsProvider.searchQuery,
-          ),
+          onRefresh: () => _loadJobsWithActiveFilters(refresh: true),
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: jobsProvider.jobs.isEmpty
@@ -401,11 +443,6 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                           decoration: InputDecoration(
                             hintText: 'Search jobs by title or keyword',
                             prefixIcon: const Icon(Icons.search),
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.north_east),
-                              onPressed: () =>
-                                  _performJobSearch(_jobSearchController.text),
-                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -413,11 +450,64 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                           onSubmitted: _performJobSearch,
                         ),
                         const SizedBox(height: 10),
+                        TextField(
+                          controller: _locationSearchController,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            hintText: 'Location (e.g. New York, Remote)',
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onSubmitted: (val) {
+                            if (val.trim().toLowerCase() == 'remote') {
+                              setState(() => _remoteOnly = true);
+                            }
+                            _loadJobsWithActiveFilters(refresh: true);
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ChoiceChip(
+                              label: const Text('All Types'),
+                              selected: _selectedEmploymentType == null,
+                              onSelected: (_) => _setEmploymentTypeFilter(null),
+                            ),
+                            ChoiceChip(
+                              label: const Text('Full-time'),
+                              selected: _selectedEmploymentType == 'full-time',
+                              onSelected: (_) =>
+                                  _setEmploymentTypeFilter('full-time'),
+                            ),
+                            ChoiceChip(
+                              label: const Text('Part-time'),
+                              selected: _selectedEmploymentType == 'part-time',
+                              onSelected: (_) =>
+                                  _setEmploymentTypeFilter('part-time'),
+                            ),
+                            ChoiceChip(
+                              label: const Text('Contract'),
+                              selected: _selectedEmploymentType == 'contract',
+                              onSelected: (_) =>
+                                  _setEmploymentTypeFilter('contract'),
+                            ),
+                            FilterChip(
+                              label: const Text('Remote Only'),
+                              selected: _remoteOnly,
+                              onSelected: _setRemoteOnlyFilter,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton.icon(
-                              onPressed: () => _performJobSearch(''),
+                              onPressed: _clearJobFilters,
                               icon: const Icon(Icons.filter_alt_off_outlined),
                               label: const Text('Clear Filters'),
                             ),
@@ -577,8 +667,25 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
                     vertical: 10,
                   ),
                   title: Text(application.jobTitle),
-                  subtitle: Text(
-                    '${application.recruiterName} • ${application.statusDisplay} • ${application.applicationAgeDisplay}',
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${application.recruiterName} • ${application.statusDisplay} • ${application.applicationAgeDisplay}',
+                      ),
+                      if (application.notes != null &&
+                          application.notes!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            'Note: ${application.notes}',
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   trailing: application.isApplied || application.isReviewing
                       ? TextButton(
@@ -597,9 +704,10 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
   }
 
   Widget _buildProfileTab() {
-    return Consumer2<AuthProvider, FileDownloadProvider>(
-      builder: (context, authProvider, downloadProvider, _) {
+    return Consumer3<AuthProvider, FileDownloadProvider, ThemeProvider>(
+      builder: (context, authProvider, downloadProvider, themeProvider, _) {
         final user = authProvider.currentUser;
+        final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -672,6 +780,17 @@ class _SeekerDashboardScreenState extends State<SeekerDashboardScreen> {
               leading: const Icon(Icons.settings_outlined),
               title: const Text('Settings'),
               onTap: () => context.push(AppRoutes.settings),
+            ),
+            SwitchListTile(
+              secondary: Icon(
+                isDarkMode
+                    ? Icons.dark_mode_outlined
+                    : Icons.light_mode_outlined,
+              ),
+              title: const Text('Dark Mode'),
+              subtitle: const Text('Applies across job seeker and recruiter'),
+              value: isDarkMode,
+              onChanged: (_) => themeProvider.toggleDarkMode(),
             ),
           ],
         );

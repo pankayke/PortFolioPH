@@ -3,6 +3,87 @@
 > Keep this file updated in real time for every non-trivial task.
 
 ## Current Task (Update)
+- Jira/Issue: System Gap Recommendations Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 1
+
+## Atomic Plan (Update)
+- [x] 1. Identify the main gap-analysis documents
+- [x] 2. Add a prioritized recommendations section
+- [x] 3. Sync the roadmap with the same priority order
+- [x] 4. Record the documentation pass in the lessons log
+
+## Evidence (Update)
+- `COMPLETE_CODEBASE_SCAN_SUMMARY.md` now includes a prioritized recommendations section above the feature inventory.
+- `PRODUCTION_UPGRADE_ROADMAP.md` now lists a clear gap-fix order so the next work cycle has a concrete sequence.
+- Validation for this pass is documentation-level; no code paths were changed.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Theme Toggle Fix for Seeker and Recruiter
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 3
+
+## Atomic Plan (Update)
+- [x] 1. Locate theme wiring and toggle entry points for both role dashboards
+- [x] 2. Remove recruiter light-theme override that blocked dark mode
+- [x] 3. Add explicit seeker dashboard theme toggle control
+- [x] 4. Validate with analyzer and Flutter tests
+
+## Evidence (Update)
+- `RecruiterDashboardScreen` now uses app-level theme colors (`colorScheme.surface` / `surfaceContainer`) instead of a forced light `Theme` wrapper.
+- Recruiter popup toggle remains wired to `ThemeProvider.toggleDarkMode()` and now visibly affects dashboard shell colors.
+- `SeekerDashboardScreen` profile tab now exposes a `Dark Mode` switch tied to `ThemeProvider.toggleDarkMode()`.
+- Validation: `flutter analyze` on edited dashboard files and `flutter test --no-pub` completed successfully.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Seeker Dashboard Job Filter Feature
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Scan seeker dashboard for missing feature controls
+- [x] 2. Add employment-type and remote-only filters in jobs tab
+- [x] 3. Wire filters into provider-backed job queries
+- [x] 4. Validate analyzer and Flutter tests
+
+## Evidence (Update)
+- `SeekerJobListProvider` now includes explicit `filterByEmploymentType` and `filterByExperienceLevel` helpers.
+- `SeekerDashboardScreen` now supports in-tab quick filters: All Types, Full-time, Part-time, Contract, and Remote Only.
+- Search + filters now execute as a combined query path via `_loadJobsWithActiveFilters()`.
+- Validation: `flutter analyze` passed for edited files and full `flutter test --no-pub` passed (41 tests).
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: System + Codebase Hardening Sweep
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 4
+
+## Atomic Plan (Update)
+- [x] 1. Harden diagnostic scripts with local-only and explicit mutation flags
+- [x] 2. Fix API route drift in diagnostics (auth logout path)
+- [x] 3. Add non-development API URL guardrails in Flutter configs
+- [x] 4. Re-run Laravel and Flutter test suites
+
+## Evidence (Update)
+- `portfoliophhadmin/diagnostic_test.php` now blocks non-CLI, non-localhost, and missing `--allow-mutations` runs.
+- `portfoliophhadmin/run_validation_tests.php` now blocks non-CLI, non-localhost, and missing `--allow-mutations` runs.
+- Route check corrected from `/api/logout` to `/api/auth/logout` in diagnostics.
+- `lib/core/config/app_config.dart` validates that staging/production flavors cannot use localhost or non-https API URLs.
+- `mobile-jobs/lib/core/config/app_config.dart` now resolves environment-aware base URL and enforces release-safe URL validation.
+- Validation: Laravel feature suite and Flutter tests passed after hardening changes.
+- Status: Completed.
+
+## Current Task (Update)
 - Jira/Issue: Repo Context + Optimization Pass
 - Owner: GitHub Copilot + Mark
 - Start: 2026-04-13

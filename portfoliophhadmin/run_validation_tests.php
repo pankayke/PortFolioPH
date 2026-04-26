@@ -6,9 +6,31 @@
 // Phase 1: Real User Simulation Tests
 // ============================================================
 
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit("This script can only run from CLI.\n");
+}
+
+$baseUrl = rtrim((string) (getenv('DIAGNOSTIC_API_BASE_URL') ?: 'http://localhost:8000/api'), '/');
+$host = parse_url($baseUrl, PHP_URL_HOST);
+$env = strtolower((string) getenv('APP_ENV'));
+$allowMutations = in_array('--allow-mutations', $argv ?? [], true);
+
+if (in_array($env, ['production', 'prod', 'staging'], true)) {
+    exit("Blocked: runtime validation is disabled when APP_ENV={$env}.\n");
+}
+
+if (! in_array($host, ['localhost', '127.0.0.1'], true)) {
+    exit("Blocked: DIAGNOSTIC_API_BASE_URL must target localhost/127.0.0.1.\n");
+}
+
+if (! $allowMutations) {
+    exit("Blocked: this suite creates and mutates records. Re-run with --allow-mutations.\n");
+}
+
 class RuntimeValidator
 {
-    private $baseUrl = 'http://localhost:8000/api';
+    private $baseUrl;
 
     private $bearerToken = null;
 
@@ -16,8 +38,10 @@ class RuntimeValidator
 
     private $recruiter;
 
-    public function __construct()
+    public function __construct(string $baseUrl)
     {
+        $this->baseUrl = $baseUrl;
+
         $timestamp = time();
         $this->testUser = [
             'name' => 'Test User '.$timestamp,
@@ -664,5 +688,5 @@ class RuntimeValidator
 }
 
 // Run the validator
-$validator = new RuntimeValidator;
+$validator = new RuntimeValidator($baseUrl);
 $validator->runAllTests();

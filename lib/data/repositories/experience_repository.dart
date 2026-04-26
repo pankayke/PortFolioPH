@@ -3,7 +3,6 @@
 // API-First Repository: Work experience records stored on backend only
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/experience_model.dart';
 
@@ -14,8 +13,8 @@ class ExperienceRepository {
   static final Map<int, List<ExperienceModel>> _localByUser =
       <int, List<ExperienceModel>>{};
 
-  ExperienceRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  ExperienceRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(ExperienceModel experience) async {
     try {

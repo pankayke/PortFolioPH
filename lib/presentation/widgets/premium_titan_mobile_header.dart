@@ -14,7 +14,7 @@ class PremiumTitanMobileHeader extends StatefulWidget
   final VoidCallback? onNotificationTap;
   final VoidCallback? onProfileTap;
   final VoidCallback? onLogoutTap;
-  final bool hasUnreadNotifications;
+  final int unreadNotificationCount;
 
   const PremiumTitanMobileHeader({
     super.key,
@@ -27,7 +27,7 @@ class PremiumTitanMobileHeader extends StatefulWidget
     this.onNotificationTap,
     this.onProfileTap,
     this.onLogoutTap,
-    this.hasUnreadNotifications = true,
+    this.unreadNotificationCount = 0,
   });
 
   @override
@@ -141,16 +141,22 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                               svg: _bellSvg,
                               onTap: widget.onNotificationTap,
                             ),
-                            if (widget.hasUnreadNotifications)
+                            if (widget.unreadNotificationCount > 0)
                               Positioned(
                                 right: -1,
                                 top: -1,
                                 child: Container(
-                                  width: 9,
-                                  height: 9,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 1,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF22C55E),
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(999),
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(
@@ -160,6 +166,19 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                                         spreadRadius: 1,
                                       ),
                                     ],
+                                  ),
+                                  child: Text(
+                                    widget.unreadNotificationCount > 99
+                                        ? '99+'
+                                        : widget.unreadNotificationCount
+                                              .toString(),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.1,
+                                    ),
                                   ),
                                 ),
                               ),

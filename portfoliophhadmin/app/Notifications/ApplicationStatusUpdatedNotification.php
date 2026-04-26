@@ -10,9 +10,7 @@ class ApplicationStatusUpdatedNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(private readonly Application $application)
-    {
-    }
+    public function __construct(private readonly Application $application) {}
 
     /**
      * Get the notification's delivery channels.

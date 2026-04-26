@@ -1,4 +1,3 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/student_skills_model.dart';
 
@@ -9,8 +8,8 @@ import 'package:portfolioph/data/models/student_skills_model.dart';
 class StudentSkillsRepository {
   final ApiService _apiService;
 
-  StudentSkillsRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  StudentSkillsRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   /// Fetch all skills for a specific student
   Future<List<StudentSkillsModel>> findByStudentId(int studentId) async {

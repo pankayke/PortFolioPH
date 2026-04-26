@@ -17,8 +17,8 @@ class UserProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  UserProvider({UserRepository? userRepository})
-    : _userRepository = userRepository ?? UserRepository();
+  UserProvider({required UserRepository userRepository})
+    : _userRepository = userRepository;
 
   // ── Getters ──────────────────────────────────────────────────────────────────
   UserModel? get currentUser => _currentUser;

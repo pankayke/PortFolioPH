@@ -2,6 +2,50 @@
 
 > Log every correction, failed attempt, or preventable defect.
 
+- Date: 2026-04-24
+- Task/Jira: System Gap Recommendations Pass
+- Mistake pattern (exact): Gap lists were documented, but the repo did not state the recommended execution order for closing them.
+- Root cause: The analysis docs enumerated issues without turning them into a sequenced action plan.
+- Prevention rules (min 3):
+  1. Pair every gap list with an explicit priority order and rationale.
+  2. Separate release blockers from growth features so planning cannot blur urgency.
+  3. Keep roadmap docs aligned when a master analysis doc changes its recommendations.
+- Validation on next similar task: Confirm the main scan summary and roadmap agree on the same priority order.
+- Outcome: The system now has a clear recommended sequence for closing its gaps.
+
+- Date: 2026-04-24
+- Task/Jira: Theme Toggle Fix for Seeker and Recruiter
+- Mistake pattern (exact): A role-specific dashboard wrapped itself in a forced light `Theme`, making global theme toggles appear broken.
+- Root cause: Local visual customization overrode `MaterialApp.themeMode` instead of deriving from shared `Theme.of(context).colorScheme`.
+- Prevention rules (min 3):
+  1. Never hard-pin role dashboards to light/dark `ThemeData` when global theme mode is already managed centrally.
+  2. For any role-specific shell, use `Theme.of(context)` tokens instead of hardcoded light colors for scaffold/app bar/navigation surfaces.
+  3. Ensure each major role flow has an obvious theme toggle touchpoint and verify it updates the current screen immediately.
+- Validation on next similar task: Run analyzer on affected role screens and perform role-by-role toggle smoke tests.
+- Outcome: Theme toggle now works visibly in both seeker and recruiter dashboards.
+
+- Date: 2026-04-24
+- Task/Jira: Seeker Dashboard Job Filter Feature
+- Mistake pattern (exact): The jobs tab exposed search but omitted practical filter controls even though provider query support already existed.
+- Root cause: UI iteration progressed faster than feature parity checks against provider capabilities.
+- Prevention rules (min 3):
+  1. For each list screen, verify visible controls map to all high-value query parameters supported by the provider.
+  2. Keep one unified query execution method so search and filters cannot diverge.
+  3. Always include a one-tap clear-filters action once multiple filters are present.
+- Validation on next similar task: Run analyzer on changed UI/provider files and execute full Flutter tests after adding new controls.
+- Outcome: Jobs tab now supports fast employment and remote filtering with stable test coverage.
+
+- Date: 2026-04-24
+- Task/Jira: System + Codebase Hardening Sweep
+- Mistake pattern (exact): Diagnostic scripts in repo root could execute mutating API flows without explicit safety gates, and one route check used a stale endpoint.
+- Root cause: Internal tooling scripts evolved outside the stricter guardrails used in automated tests and route contracts.
+- Prevention rules (min 3):
+  1. All mutating diagnostic scripts must require an explicit runtime flag such as `--allow-mutations`.
+  2. Diagnostic base URLs must be limited to localhost unless explicitly reviewed for another environment.
+  3. Include route-contract verification in script updates whenever API routes change.
+- Validation on next similar task: Run diagnostics with and without safety flags, confirm expected blocking behavior, and confirm script routes match `routes/api.php`.
+- Outcome: Safer script execution defaults and corrected API route checks.
+
 - Date: 2026-04-13
 - Task/Jira: Repo Context + Optimization Pass
 - Mistake pattern (exact): Several high-traffic pages were still loading broad relations or relying on random factory roles in tests.

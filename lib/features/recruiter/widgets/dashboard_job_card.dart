@@ -101,7 +101,12 @@ class DashboardJobCard extends StatelessWidget {
                 child: FilledButton.tonalIcon(
                   onPressed:
                       onEdit ??
-                      () => context.push('/recruiter/jobs/${job.id}/edit'),
+                      () => context.push(
+                        AppRoutes.recruiterJobEdit.replaceFirst(
+                          ':id',
+                          job.id.toString(),
+                        ),
+                      ),
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Edit'),
                 ),

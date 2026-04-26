@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Application;
 use App\Models\Job;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,6 +76,8 @@ class AdminWebControllerTest extends TestCase
 
     public function test_admin_audit_page_loads_with_recent_actions_and_metrics(): void
     {
+        $this->actingAs($this->admin);
+
         $recruiter = User::factory()->create(['role' => 'recruiter', 'active' => true]);
         $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
         $seeker = User::factory()->create(['role' => 'job_seeker', 'active' => true]);
@@ -84,15 +87,12 @@ class AdminWebControllerTest extends TestCase
             'user_id' => $seeker->id,
         ]);
 
-        $response = $this->actingAs($this->admin)->get(route('admin.audit'));
+        $response = $this->get(route('admin.audit'));
 
         $response->assertOk();
-        $response->assertViewHasAll(['recentActions', 'activeSessions', 'serverLoad']);
-        $response->assertViewHas('recentActions', function (array $recentActions): bool {
-            return isset($recentActions['User edits'], $recentActions['Job changes'], $recentActions['Application updates'])
-                && $recentActions['Job changes']->first()?->relationLoaded('recruiter')
-                && $recentActions['Application updates']->first()?->relationLoaded('job')
-                && $recentActions['Application updates']->first()?->relationLoaded('user');
+        $response->assertViewHasAll(['auditLogs', 'activeSessions', 'serverLoad']);
+        $response->assertViewHas('auditLogs', function ($auditLogs): bool {
+            return $auditLogs->first() !== null && $auditLogs->first()->relationLoaded('user');
         });
     }
 
@@ -187,12 +187,12 @@ class AdminWebControllerTest extends TestCase
         $response->assertRedirect(route('admin.settings'));
         $response->assertSessionHas('success', 'Admin command center settings updated.');
 
-        $this->assertTrue((bool) session('admin_settings.maintenance_mode'));
-        $this->assertTrue((bool) session('admin_settings.new_user_alerts'));
-        $this->assertFalse((bool) session('admin_settings.moderation_alerts'));
-        $this->assertSame('weekly', session('admin_settings.digest_frequency'));
-        $this->assertSame('compact', session('admin_settings.dashboard_density'));
-        $this->assertSame(45, session('admin_settings.session_timeout'));
+        $this->assertTrue((bool) Setting::get('maintenance_mode'));
+        $this->assertTrue((bool) Setting::get('new_user_alerts'));
+        $this->assertFalse((bool) Setting::get('moderation_alerts'));
+        $this->assertSame('weekly', Setting::get('digest_frequency'));
+        $this->assertSame('compact', Setting::get('dashboard_density'));
+        $this->assertSame(45, Setting::get('session_timeout'));
     }
 
     public function test_applications_page_contains_aggregated_stats(): void

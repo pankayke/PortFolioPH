@@ -1,0 +1,864 @@
+00:00 +0: loading C:/Users/USER/portfolioph/test/core/services/api_service_smoke_test.dart
+00:00 +0: C:/Users/USER/portfolioph/test/core/services/api_service_smoke_test.dart: token lifecycle methods work end-to-end
+✅ SUCCESS: ApiService initialized with http://localhost:8000/api
+00:00 +1: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should create job entity with required fields
+00:00 +2: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should have equality based on all properties
+00:00 +3: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should differ when properties change
+00:00 +4: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should determine if job is open
+00:00 +5: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should determine if job is accepting applications
+00:00 +6: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should format salary range correctly
+00:00 +7: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should show negotiable for missing salary
+00:00 +8: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should handle partial salary data
+00:00 +9: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should support different job types
+00:00 +10: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should parse JobType from string
+00:00 +11: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should support different job statuses
+00:00 +12: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should parse JobStatus from string
+00:00 +13: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should track application count
+00:00 +14: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should include recruiter information
+00:00 +15: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should include required skills list
+00:00 +16: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should handle empty skills list
+00:00 +17: C:/Users/USER/portfolioph/test/domain/entities/job_entity_test.dart: JobEntity should track timestamps
+00:00 +18: C:/Users/USER/portfolioph/test/features/models/recruiter_models_parsing_test.dart: Recruiter Job.fromJson parses salary and counters from numeric strings
+00:00 +19: C:/Users/USER/portfolioph/test/features/models/recruiter_models_parsing_test.dart: Recruiter Job.fromJson falls back to application_count when applications_count is missing
+00:00 +20: C:/Users/USER/portfolioph/test/features/models/recruiter_models_parsing_test.dart: RecruiterApplication.fromJson parses ids from mixed numeric formats and nested user data
+00:01 +21: C:/Users/USER/portfolioph/test/features/models/seeker_models_parsing_test.dart: SeekerJob.fromJson normalizes snake_case payload and numeric strings
+00:01 +22: C:/Users/USER/portfolioph/test/features/models/seeker_models_parsing_test.dart: SeekerJob.fromJson supports camelCase payload fields
+00:01 +23: C:/Users/USER/portfolioph/test/features/models/seeker_models_parsing_test.dart: SeekerApplication.fromJson normalizes mixed naming and parses numeric strings
+00:01 +24: C:/Users/USER/portfolioph/test/features/seeker/repositories/seeker_repository_contract_test.dart: SeekerRepositoryImpl getJobs maps API list response to model list
+✅ SUCCESS: ApiService initialized with http://localhost:8000/api
+00:01 +25: C:/Users/USER/portfolioph/test/features/seeker/repositories/seeker_repository_contract_test.dart: SeekerRepositoryImpl getJobs propagates unauthorized errors
+✅ SUCCESS: ApiService initialized with http://localhost:8000/api
+00:01 +26: C:/Users/USER/portfolioph/test/features/seeker/repositories/seeker_repository_contract_test.dart: SeekerApplicationRepositoryImpl getApplications maps API list response to model list
+✅ SUCCESS: ApiService initialized with http://localhost:8000/api
+00:01 +27: C:/Users/USER/portfolioph/test/features/seeker/repositories/seeker_repository_contract_test.dart: SeekerApplicationRepositoryImpl applyForJob propagates validation errors
+✅ SUCCESS: ApiService initialized with http://localhost:8000/api
+00:01 +28: C:/Users/USER/portfolioph/test/features/seeker/repositories/seeker_repository_contract_test.dart: SeekerApplicationRepositoryImpl withdrawApplication propagates server errors
+✅ SUCCESS: ApiService initialized with http://localhost:8000/api
+00:02 +29: C:/Users/USER/portfolioph/test/integration_auth_test.dart: Authentication Integration Markers register flow test marker
+00:02 +30: C:/Users/USER/portfolioph/test/integration_auth_test.dart: Authentication Integration Markers login flow test marker
+00:02 +31: C:/Users/USER/portfolioph/test/integration_auth_test.dart: Authentication Integration Markers session restore auth/me test marker
+00:02 +32: C:/Users/USER/portfolioph/test/integration_auth_test.dart: Authentication Integration Markers logout flow test marker
+00:02 +33: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService startPolling calls callback immediately
+[PollingService] Started polling: test_poll (0s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:02 +34: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService startPolling calls callback periodically
+[PollingService] Started polling: test_poll (0s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:03 +35: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService stopPolling stops the task
+[PollingService] Started polling: test_poll (0s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:03 +36: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService isPolling returns correct state
+[PollingService] Started polling: test_poll (1s)
+[PollingService] Stopped polling: test_poll
+[PollingService] Stopped all polling tasks
+00:03 +37: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService stopAll stops all tasks
+[PollingService] Started polling: poll_1 (0s)
+[PollingService] Started polling: poll_2 (0s)
+[PollingService] Stopped polling: poll_1
+[PollingService] Stopped polling: poll_2
+[PollingService] Stopped all polling tasks
+[PollingService] Stopped all polling tasks
+00:03 +38: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService handles failed callbacks gracefully
+[PollingService] Started polling: failing_poll (0s)
+[PollingService] Poll failed (1): failing_poll | Exception: Test error
+[PollingService] Poll failed (2): failing_poll | Exception: Test error
+[PollingService] Poll failed (3): failing_poll | Exception: Test error
+[PollingService] Max failures reached. Stopping: failing_poll
+[PollingService] Stopped polling: failing_poll
+[PollingService] Stopped all polling tasks
+00:03 +39: C:/Users/USER/portfolioph/test/services/polling_service_test.dart: PollingService activeTaskCount reflects running tasks
+[PollingService] Started polling: poll_1 (1s)
+[PollingService] Started polling: poll_2 (1s)
+[PollingService] Stopped polling: poll_1
+[PollingService] Stopped polling: poll_2
+[PollingService] Stopped all polling tasks
+00:12 +40 -1: loading C:/Users/USER/portfolioph/test/widget_test.dart [E]
+  Failed to load "C:/Users/USER/portfolioph/test/widget_test.dart":
+  Compilation failed for testPath=C:/Users/USER/portfolioph/test/widget_test.dart: lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:29:78: Error: Can't find '}' to match '{'.
+  class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
+                                                                               ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:315:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterJobsTab extends StatefulWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:315:25: Error: Expected a class member, but got 'extends'.
+  class _RecruiterJobsTab extends StatefulWidget {
+                          ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:315:33: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterJobsTab extends StatefulWidget {
+                                  ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:322:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:322:30: Error: Expected a class member, but got 'extends'.
+  class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
+                               ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:322:38: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
+                                       ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:423:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterAtsTab extends StatefulWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:423:24: Error: Expected a class member, but got 'extends'.
+  class _RecruiterAtsTab extends StatefulWidget {
+                         ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:423:32: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterAtsTab extends StatefulWidget {
+                                 ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:430:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:430:29: Error: Expected a class member, but got 'extends'.
+  class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
+                              ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:430:37: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
+                                      ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:531:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterJobCreateTab extends StatefulWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:531:30: Error: Expected a class member, but got 'extends'.
+  class _RecruiterJobCreateTab extends StatefulWidget {
+                               ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:531:38: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterJobCreateTab extends StatefulWidget {
+                                       ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:540:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:540:35: Error: Expected a class member, but got 'extends'.
+  class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
+                                    ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:540:43: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
+                                            ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:35: Error: Expected a class member, but got 'extends'.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                    ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:43: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                            ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:904:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _JobCard extends StatelessWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:904:16: Error: Expected a class member, but got 'extends'.
+  class _JobCard extends StatelessWidget {
+                 ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:904:24: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _JobCard extends StatelessWidget {
+                         ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:982:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _ApplicantCard extends StatelessWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:982:22: Error: Expected a class member, but got 'extends'.
+  class _ApplicantCard extends StatelessWidget {
+                       ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:982:30: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _ApplicantCard extends StatelessWidget {
+                               ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1106:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _GlassCard extends StatelessWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1106:18: Error: Expected a class member, but got 'extends'.
+  class _GlassCard extends StatelessWidget {
+                   ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1106:26: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _GlassCard extends StatelessWidget {
+                           ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1138:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _StatusFilterChip extends StatelessWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1138:25: Error: Expected a class member, but got 'extends'.
+  class _StatusFilterChip extends StatelessWidget {
+                          ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1138:33: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _StatusFilterChip extends StatelessWidget {
+                                  ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1166:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _StatTile extends StatelessWidget {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1166:17: Error: Expected a class member, but got 'extends'.
+  class _StatTile extends StatelessWidget {
+                  ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1166:25: Error: A method declaration needs an explicit list of parameters.
+  Try adding a parameter list to the method declaration.
+  class _StatTile extends StatelessWidget {
+                          ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1211:1: Error: Classes can't be declared inside other classes.
+  Try moving the class to the top-level.
+  class _RecruiterTabItem {
+  ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:423:32: Error: 'StatefulWidget' is already declared in this scope.
+  class _RecruiterAtsTab extends StatefulWidget {
+                                 ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:315:33: Context: Previous declaration of 'StatefulWidget'.
+  class _RecruiterJobsTab extends StatefulWidget {
+                                  ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:531:38: Error: 'StatefulWidget' is already declared in this scope.
+  class _RecruiterJobCreateTab extends StatefulWidget {
+                                       ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:315:33: Context: Previous declaration of 'StatefulWidget'.
+  class _RecruiterJobsTab extends StatefulWidget {
+                                  ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:430:37: Error: 'State' is already declared in this scope.
+  class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
+                                      ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:322:38: Context: Previous declaration of 'State'.
+  class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
+                                       ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:540:43: Error: 'State' is already declared in this scope.
+  class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
+                                            ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:322:38: Context: Previous declaration of 'State'.
+  class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
+                                       ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:904:24: Error: 'StatelessWidget' is already declared in this scope.
+  class _JobCard extends StatelessWidget {
+                         ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:43: Context: Previous declaration of 'StatelessWidget'.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                            ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:982:30: Error: 'StatelessWidget' is already declared in this scope.
+  class _ApplicantCard extends StatelessWidget {
+                               ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:43: Context: Previous declaration of 'StatelessWidget'.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                            ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1106:26: Error: 'StatelessWidget' is already declared in this scope.
+  class _GlassCard extends StatelessWidget {
+                           ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:43: Context: Previous declaration of 'StatelessWidget'.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                            ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1138:33: Error: 'StatelessWidget' is already declared in this scope.
+  class _StatusFilterChip extends StatelessWidget {
+                                  ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:43: Context: Previous declaration of 'StatelessWidget'.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                            ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1166:25: Error: 'StatelessWidget' is already declared in this scope.
+  class _StatTile extends StatelessWidget {
+                          ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:754:43: Context: Previous declaration of 'StatelessWidget'.
+  class _RecruiterCompanyProfileTab extends StatelessWidget {
+                                            ^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:30:21: Error: Type '_RecruiterTabItem' not found.
+    static const List<_RecruiterTabItem> _tabs = [
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:31:5: Error: Method not found: '_RecruiterTabItem'.
+      _RecruiterTabItem(
+      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:36:5: Error: Method not found: '_RecruiterTabItem'.
+      _RecruiterTabItem(
+      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:41:5: Error: Method not found: '_RecruiterTabItem'.
+      _RecruiterTabItem(
+      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:46:5: Error: Method not found: '_RecruiterTabItem'.
+      _RecruiterTabItem(
+      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:51:5: Error: Method not found: '_RecruiterTabItem'.
+      _RecruiterTabItem(
+      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:30:21: Error: '_RecruiterTabItem' isn't a type.
+    static const List<_RecruiterTabItem> _tabs = [
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:249:23: Error: Not a constant expression.
+                  const _RecruiterJobsTab(),
+                        ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:252:23: Error: Not a constant expression.
+                  const _RecruiterCompanyProfileTab(),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:301:7: Error: Expected ';' after this.
+        ),
+        ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:301:8: Error: Expected an identifier, but got ','.
+  Try inserting an identifier before ','.
+        ),
+         ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:301:8: Error: Unexpected token ';'.
+        ),
+         ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:302:5: Error: Expected an identifier, but got ')'.
+  Try inserting an identifier before ')'.
+      );
+      ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:301:8: Error: Expected ';' after this.
+        ),
+         ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:302:5: Error: Unexpected token ';'.
+      );
+      ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:171:29: Error: Local variable '_goToTab' can't be referenced before it is declared.
+                              _goToTab(4);
+                              ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:304:8: Context: This is the declaration of the variable '_goToTab'.
+    void _goToTab(int index) {
+         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:248:66: Error: Local variable '_goToTab' can't be referenced before it is declared.
+                  RecruiterDashboardOverviewTab(onJumpToAts: () => _goToTab(2)),
+                                                                   ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:304:8: Context: This is the declaration of the variable '_goToTab'.
+    void _goToTab(int index) {
+         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:251:56: Error: Local variable '_goToTab' can't be referenced before it is declared.
+                  _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+                                                         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:304:8: Context: This is the declaration of the variable '_goToTab'.
+    void _goToTab(int index) {
+         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:273:38: Error: Local variable '_goToTab' can't be referenced before it is declared.
+                      onPressed: () => _goToTab(3),
+                                       ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:304:8: Context: This is the declaration of the variable '_goToTab'.
+    void _goToTab(int index) {
+         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:287:40: Error: Local variable '_goToTab' can't be referenced before it is declared.
+                  onDestinationSelected: _goToTab,
+                                         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:304:8: Context: This is the declaration of the variable '_goToTab'.
+    void _goToTab(int index) {
+         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:174:29: Error: Local variable '_logout' can't be referenced before it is declared.
+                              _logout(context);
+                              ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:308:16: Context: This is the declaration of the variable '_logout'.
+    Future<void> _logout(BuildContext context) async {
+                 ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:171:29: Error: The method '_goToTab' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_goToTab'.
+                              _goToTab(4);
+                              ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:174:29: Error: The method '_logout' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_logout'.
+                              _logout(context);
+                              ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:248:66: Error: The method '_goToTab' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_goToTab'.
+                  RecruiterDashboardOverviewTab(onJumpToAts: () => _goToTab(2)),
+                                                                   ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:251:17: Error: The method '_RecruiterJobCreateTab' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_RecruiterJobCreateTab'.
+                  _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:251:56: Error: The method '_goToTab' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_goToTab'.
+                  _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+                                                         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:273:38: Error: The method '_goToTab' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_goToTab'.
+                      onPressed: () => _goToTab(3),
+                                       ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:282:20: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+              child: _GlassCard(
+                     ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:287:40: Error: The getter '_goToTab' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named '_goToTab'.
+                  onDestinationSelected: _goToTab,
+                                         ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:291:40: Error: The getter 'icon' isn't defined for the type 'Object?'.
+   - 'Object' is from 'dart:core'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'icon'.
+                          icon: Icon(tab.icon),
+                                         ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:292:48: Error: The getter 'activeIcon' isn't defined for the type 'Object?'.
+   - 'Object' is from 'dart:core'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'activeIcon'.
+                          selectedIcon: Icon(tab.activeIcon),
+                                                 ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:293:36: Error: The getter 'label' isn't defined for the type 'Object?'.
+   - 'Object' is from 'dart:core'.
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'label'.
+                          label: tab.label,
+                                     ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:296:22: Error: The argument type 'List<dynamic>' can't be assigned to the parameter type 'List<Widget>'.
+   - 'List' is from 'dart:core'.
+   - 'Widget' is from 'package:flutter/src/widgets/framework.dart' ('/C:/src/flutter/packages/flutter/lib/src/widgets/framework.dart').
+                      .toList(growable: false),
+                       ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:316:9: Error: Not a constant expression.
+    const _RecruiterJobsTab();
+          ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:319:9: Error: '_RecruiterJobsTab' isn't a type.
+    State<_RecruiterJobsTab> createState() => _RecruiterJobsTabState();
+          ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:319:45: Error: The method '_RecruiterJobsTabState' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_RecruiterJobsTabState'.
+    State<_RecruiterJobsTab> createState() => _RecruiterJobsTabState();
+                                              ^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:409:23: Error: Not a constant expression.
+                  const _GlassCard(
+                        ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:338:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:347:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:356:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:365:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:377:15: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+                _GlassCard(
+                ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:414:45: Error: The method '_JobCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_JobCard'.
+                ...provider.jobs.map((job) => _JobCard(job: job)),
+                                              ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:424:9: Error: Not a constant expression.
+    const _RecruiterAtsTab();
+          ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:427:9: Error: '_RecruiterAtsTab' isn't a type.
+    State<_RecruiterAtsTab> createState() => _RecruiterAtsTabState();
+          ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:427:44: Error: The method '_RecruiterAtsTabState' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_RecruiterAtsTabState'.
+    State<_RecruiterAtsTab> createState() => _RecruiterAtsTabState();
+                                             ^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:517:23: Error: Not a constant expression.
+                  const _GlassCard(
+                        ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:446:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:455:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:464:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:473:21: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                      _StatusFilterChip(
+                      ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:485:15: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+                _GlassCard(
+                ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:522:53: Error: The method '_ApplicantCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_ApplicantCard'.
+                ...provider.applications.map((app) => _ApplicantCard(app: app)),
+                                                      ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:534:42: Error: Expected ',' before this.
+    const _RecruiterJobCreateTab({required this.onPosted});
+                                           ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:534:9: Error: Not a constant expression.
+    const _RecruiterJobCreateTab({required this.onPosted});
+          ^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:537:9: Error: '_RecruiterJobCreateTab' isn't a type.
+    State<_RecruiterJobCreateTab> createState() => _RecruiterJobCreateTabState();
+          ^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:537:50: Error: The method '_RecruiterJobCreateTabState' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_RecruiterJobCreateTabState'.
+    State<_RecruiterJobCreateTab> createState() => _RecruiterJobCreateTabState();
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:592:22: Error: Local variable '_buildStepContent' can't be referenced before it is declared.
+                child: _buildStepContent(),
+                       ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:614:10: Context: This is the declaration of the variable '_buildStepContent'.
+    Widget _buildStepContent() {
+           ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:623:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Job title'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:632:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Description'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:640:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Location'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:654:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Job type'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:667:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Required skills (comma-separated)'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:679:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Salary minimum'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:685:27: Error: Local variable '_inputDecoration' can't be referenced before it is declared.
+                decoration: _inputDecoration('Salary maximum'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:697:19: Context: This is the declaration of the variable '_inputDecoration'.
+    InputDecoration _inputDecoration(String label) {
+                    ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:600:47: Error: Local variable '_submit' can't be referenced before it is declared.
+              onPressed: _isSubmitting ? null : _submit,
+                                                ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:715:16: Context: This is the declaration of the variable '_submit'.
+    Future<void> _submit() async {
+                 ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:577:24: Error: The method '_StatusFilterChip' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatusFilterChip'.
+                  child: _StatusFilterChip(
+                         ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:587:9: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+          _GlassCard(
+          ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:592:22: Error: The method '_buildStepContent' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_buildStepContent'.
+                child: _buildStepContent(),
+                       ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:600:47: Error: The getter '_submit' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named '_submit'.
+              onPressed: _isSubmitting ? null : _submit,
+                                                ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:623:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Job title'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:632:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Description'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:640:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Location'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:654:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Job type'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:667:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Required skills (comma-separated)'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:679:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Salary minimum'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:685:27: Error: The method '_inputDecoration' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_inputDecoration'.
+                decoration: _inputDecoration('Salary maximum'),
+                            ^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:742:14: Error: The method 'onPosted' isn't defined for the type 'RecruiterDashboardScreen'.
+   - 'RecruiterDashboardScreen' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named 'onPosted'.
+        widget.onPosted();
+               ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:755:9: Error: Not a constant expression.
+    const _RecruiterCompanyProfileTab();
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:769:13: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+              _GlassCard(
+              ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:817:13: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+              _GlassCard(
+              ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:841:13: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+              _GlassCard(
+              ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:869:32: Error: The method '_StatTile' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatTile'.
+                          child: _StatTile(
+                                 ^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:878:32: Error: The method '_StatTile' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_StatTile'.
+                          child: _StatTile(
+                                 ^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:907:28: Error: Expected ',' before this.
+    const _JobCard({required this.job});
+                             ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:907:9: Error: Not a constant expression.
+    const _JobCard({required this.job});
+          ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:914:14: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+        child: _GlassCard(
+               ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:923:21: Error: Final variable 'job' must be assigned before it can be used.
+                      job.title,
+                      ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:930:26: Error: Final variable 'job' must be assigned before it can be used.
+                    label: job.status.toUpperCase(),
+                           ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:931:30: Error: Final variable 'job' must be assigned before it can be used.
+                    glowColor: job.isClosed
+                               ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:939:18: Error: Final variable 'job' must be assigned before it can be used.
+                '${job.location} • ${job.salaryDisplay}',
+                   ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:939:36: Error: Final variable 'job' must be assigned before it can be used.
+                '${job.location} • ${job.salaryDisplay}',
+                                     ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:946:45: Error: Final variable 'job' must be assigned before it can be used.
+                  RecruiterGlowChip(label: '${job.applicationCount} applicants'),
+                                              ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:947:21: Error: Final variable 'job' must be assigned before it can be used.
+                  if (job.isDeadlinePassed)
+                      ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:959:55: Error: Final variable 'job' must be assigned before it can be used.
+                        context.push('/recruiter/jobs/${job.id}/edit'),
+                                                        ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:964:54: Error: Final variable 'job' must be assigned before it can be used.
+                    onPressed: () => provider.closeJob(job.id),
+                                                       ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:969:55: Error: Final variable 'job' must be assigned before it can be used.
+                    onPressed: () => provider.deleteJob(job.id),
+                                                        ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:985:34: Error: Expected ',' before this.
+    const _ApplicantCard({required this.app});
+                                   ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:985:9: Error: Not a constant expression.
+    const _ApplicantCard({required this.app});
+          ^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1046:32: Error: Local variable '_showQuickActions' can't be referenced before it is declared.
+                onPressed: () => _showQuickActions(context),
+                                 ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1055:16: Context: This is the declaration of the variable '_showQuickActions'.
+    Future<void> _showQuickActions(BuildContext context) async {
+                 ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1076:21: Error: Local variable '_quickAction' can't be referenced before it is declared.
+                      _quickAction(context, 'Shortlist', () {
+                      ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1095:10: Context: This is the declaration of the variable '_quickAction'.
+    Widget _quickAction(BuildContext context, String label, VoidCallback onTap) {
+           ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1079:21: Error: Local variable '_quickAction' can't be referenced before it is declared.
+                      _quickAction(context, 'Reject', () {
+                      ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1095:10: Context: This is the declaration of the variable '_quickAction'.
+    Widget _quickAction(BuildContext context, String label, VoidCallback onTap) {
+           ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1082:21: Error: Local variable '_quickAction' can't be referenced before it is declared.
+                      _quickAction(context, 'Hire', () {
+                      ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1095:10: Context: This is the declaration of the variable '_quickAction'.
+    Widget _quickAction(BuildContext context, String label, VoidCallback onTap) {
+           ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:991:14: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+        child: _GlassCard(
+               ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1002:21: Error: Final variable 'app' must be assigned before it can be used.
+                      app.applicantName.isNotEmpty
+                      ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1003:27: Error: Final variable 'app' must be assigned before it can be used.
+                          ? app.applicantName[0].toUpperCase()
+                            ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1017:25: Error: Final variable 'app' must be assigned before it can be used.
+                          app.applicantName,
+                          ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1023:25: Error: Final variable 'app' must be assigned before it can be used.
+                          app.applicantEmail,
+                          ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1036:42: Error: Final variable 'app' must be assigned before it can be used.
+                  RecruiterGlowChip(label: app.statusDisplay),
+                                           ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1037:21: Error: Final variable 'app' must be assigned before it can be used.
+                  if (app.applicantLocation.isNotEmpty)
+                      ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1039:28: Error: Final variable 'app' must be assigned before it can be used.
+                      label: app.applicantLocation,
+                             ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1046:32: Error: The method '_showQuickActions' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_showQuickActions'.
+                onPressed: () => _showQuickActions(context),
+                                 ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1068:19: Error: Final variable 'app' must be assigned before it can be used.
+                    app.applicantName,
+                    ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1076:21: Error: The method '_quickAction' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_quickAction'.
+                      _quickAction(context, 'Shortlist', () {
+                      ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1077:56: Error: Final variable 'app' must be assigned before it can be used.
+                        provider.updateApplicationStatus(app.id, 'shortlisted');
+                                                         ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1079:21: Error: The method '_quickAction' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_quickAction'.
+                      _quickAction(context, 'Reject', () {
+                      ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1080:56: Error: Final variable 'app' must be assigned before it can be used.
+                        provider.updateApplicationStatus(app.id, 'rejected');
+                                                         ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1082:21: Error: The method '_quickAction' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_quickAction'.
+                      _quickAction(context, 'Hire', () {
+                      ^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1083:56: Error: Final variable 'app' must be assigned before it can be used.
+                        provider.updateApplicationStatus(app.id, 'accepted');
+                                                         ^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1112:14: Error: Expected ',' before this.
+      required this.child,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1113:18: Error: Not a constant expression.
+      this.padding = const EdgeInsets.all(14),
+                   ^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1111:9: Error: Not a constant expression.
+    const _GlassCard({
+          ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1120:16: Error: Final variable 'padding' must be assigned before it can be used.
+        padding: padding,
+                 ^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1133:14: Error: Final variable 'child' must be assigned before it can be used.
+        child: child,
+               ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1144:14: Error: Expected ',' before this.
+      required this.label,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1145:14: Error: Expected ',' before this.
+      required this.selected,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1146:14: Error: Expected ',' before this.
+      required this.onTap,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1143:9: Error: Not a constant expression.
+    const _StatusFilterChip({
+          ^^^^^^^^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1153:19: Error: Final variable 'label' must be assigned before it can be used.
+        label: Text(label),
+                    ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1154:17: Error: Final variable 'selected' must be assigned before it can be used.
+        selected: selected,
+                  ^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1155:26: Error: Final variable 'onTap' must be assigned before it can be used.
+        onSelected: (_) => onTap(),
+                           ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1173:14: Error: Expected ',' before this.
+      required this.label,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1174:14: Error: Expected ',' before this.
+      required this.value,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1175:14: Error: Expected ',' before this.
+      required this.icon,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1176:14: Error: Expected ',' before this.
+      required this.accent,
+               ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1172:9: Error: Not a constant expression.
+    const _StatTile({
+          ^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1181:12: Error: The method '_GlassCard' isn't defined for the type '_RecruiterDashboardScreenState'.
+   - '_RecruiterDashboardScreenState' is from 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart' ('lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart').
+  Try correcting the name to the name of an existing method, or defining a method named '_GlassCard'.
+      return _GlassCard(
+             ^^^^^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1191:22: Error: Final variable 'accent' must be assigned before it can be used.
+                color: accent.withValues(alpha: 0.18),
+                       ^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1192:41: Error: Final variable 'accent' must be assigned before it can be used.
+                border: Border.all(color: accent.withValues(alpha: 0.35)),
+                                          ^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1194:25: Error: Final variable 'icon' must be assigned before it can be used.
+              child: Icon(icon, color: accent, size: 20),
+                          ^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1194:38: Error: Final variable 'accent' must be assigned before it can be used.
+              child: Icon(icon, color: accent, size: 20),
+                                       ^^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1198:13: Error: Final variable 'value' must be assigned before it can be used.
+              value,
+              ^^^^^
+  lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart:1204:16: Error: Final variable 'label' must be assigned before it can be used.
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+                 ^^^^^
+  .
+00:12 +40 -1: Some tests failed.

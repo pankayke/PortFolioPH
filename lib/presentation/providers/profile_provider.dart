@@ -30,8 +30,8 @@ class ProfileProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  ProfileProvider({UserRepository? userRepository})
-    : _userRepository = userRepository ?? UserRepository();
+  ProfileProvider({required UserRepository userRepository})
+    : _userRepository = userRepository;
 
   // ── Load Profile ────────────────────────────────────────────────────────────
   /// Loads the current user's profile from the API.

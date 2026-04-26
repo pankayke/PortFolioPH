@@ -3,7 +3,6 @@
 // API-First Repository: Certifications stored on backend only
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/certification_model.dart';
 
@@ -14,8 +13,8 @@ class CertificationRepository {
   static final Map<int, List<CertificationModel>> _localByUser =
       <int, List<CertificationModel>>{};
 
-  CertificationRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  CertificationRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(CertificationModel cert) async {
     try {

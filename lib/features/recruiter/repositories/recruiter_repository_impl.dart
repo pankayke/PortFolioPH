@@ -8,6 +8,24 @@ import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/models/recruiter_dashboard_summary.dart';
 import 'package:portfolioph/features/recruiter/models/job_model.dart';
 
+class PaginatedResult<T> {
+  final List<T> items;
+  final int currentPage;
+  final int totalPages;
+  final int total;
+  final int perPage;
+
+  const PaginatedResult({
+    required this.items,
+    required this.currentPage,
+    required this.totalPages,
+    required this.total,
+    required this.perPage,
+  });
+
+  bool get hasMore => currentPage < totalPages;
+}
+
 class RecruiterRepositoryImpl {
   final ApiService _apiService;
 
@@ -18,7 +36,7 @@ class RecruiterRepositoryImpl {
     return RecruiterDashboardSummary.fromJson(response as Map<String, dynamic>);
   }
 
-  Future<List<Job>> getJobs({
+  Future<PaginatedResult<Job>> getJobs({
     int page = 1,
     String? status,
     String? search,
@@ -33,13 +51,11 @@ class RecruiterRepositoryImpl {
         queryParameters: queryParams,
       );
 
-      if (response is List) {
-        return response
-            .map((j) => Job.fromJson(j as Map<String, dynamic>))
-            .toList();
-      }
-
-      return [];
+      return _parsePaginatedResponse(
+        response,
+        (job) => Job.fromJson(job),
+        fallbackPage: page,
+      );
     } catch (e) {
       rethrow;
     }
@@ -94,7 +110,7 @@ class ApplicationRepositoryImpl {
 
   ApplicationRepositoryImpl(this._apiService);
 
-  Future<List<RecruiterApplication>> getApplications({
+  Future<PaginatedResult<RecruiterApplication>> getApplications({
     int page = 1,
     String? status,
     int? jobId,
@@ -111,15 +127,11 @@ class ApplicationRepositoryImpl {
         queryParameters: queryParams,
       );
 
-      if (response is List) {
-        return response
-            .map(
-              (a) => RecruiterApplication.fromJson(a as Map<String, dynamic>),
-            )
-            .toList();
-      }
-
-      return [];
+      return _parsePaginatedResponse(
+        response,
+        (application) => RecruiterApplication.fromJson(application),
+        fallbackPage: page,
+      );
     } catch (e) {
       rethrow;
     }
@@ -157,12 +169,14 @@ class ApplicationRepositoryImpl {
     String status,
   ) async {
     try {
-      for (final id in applicationIds) {
-        await _apiService.put(
-          '/applications/$id/status',
-          data: {'status': status},
-        );
-      }
+      await Future.wait(
+        applicationIds.map(
+          (id) => _apiService.put(
+            '/applications/$id/status',
+            data: {'status': status},
+          ),
+        ),
+      );
     } catch (e) {
       rethrow;
     }
@@ -201,4 +215,53 @@ class CreateJobRequest {
     'required_skills': requiredSkills,
     if (deadline != null) 'deadline': deadline!.toIso8601String(),
   };
+}
+
+PaginatedResult<T> _parsePaginatedResponse<T>(
+  Object? response,
+  T Function(Map<String, dynamic>) fromJson, {
+  required int fallbackPage,
+}) {
+  if (response is List) {
+    final items = response
+        .map((item) => fromJson(Map<String, dynamic>.from(item as Map)))
+        .toList(growable: false);
+    return PaginatedResult<T>(
+      items: items,
+      currentPage: fallbackPage,
+      totalPages: fallbackPage,
+      total: items.length,
+      perPage: items.length,
+    );
+  }
+
+  if (response is Map<String, dynamic>) {
+    final rawItems = response['data'];
+    final items = rawItems is List
+        ? rawItems
+              .map((item) => fromJson(Map<String, dynamic>.from(item as Map)))
+              .toList(growable: false)
+        : <T>[];
+    final pagination = response['pagination'];
+    final paginationMap = pagination is Map<String, dynamic>
+        ? pagination
+        : <String, dynamic>{};
+
+    return PaginatedResult<T>(
+      items: items,
+      currentPage:
+          (paginationMap['current_page'] as num?)?.toInt() ?? fallbackPage,
+      totalPages: (paginationMap['last_page'] as num?)?.toInt() ?? fallbackPage,
+      total: (paginationMap['total'] as num?)?.toInt() ?? items.length,
+      perPage: (paginationMap['per_page'] as num?)?.toInt() ?? items.length,
+    );
+  }
+
+  return PaginatedResult<T>(
+    items: const [],
+    currentPage: fallbackPage,
+    totalPages: fallbackPage,
+    total: 0,
+    perPage: 0,
+  );
 }

@@ -144,6 +144,30 @@ class SeekerJobListProvider extends ChangeNotifier {
     await loadJobs(location: location, search: _searchQuery, refresh: true);
   }
 
+  /// Filter jobs by employment type
+  Future<void> filterByEmploymentType(String employmentType) async {
+    await loadJobs(
+      employmentType: employmentType,
+      search: _searchQuery,
+      category: _selectedCategory,
+      location: _selectedLocation,
+      experienceLevel: _selectedExperienceLevel,
+      refresh: true,
+    );
+  }
+
+  /// Filter jobs by experience level
+  Future<void> filterByExperienceLevel(String experienceLevel) async {
+    await loadJobs(
+      experienceLevel: experienceLevel,
+      search: _searchQuery,
+      category: _selectedCategory,
+      location: _selectedLocation,
+      employmentType: _selectedEmploymentType,
+      refresh: true,
+    );
+  }
+
   /// Save job for later
   Future<void> saveJob(int jobId) async {
     try {

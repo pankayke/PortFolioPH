@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminWebController;
 use App\Http\Controllers\ApplicationWebController;
 use App\Http\Controllers\AuthWebController;
@@ -56,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('recruiter')->group(function () {
         Route::get('/applications/{application}/edit', [ApplicationWebController::class, 'edit'])->name('applications.edit');
         Route::put('/applications/{application}/status', [ApplicationWebController::class, 'updateStatus'])->name('applications.update-status');
+        Route::post('/applications/bulk-status', [ApplicationWebController::class, 'bulkUpdateStatus'])->name('applications.bulk-status');
     });
 });
 
@@ -72,6 +74,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{user}', [AdminWebController::class, 'updateUser'])->name('update');
         Route::post('/{user}/suspend', [AdminWebController::class, 'suspendUser'])->name('suspend');
         Route::post('/{user}/unsuspend', [AdminWebController::class, 'unsuspendUser'])->name('unsuspend');
+        Route::post('/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('reset-password');
         Route::delete('/{user}', [AdminWebController::class, 'deleteUser'])->name('delete');
 
         // Download CV for user
