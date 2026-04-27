@@ -95,7 +95,20 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if flutter pub get; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "flutter pub get failed (attempt $attempt). Retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "flutter pub get failed after 3 attempts."
+          exit 1
 
       - name: Enforce formatting
         run: dart format --set-exit-if-changed lib test
@@ -123,7 +136,20 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if flutter pub get; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "flutter pub get failed (attempt $attempt). Retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "flutter pub get failed after 3 attempts."
+          exit 1
 
       - name: Enforce formatting
         run: dart format --set-exit-if-changed lib test
@@ -167,7 +193,20 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if composer install --no-interaction --prefer-dist --no-progress; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "composer install failed (attempt $attempt). Retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "composer install failed after 3 attempts."
+          exit 1
 
       - name: Prepare test environment
         run: |
