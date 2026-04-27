@@ -104,7 +104,7 @@ jobs:
         run: flutter analyze
 
       - name: Unit and widget tests
-        run: flutter test --no-pub
+        run: flutter test --no-pub --concurrency=1
 
   mobile-module-quality:
     name: Mobile Module Quality Gates
@@ -134,7 +134,7 @@ jobs:
       - name: Unit and widget tests
         run: |
           if [ -d test ]; then
-            flutter test --no-pub
+            flutter test --no-pub --concurrency=1
           else
             echo "No tests directory found in mobile-jobs; skipping tests."
           fi
