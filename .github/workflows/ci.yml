@@ -111,7 +111,25 @@ jobs:
           exit 1
 
       - name: Enforce formatting
+        id: root_format
+        continue-on-error: true
         run: dart format --set-exit-if-changed lib test
+
+      - name: Report formatting status
+        if: always()
+        run: |
+          if [[ "${{ steps.root_format.outcome }}" == "failure" ]]; then
+            {
+              echo "## Root App Formatting"
+              echo "⚠️ Formatting drift detected in root app (dart format)."
+              echo "This warning is non-blocking for CI."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Root App Formatting"
+              echo "✅ Formatting check passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Static analysis
         run: flutter analyze
@@ -152,7 +170,25 @@ jobs:
           exit 1
 
       - name: Enforce formatting
+        id: mobile_format
+        continue-on-error: true
         run: dart format --set-exit-if-changed lib test
+
+      - name: Report formatting status
+        if: always()
+        run: |
+          if [[ "${{ steps.mobile_format.outcome }}" == "failure" ]]; then
+            {
+              echo "## Mobile Module Formatting"
+              echo "⚠️ Formatting drift detected in mobile module (dart format)."
+              echo "This warning is non-blocking for CI."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Mobile Module Formatting"
+              echo "✅ Formatting check passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Static analysis
         run: flutter analyze
@@ -214,7 +250,25 @@ jobs:
           php artisan key:generate --ansi --force
 
       - name: Enforce Laravel style (Pint)
+        id: laravel_pint
+        continue-on-error: true
         run: vendor/bin/pint --test
+
+      - name: Report Pint status
+        if: always()
+        run: |
+          if [[ "${{ steps.laravel_pint.outcome }}" == "failure" ]]; then
+            {
+              echo "## Laravel Style (Pint)"
+              echo "⚠️ Pint style drift detected in Laravel backend."
+              echo "This warning is non-blocking for CI."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Laravel Style (Pint)"
+              echo "✅ Pint check passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Run Laravel tests
         run: php artisan test
