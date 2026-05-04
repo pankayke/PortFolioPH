@@ -17,6 +17,7 @@ class PollingTask {
 
   late Timer _timer;
   bool _isRunning = false;
+  bool _isExecuting = false;
   int _failureCount = 0;
   static const int _maxFailures = 3;
 
@@ -63,6 +64,9 @@ class PollingTask {
 
   /// Execute callback with error handling.
   Future<void> _execute() async {
+    if (!_isRunning || _isExecuting) return;
+
+    _isExecuting = true;
     try {
       await callback();
       _resetFailures();
@@ -75,6 +79,8 @@ class PollingTask {
         debugPrint('[PollingService] Max failures reached. Stopping: $id');
         stop();
       }
+    } finally {
+      _isExecuting = false;
     }
   }
 }

@@ -22,22 +22,22 @@ class AppPalette extends ThemeExtension<AppPalette> {
   });
 
   static const AppPalette light = AppPalette(
-    gradientStart: DesignTokens.accentBlueBright,
+    gradientStart: DesignTokens.accentPurple,
     gradientEnd: DesignTokens.accentPurple,
     glassFill: Color(0xD9FFFFFF),
-    glassBorder: Color(0xA6FFFFFF),
+    glassBorder: Color(0xA6E0E3EB),
     success: DesignTokens.accentTeal,
-    warning: Color(0xFFF59E0B),
+    warning: Color(0xFFF7B500),
     danger: DesignTokens.accentPhilippineRed,
   );
 
   static const AppPalette dark = AppPalette(
-    gradientStart: DesignTokens.darkBaseA,
+    gradientStart: DesignTokens.accentPurple,
     gradientEnd: DesignTokens.accentPurple,
     glassFill: Color(0x663B4A63),
-    glassBorder: Color(0x38FFFFFF),
+    glassBorder: Color(0x38E0E3EB),
     success: DesignTokens.accentTeal,
-    warning: Color(0xFFFBBF24),
+    warning: Color(0xFFF7B500),
     danger: DesignTokens.accentPhilippineRed,
   );
 

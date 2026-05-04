@@ -10,11 +10,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
+import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/features/notifications/providers/notification_provider.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -89,6 +93,33 @@ class _NotificationSettingsScreenState
     }
   }
 
+  Future<void> _openNotification(AppNotificationItem item) async {
+    await _markNotificationAsRead(item.id);
+    if (!mounted) return;
+
+    final role = context.read<AuthProvider>().currentUser?.role;
+    if (role == AppConstants.roleRecruiter) {
+      if (item.jobId != null) {
+        context.push(
+          AppRoutes.recruiterJobDetail.replaceFirst(':id', '${item.jobId}'),
+        );
+        return;
+      }
+      context.go(AppRoutes.recruiterApplications);
+      return;
+    }
+
+    if (item.applicationId != null) {
+      context.go(AppRoutes.seekerApplications);
+      return;
+    }
+    if (item.jobId != null) {
+      context.go(AppRoutes.seekerJobsList);
+      return;
+    }
+    context.go(AppRoutes.dashboard);
+  }
+
   Future<void> _markAllNotificationsAsRead() async {
     if (_isMarkingAllRead) return;
 
@@ -153,12 +184,14 @@ class _NotificationSettingsScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        notificationFeedError,
+                        '$notificationFeedError'
+                        '${notificationProvider.lastSyncedAt != null ? ' • Last synced ${_formatTimestamp(notificationProvider.lastSyncedAt!)}' : ''}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 10),
                       TextButton.icon(
-                        onPressed: () => notificationProvider.refreshNotifications(),
+                        onPressed: () =>
+                            notificationProvider.refreshNotifications(),
                         icon: const Icon(Icons.refresh),
                         label: const Text('Retry'),
                       ),
@@ -483,7 +516,7 @@ class _NotificationSettingsScreenState
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: () => _markNotificationAsRead(item.id),
+        onTap: () => _openNotification(item),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
@@ -502,13 +535,9 @@ class _NotificationSettingsScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                item.status == 'accepted'
-                    ? Icons.check_circle_outline
-                    : Icons.cancel_outlined,
+                _notificationIcon(item),
                 size: 20,
-                color: item.status == 'accepted'
-                    ? const Color(0xFF16A34A)
-                    : const Color(0xFFDC2626),
+                color: _notificationColor(item),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -540,7 +569,7 @@ class _NotificationSettingsScreenState
                   height: 8,
                   margin: const EdgeInsets.only(top: 4),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF2563EB),
+                    color: DesignTokens.accentBlueBright,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -566,6 +595,36 @@ class _NotificationSettingsScreenState
     if (_messageNotifications) count++;
     if (_newMatchNotifications) count++;
     return '$count active';
+  }
+
+  IconData _notificationIcon(AppNotificationItem item) {
+    switch (item.status) {
+      case 'accepted':
+        return Icons.check_circle_outline;
+      case 'shortlisted':
+      case 'reviewed':
+      case 'pending':
+        return Icons.schedule_outlined;
+      case 'rejected':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.notifications_none_outlined;
+    }
+  }
+
+  Color _notificationColor(AppNotificationItem item) {
+    switch (item.status) {
+      case 'accepted':
+        return const Color(0xFF16A34A);
+      case 'shortlisted':
+      case 'reviewed':
+      case 'pending':
+        return DesignTokens.accentBlueBright;
+      case 'rejected':
+        return const Color(0xFFDC2626);
+      default:
+        return Theme.of(context).colorScheme.primary;
+    }
   }
 
   Future<void> _showResetDialog() async {

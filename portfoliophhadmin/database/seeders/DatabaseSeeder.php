@@ -25,11 +25,11 @@ class DatabaseSeeder extends Seeder
         // Populate jobs and applications for realistic dashboard and workflow data.
         $this->call(BulkPlatformDataSeeder::class);
 
-        // Create test job seeker
+        // Create labeled dummy job seeker account.
         User::updateOrCreate(
             ['email' => 'jobseeker@example.com'],
             [
-                'name' => 'Test Job Seeker',
+                'name' => 'Miguel Santos',
                 'password' => Hash::make('password'),
                 'role' => 'job_seeker',
                 'active' => true,
@@ -37,16 +37,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Create test recruiter
+        // Create labeled dummy recruiter account.
         User::updateOrCreate(
             ['email' => 'recruiter@example.com'],
             [
-                'name' => 'Test Recruiter',
+                'name' => 'Angela Sy - Northstar Talent',
                 'password' => Hash::make('password'),
                 'role' => 'recruiter',
                 'active' => true,
                 'email_verified_at' => now(),
             ]
         );
+
+        echo "Core dummy accounts created/verified:\n";
+        echo "- Dummy Admin (Primary): admin@portfolio.ph\n";
+        echo "- Dummy Admin (Backup): admin@portfolioph.com\n";
+        echo "- Miguel Santos (Job Seeker): jobseeker@example.com\n";
+        echo "- Angela Sy - Northstar Talent (Recruiter): recruiter@example.com\n";
+        echo "Password: password\n";
     }
 }

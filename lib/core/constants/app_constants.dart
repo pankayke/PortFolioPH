@@ -49,15 +49,15 @@ abstract final class AppConstants {
   static const String localCoordinatorFullName = 'PortFolioPH Coordinator';
 
   // ── Brand colours (raw ARGB – used by AppTheme) ─────────────────────────────
-  static const Color primaryColor = DesignTokens.accentBlue;
+  static const Color primaryColor = DesignTokens.accentPurple;
   static const Color accentColor = DesignTokens.accentPurple;
   static const Color errorColor = DesignTokens.accentPhilippineRed;
-  static const Color successColor = Color(0xFF388E3C);
-  static const Color warningColor = Color(0xFFF57C00);
+  static const Color successColor = Color(0xFF32D796);
+  static const Color warningColor = Color(0xFFF7B500);
   static const Color surfaceColor = DesignTokens.lightBase;
   static const Color onPrimaryColor = Color(0xFFFFFFFF);
-  static const Color textPrimary = DesignTokens.darkBaseA;
-  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textPrimary = Color(0xFF1E1E2F);
+  static const Color textSecondary = Color(0xFF8B949E);
 
   // ── Typography scale (sp) ────────────────────────────────────────────────────
   static const double fontSizeXs = 10.0;

@@ -207,6 +207,8 @@ jobs:
     defaults:
       run:
         working-directory: portfoliophhadmin
+    env:
+      APP_KEY: base64:jPhaONrQt/qVn1E8wBBEBYNZjsZ9lmGUfKlW8ozLDko=
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -247,7 +249,6 @@ jobs:
       - name: Prepare test environment
         run: |
           cp -n .env.example .env || true
-          php artisan key:generate --ansi --force
 
       - name: Enforce Laravel style (Pint)
         id: laravel_pint

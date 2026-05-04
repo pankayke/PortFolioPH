@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
+import 'package:portfolioph/core/theme/color_palette.dart';
 
 enum GlassButtonStyle { primary, secondary, tertiary }
 
@@ -131,25 +133,28 @@ class _GlassButtonState extends State<GlassButton>
   }
 
   Widget _buildPrimaryButton(bool isEnabled) {
+    final palette = Theme.of(context).extension<AppPalette>();
+    final gradient =
+        widget.gradient ??
+        LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette?.gradientStart ?? DesignTokens.primaryGradient.colors.first,
+            palette?.gradientEnd ?? DesignTokens.primaryGradient.colors.last,
+          ],
+        );
+
     return Container(
       width: widget.fullWidth ? double.infinity : null,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        gradient:
-            widget.gradient ??
-            LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppConstants.primaryColor,
-                Color.lerp(AppConstants.primaryColor, Colors.white, 0.22)!,
-              ],
-            ),
+        gradient: gradient,
         boxShadow: [
           BoxShadow(
             blurRadius: 16 * widget.shadowIntensity,
             offset: const Offset(0, 8),
-            color: AppConstants.primaryColor.withAlpha(
+            color: (palette?.gradientStart ?? AppConstants.primaryColor).withAlpha(
               ((0.3 * widget.shadowIntensity) * 255).toInt(),
             ),
           ),

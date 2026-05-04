@@ -22,6 +22,7 @@ class DashboardJobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final statusColor = _isActive ? colorScheme.primary : colorScheme.error;
     return RecruiterGlassCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -58,23 +59,17 @@ class DashboardJobCard extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: (_isActive ? Colors.green : Colors.red).withValues(
-                    alpha: 0.10,
-                  ),
+                  color: statusColor.withValues(alpha: 0.12),
                   border: Border.all(
-                    color: (_isActive ? Colors.green : Colors.red).withValues(
-                      alpha: 0.24,
-                    ),
+                    color: statusColor.withValues(alpha: 0.26),
                   ),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   _isActive ? 'Active' : 'Closed',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: _isActive
-                        ? Colors.green.shade700
-                        : Colors.red.shade700,
-                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -142,19 +137,28 @@ class _MiniMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.grey.shade50,
-          border: Border.all(color: Colors.grey.shade200),
+          color: colorScheme.surfaceContainerHighest.withValues(
+            alpha: isDark ? 0.72 : 1,
+          ),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -162,6 +166,8 @@ class _MiniMetric extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/core/mixins/animation_mixins.dart';
 import 'package:portfolioph/core/mixins/screen_mixins.dart';
 import 'package:portfolioph/core/router/app_router.dart';
@@ -38,6 +39,17 @@ class _DashboardScreenState extends State<DashboardScreen>
       TextEditingController();
   bool _didInitUserLoad = false;
   String _dashboardJobSearchQuery = '';
+  final Set<int> _expandedPreviewJobIds = <int>{};
+
+  void _togglePreviewJobDescription(int jobId) {
+    setState(() {
+      if (_expandedPreviewJobIds.contains(jobId)) {
+        _expandedPreviewJobIds.remove(jobId);
+      } else {
+        _expandedPreviewJobIds.add(jobId);
+      }
+    });
+  }
 
   static const List<String> _rotationCategories = [
     'Week 1: IT / Dev Jobs',
@@ -64,6 +76,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
+    // Stop polling only when this screen is fully disposed.
+    context.read<JobFeedProvider>().stopPolling();
     _fadeController.dispose();
     _scaleController.dispose();
     _dashboardSearchController.dispose();
@@ -77,10 +91,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (_didInitUserLoad) return;
     _didInitUserLoad = true;
 
-    // Keep live jobs updated while dashboard is visible.
-    context.read<JobFeedProvider>().startPolling();
-
     loadDataForUserWithId((userId) {
+      // Keep live jobs updated while dashboard is visible.
+      // Starting polling inside the post-frame user-load path avoids
+      // notifyListeners during the build phase.
+      context.read<JobFeedProvider>().startPolling();
+
       // Load all user data
       context.read<PortfolioProvider>().loadForUser(userId);
       context.read<CertificationProvider>().loadForUser(userId);
@@ -92,13 +108,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Load jobs with alignment scoring based on user profile
       _loadJobsWithAlignment();
     });
-  }
-
-  @override
-  void deactivate() {
-    // Stop polling when leaving dashboard to conserve resources.
-    context.read<JobFeedProvider>().stopPolling();
-    super.deactivate();
   }
 
   /// Load jobs with alignment scoring based on user profile.
@@ -180,6 +189,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     return PremiumAppBackground(
       animation: bokehController,
+      lite: true,
       child: Scaffold(
         body: RefreshIndicator(
           onRefresh: () => _refresh(user.id!),
@@ -303,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
           decoration: BoxDecoration(
             color: isDark
@@ -372,7 +382,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                              colors: [
+                                DesignTokens.accentBlueBright,
+                                DesignTokens.accentPurple,
+                              ],
                             ),
                             border: Border.all(
                               color: Colors.white.withAlpha(90),
@@ -445,7 +458,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             gradient: LinearGradient(
               colors: [
                 colorScheme.primary.withAlpha(isDark ? 52 : 30),
-                const Color(0xFF8B5CF6).withAlpha(isDark ? 36 : 24),
+                DesignTokens.accentPurple.withAlpha(isDark ? 36 : 24),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
@@ -488,7 +501,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             gradient: LinearGradient(
               colors: [
                 colorScheme.primary.withAlpha(isDark ? 58 : 28),
-                const Color(0xFF8B5CF6).withAlpha(isDark ? 42 : 20),
+                DesignTokens.accentPurple.withAlpha(isDark ? 42 : 20),
                 Colors.white.withAlpha(isDark ? 12 : 64),
               ],
               begin: Alignment.topLeft,
@@ -508,7 +521,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -588,7 +601,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  height: 132,
+                  height: 154,
                   child: featuredJobs.isEmpty
                       ? _buildMomentumEmptyState(isDark)
                       : ListView.separated(
@@ -660,8 +673,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         : '${(score * 100).toStringAsFixed(0)}% match';
 
     return Container(
-      width: 208,
-      padding: const EdgeInsets.all(14),
+      width: 198,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(isDark ? 14 : 168),
         borderRadius: BorderRadius.circular(18),
@@ -670,45 +683,57 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            company,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const Spacer(),
-          Row(
-            children: [
-              const Icon(Icons.place_outlined, size: 16),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  location,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelSmall,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  company,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 11),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.place_outlined, size: 14),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        location,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelSmall?.copyWith(fontSize: 10.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(999),
               color: score == null
                   ? Colors.white.withAlpha(isDark ? 16 : 140)
-                  : const Color(0xFF3B82F6).withAlpha(34),
+                  : DesignTokens.accentBlueBright.withAlpha(34),
             ),
             child: Text(
               scoreLabel,
@@ -807,6 +832,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                         child: TextField(
                           controller: _dashboardSearchController,
+                          cursorColor: isDark
+                              ? Colors.white.withAlpha(220)
+                              : const Color(0xFF1E293B),
                           onChanged: (value) {
                             setState(() {
                               _dashboardJobSearchQuery = value;
@@ -819,14 +847,25 @@ class _DashboardScreenState extends State<DashboardScreen>
                           },
                           decoration: InputDecoration(
                             hintText: 'Search jobs, companies, skills...',
+                            prefixIconColor: isDark
+                                ? Colors.white.withAlpha(170)
+                                : const Color(0xFF334155),
+                            suffixIconColor: isDark
+                                ? Colors.white.withAlpha(170)
+                                : const Color(0xFF334155),
                             hintStyle: TextStyle(
-                              color: Colors.white.withAlpha(isDark ? 127 : 153),
+                              color: isDark
+                                  ? Colors.white.withAlpha(127)
+                                  : const Color(0xFF64748B),
                               fontSize: 13,
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.search_rounded,
                               size: 18,
-                              color: Colors.white.withAlpha(isDark ? 127 : 153),
+                            ),
+                            prefixIconConstraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 36,
                             ),
                             suffixIcon: _dashboardJobSearchQuery.trim().isEmpty
                                 ? null
@@ -845,7 +884,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                               vertical: 10,
                             ),
                           ),
-                          style: const TextStyle(fontSize: 13),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark
+                                ? Colors.white.withAlpha(220)
+                                : const Color(0xFF0F172A),
+                          ),
                         ),
                       ),
                     ],
@@ -891,11 +935,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     final badgeColor = Color(
       int.parse(badgeColorHex.replaceFirst('#', '0xff')),
     );
+    final jobId = job.id ?? job.title.hashCode;
+    final isExpanded = _expandedPreviewJobIds.contains(jobId);
+    final showSeeMore = job.description.trim().length > 140;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
           decoration: BoxDecoration(
             color: isDark
@@ -961,6 +1008,31 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
               const SizedBox(height: 10),
+              Text(
+                job.description,
+                maxLines: isExpanded ? null : 3,
+                overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? const Color(0xFFD7E0EA) : const Color(0xFF475569),
+                  height: 1.4,
+                ),
+              ),
+              if (showSeeMore)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => _togglePreviewJobDescription(jobId),
+                    style: TextButton.styleFrom(
+                      foregroundColor: DesignTokens.accentPurple,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(isExpanded ? 'See less' : 'See more'),
+                  ),
+                ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -977,7 +1049,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Container(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                        colors: [
+                          DesignTokens.accentPurple,
+                          DesignTokens.accentBlueBright,
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1050,7 +1125,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 'Certifications',
                 certifications.toString(),
                 Icons.card_membership_rounded,
-                const Color(0xFF3B82F6),
+                DesignTokens.accentBlueBright,
                 isDark,
                 subLabel: certifications == 0
                     ? 'Add certification'
@@ -1066,7 +1141,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: _buildCompactMetricChip(
                 'Skills',
                 skills.toString(),
-                const Color(0xFF8B5CF6),
+                DesignTokens.accentPurple,
                 isDark,
               ),
             ),
@@ -1114,7 +1189,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,

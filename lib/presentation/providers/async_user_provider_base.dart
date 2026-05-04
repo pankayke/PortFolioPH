@@ -40,4 +40,3 @@ abstract class AsyncUserProviderBase extends ChangeNotifier {
     }
   }
 }
-

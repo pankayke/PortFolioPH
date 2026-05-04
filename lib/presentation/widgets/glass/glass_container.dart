@@ -56,12 +56,12 @@ class GlassContainer extends StatelessWidget {
     this.width,
     this.height,
     this.padding,
-    this.blurStrength = 20.0,
+    this.blurStrength = 14.0,
     this.saturation = 150.0,
     this.opacity = 0.18,
     this.borderOpacity = 0.2,
     this.borderRadius = 24.0,
-    this.shadowIntensity = 0.15,
+    this.shadowIntensity = 0.10,
     this.backgroundGradient,
     this.enableGlow = true,
     this.glowColor,
@@ -109,14 +109,14 @@ class GlassContainer extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 12 * shadowIntensity,
+                  blurRadius: 8 * shadowIntensity,
                   offset: const Offset(0, 8),
                   color: Colors.black.withAlpha(
                     ((shadowIntensity * 0.32) * 255).toInt(),
                   ),
                 ),
                 BoxShadow(
-                  blurRadius: 32 * shadowIntensity,
+                  blurRadius: 20 * shadowIntensity,
                   offset: const Offset(0, 4),
                   color: Colors.black.withAlpha(
                     ((shadowIntensity * 0.24) * 255).toInt(),

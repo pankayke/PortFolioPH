@@ -46,7 +46,7 @@ class GlassInputField extends StatefulWidget {
     this.onEditingComplete,
     this.textInputAction,
     this.autofillHints,
-    this.blurStrength = 12.0,
+    this.blurStrength = 8.0,
     this.opacity = 0.15,
   });
 
@@ -115,12 +115,12 @@ class _GlassInputFieldState extends State<GlassInputField> {
             boxShadow: [
               if (isFocused)
                 BoxShadow(
-                  blurRadius: 12,
+                  blurRadius: 8,
                   color: AppConstants.primaryColor.withAlpha(40),
                 ),
               if (hasError)
                 BoxShadow(
-                  blurRadius: 12,
+                  blurRadius: 8,
                   color: AppConstants.errorColor.withAlpha(30),
                 ),
             ],

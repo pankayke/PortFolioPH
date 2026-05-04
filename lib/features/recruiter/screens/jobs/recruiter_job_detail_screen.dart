@@ -21,6 +21,7 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<RecruiterJobManagerProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return PremiumAppBackground(
       child: Scaffold(
@@ -28,6 +29,7 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
         appBar: AppBar(
           title: const Text('Job Details'),
           backgroundColor: Colors.transparent,
+          elevation: 0,
           actions: [
             IconButton(
               icon: const Icon(Icons.edit_outlined),
@@ -66,8 +68,11 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 RecruiterGlassCard(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0F172A), Color(0xFF1D4ED8)],
+                  gradient: LinearGradient(
+                    colors: [
+                      colorScheme.primary.withValues(alpha: 0.14),
+                      colorScheme.surface.withValues(alpha: 0.12),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -81,7 +86,7 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
                               job.title,
                               style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(
-                                    color: Colors.white,
+                                    color: colorScheme.onSurface,
                                     fontWeight: FontWeight.w800,
                                   ),
                             ),
@@ -89,8 +94,8 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
                           RecruiterGlowChip(
                             label: job.status.toUpperCase(),
                             glowColor: job.isClosed
-                                ? Colors.red
-                                : const Color(0xFF38BDF8),
+                                ? colorScheme.error
+                                : colorScheme.primary,
                           ),
                         ],
                       ),
@@ -98,8 +103,8 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
                       Text(
                         '${job.location} • ${job.jobType} • ${job.applicationCount} applicants',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.84),
-                        ),
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       ),
                       const SizedBox(height: 14),
                       Wrap(
@@ -130,7 +135,7 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
                         'Job Description',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
-                              color: Colors.white,
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                       ),
@@ -138,8 +143,8 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
                       Text(
                         job.description,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.88),
-                        ),
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       ),
                     ],
                   ),
@@ -153,7 +158,7 @@ class _RecruiterJobDetailScreenState extends State<RecruiterJobDetailScreen> {
                         'Required Skills',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
-                              color: Colors.white,
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                       ),

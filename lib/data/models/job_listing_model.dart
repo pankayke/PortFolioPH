@@ -38,7 +38,10 @@ class JobListingModel {
       id: map['id'] as int?,
       title: _asString(map['title'], fallback: 'Untitled Job'),
       company: _asString(
-        map['company'] ?? map['company_name'],
+        map['company'] ??
+            map['company_name'] ??
+            map['recruiter_name'] ??
+            _extractNestedRecruiterName(map['recruiter']),
         fallback: 'PortfolioPH',
       ),
       salary: parsedSalary,
@@ -102,6 +105,17 @@ class JobListingModel {
     if (value is num) return value.toDouble();
     if (value is String) return double.tryParse(value);
     return null;
+  }
+
+  static String? _extractNestedRecruiterName(dynamic recruiter) {
+    if (recruiter is! Map) return null;
+
+    final recruiterMap = recruiter.cast<String, dynamic>();
+    final name = recruiterMap['name'];
+    if (name == null) return null;
+
+    final value = name.toString().trim();
+    return value.isEmpty ? null : value;
   }
 
   Map<String, dynamic> toMap() {

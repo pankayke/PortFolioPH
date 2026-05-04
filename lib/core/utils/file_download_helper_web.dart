@@ -20,4 +20,3 @@ Future<bool> saveBytes({
   anchor.remove();
   return true;
 }
-

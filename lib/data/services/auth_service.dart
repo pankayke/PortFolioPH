@@ -27,7 +27,10 @@ class AuthService {
   final UserRepository _userRepository;
   final ApiService _apiService;
 
-  factory AuthService({UserRepository? userRepository, ApiService? apiService}) {
+  factory AuthService({
+    UserRepository? userRepository,
+    ApiService? apiService,
+  }) {
     final resolvedApi = apiService ?? ApiService(const FlutterSecureStorage());
     final resolvedUserRepository =
         userRepository ?? UserRepository(apiService: resolvedApi);

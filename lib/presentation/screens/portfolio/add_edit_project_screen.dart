@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -412,22 +413,7 @@ class _AddEditProjectScreenState extends State<AddEditProjectScreen> {
                           borderRadius: BorderRadius.circular(
                             AppConstants.radiusMd,
                           ),
-                          child: Image.file(
-                            File(imagePath),
-                            width: 120,
-                            height: 110,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  width: 120,
-                                  height: 110,
-                                  color: Colors.grey.shade200,
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.broken_image_outlined,
-                                  ),
-                                ),
-                          ),
+                          child: _buildProjectImage(imagePath),
                         ),
                         Positioned(
                           top: 4,
@@ -458,6 +444,52 @@ class _AddEditProjectScreenState extends State<AddEditProjectScreen> {
       ),
     ];
   }
+}
+
+Widget _buildProjectImage(String imagePath) {
+  if (imagePath.startsWith('data:image/')) {
+    final commaIndex = imagePath.indexOf(',');
+    if (commaIndex > -1) {
+      try {
+        final bytes = base64Decode(imagePath.substring(commaIndex + 1));
+        return Image.memory(
+          bytes,
+          width: 120,
+          height: 110,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            width: 120,
+            height: 110,
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image_outlined),
+          ),
+        );
+      } catch (_) {
+        return Container(
+          width: 120,
+          height: 110,
+          color: Colors.grey.shade200,
+          alignment: Alignment.center,
+          child: const Icon(Icons.broken_image_outlined),
+        );
+      }
+    }
+  }
+
+  return Image.file(
+    File(imagePath),
+    width: 120,
+    height: 110,
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) => Container(
+      width: 120,
+      height: 110,
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: const Icon(Icons.broken_image_outlined),
+    ),
+  );
 }
 
 class _DateButton extends StatelessWidget {

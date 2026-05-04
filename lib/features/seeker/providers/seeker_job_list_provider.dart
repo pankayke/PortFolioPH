@@ -43,6 +43,7 @@ class SeekerJobListProvider extends ChangeNotifier {
   String? _selectedExperienceLevel;
   int _currentPage = 1;
   bool _hasMore = true;
+  DateTime? _lastSyncedAt;
 
   // ─────── Getters ──────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ class SeekerJobListProvider extends ChangeNotifier {
   int get jobCount => _jobs.length;
   int get currentPage => _currentPage;
   bool get hasMore => _hasMore;
+  DateTime? get lastSyncedAt => _lastSyncedAt;
 
   // ─────── Constructor ───────────────────────────────────────────────────────
 
@@ -101,7 +103,13 @@ class SeekerJobListProvider extends ChangeNotifier {
       _selectedEmploymentType = employmentType;
       _selectedExperienceLevel = experienceLevel;
       _hasMore = loadedJobs.isNotEmpty;
+      _lastSyncedAt = DateTime.now();
       _isLoading = false;
+      
+      if (search != null && search.isNotEmpty) {
+        ToastService.showInfo('Found ${loadedJobs.length} jobs for "$search"');
+      }
+      
       notifyListeners();
     } on DioException catch (e) {
       _error = ErrorHandler.mapError(e);
@@ -250,6 +258,15 @@ class SeekerJobListProvider extends ChangeNotifier {
   /// Clear error message
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  /// Mark a job as applied in local state so UI reflects action immediately.
+  void markJobAsApplied(int jobId) {
+    final index = _jobs.indexWhere((job) => job.id == jobId);
+    if (index == -1) return;
+
+    _jobs[index] = _jobs[index].copyWith(applicationStatus: 'applied');
     notifyListeners();
   }
 }

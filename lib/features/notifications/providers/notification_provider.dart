@@ -9,6 +9,7 @@ class NotificationProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _hasLoaded = false;
   String? _error;
+  DateTime? _lastSyncedAt;
 
   NotificationProvider(this._apiService);
 
@@ -16,6 +17,7 @@ class NotificationProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get hasLoaded => _hasLoaded;
   String? get error => _error;
+  DateTime? get lastSyncedAt => _lastSyncedAt;
   bool get hasUnreadNotifications => unreadCount > 0;
   int get unreadCount => _notifications.where((item) => !item.isRead).length;
 
@@ -38,6 +40,7 @@ class NotificationProvider extends ChangeNotifier {
 
       _notifications = _parseNotifications(response);
       _hasLoaded = true;
+      _lastSyncedAt = DateTime.now();
       _isLoading = false;
       notifyListeners();
     } catch (error) {

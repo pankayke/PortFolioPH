@@ -24,26 +24,41 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
     String? experienceLevel,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        if (search != null && search.isNotEmpty) 'search': search,
-        if (category != null && category.isNotEmpty) 'category': category,
-        if (location != null && location.isNotEmpty) 'location': location,
-        if (employmentType != null && employmentType.isNotEmpty)
-          'employment_type': employmentType,
-        if (experienceLevel != null && experienceLevel.isNotEmpty)
-          'experience_level': experienceLevel,
-      };
+      final queryParameters = <String, dynamic>{'page': page};
+      if (search != null && search.trim().isNotEmpty) {
+        queryParameters['search'] = search.trim();
+      }
+      if (category != null && category.trim().isNotEmpty) {
+        queryParameters['category'] = category.trim();
+      }
+      if (location != null && location.trim().isNotEmpty) {
+        queryParameters['location'] = location.trim();
+      }
+      if (employmentType != null && employmentType.trim().isNotEmpty) {
+        queryParameters['employment_type'] = employmentType.trim();
+      }
+      if (experienceLevel != null && experienceLevel.trim().isNotEmpty) {
+        queryParameters['experience_level'] = experienceLevel.trim();
+      }
 
       final response = await _apiService.get(
         '/jobs',
-        queryParameters: queryParams,
+        queryParameters: queryParameters,
       );
 
       if (response is List) {
         return response
             .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
             .toList();
+      }
+
+      if (response is Map<String, dynamic>) {
+        final data = response['data'];
+        if (data is List) {
+          return data
+              .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       return [];
@@ -94,6 +109,15 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
             .toList();
       }
 
+      if (response is Map<String, dynamic>) {
+        final data = response['data'];
+        if (data is List) {
+          return data
+              .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
+              .toList();
+        }
+      }
+
       return [];
     } catch (e) {
       rethrow;
@@ -113,21 +137,32 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
     String sortBy = 'applied_at',
   }) async {
     try {
-      final queryParams = <String, dynamic>{
+      final queryParameters = <String, dynamic>{
         'page': page,
         'sort_by': sortBy,
-        if (status != null && status.isNotEmpty) 'status': status,
       };
+      if (status != null && status.isNotEmpty) {
+        queryParameters['status'] = status;
+      }
 
       final response = await _apiService.get(
         '/applications',
-        queryParameters: queryParams,
+        queryParameters: queryParameters,
       );
 
       if (response is List) {
         return response
             .map((a) => SeekerApplication.fromJson(a as Map<String, dynamic>))
             .toList();
+      }
+
+      if (response is Map<String, dynamic>) {
+        final data = response['data'];
+        if (data is List) {
+          return data
+              .map((a) => SeekerApplication.fromJson(a as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       return [];

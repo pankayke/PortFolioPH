@@ -15,25 +15,32 @@ class AdminSeeder extends Seeder
     {
         // Ensure at least one admin account is always available.
         $adminAccounts = [
-            'admin@portfolio.ph',
-            'admin@portfolioph.com',
+            [
+                'email' => 'admin@portfolio.ph',
+                'name' => 'Dummy Admin (Primary)',
+            ],
+            [
+                'email' => 'admin@portfolioph.com',
+                'name' => 'Dummy Admin (Backup)',
+            ],
         ];
 
-        foreach ($adminAccounts as $email) {
+        foreach ($adminAccounts as $account) {
             User::updateOrCreate(
-                ['email' => $email],
+                ['email' => $account['email']],
                 [
-                    'name' => 'Admin',
+                    'name' => $account['name'],
                     'password' => Hash::make('password'),
                     'role' => 'admin',
                     'active' => true,
+                    'email_verified_at' => now(),
                 ]
             );
         }
 
-        echo "Admin users created/verified:\n";
-        echo "- admin@portfolio.ph\n";
-        echo "- admin@portfolioph.com\n";
+        echo "Admin dummy accounts created/verified:\n";
+        echo "- Dummy Admin (Primary): admin@portfolio.ph\n";
+        echo "- Dummy Admin (Backup): admin@portfolioph.com\n";
         echo "Password: password\n";
     }
 }

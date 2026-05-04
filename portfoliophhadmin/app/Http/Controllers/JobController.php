@@ -9,6 +9,7 @@ use App\Models\Job;
 use App\Services\JobService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
@@ -19,7 +20,11 @@ class JobController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only(['search', 'location']);
+        Log::debug('Full Request URL: '.$request->fullUrl());
+        Log::debug('Incoming inputs: ', $request->all());
+
+        $filters = $request->only(['search', 'location', 'category', 'employment_type', 'experience_level']);
+
         $perPage = $this->resolvePerPage($request);
         $jobs = $this->jobService->getApprovedJobs($filters, $perPage);
 

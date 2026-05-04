@@ -119,79 +119,83 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               : _error != null
               ? Center(child: Text('Failed to load dashboard: $_error'))
               : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: sections.contains(_selectedSection)
-                        ? _selectedSection
-                        : 'All Sections',
-                    items: sections
-                        .map(
-                          (item) => DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(item),
-                          ),
-                        )
-                        .toList(growable: false),
-                    decoration: const InputDecoration(
-                      labelText: 'Class / Section filter',
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() => _selectedSection = value);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Students in view: ${filteredRows.length}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: filteredRows.isEmpty
-                        ? const Center(
-                            child: Text('No students found for this section.'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      initialValue: sections.contains(_selectedSection)
+                          ? _selectedSection
+                          : 'All Sections',
+                      items: sections
+                          .map(
+                            (item) => DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(item),
+                            ),
                           )
-                        : ListView.separated(
-                            itemCount: filteredRows.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final row = filteredRows[index];
-                              return GlassContainer(
-                                borderRadius: 16,
-                                blurStrength: 20,
-                                opacity: 0.26,
-                                borderOpacity: 0.18,
-                                enableGlow: false,
-                                child: ListTile(
-                                  leading: const Icon(Icons.school_outlined),
-                                  title: Text(
-                                    row.user.fullName?.isNotEmpty == true
-                                        ? row.user.fullName!
-                                        : row.user.username,
+                          .toList(growable: false),
+                      decoration: const InputDecoration(
+                        labelText: 'Class / Section filter',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _selectedSection = value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Students in view: ${filteredRows.length}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: filteredRows.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No students found for this section.',
+                              ),
+                            )
+                          : ListView.separated(
+                              itemCount: filteredRows.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 8),
+                              itemBuilder: (context, index) {
+                                final row = filteredRows[index];
+                                return GlassContainer(
+                                  borderRadius: 16,
+                                  blurStrength: 20,
+                                  opacity: 0.26,
+                                  borderOpacity: 0.18,
+                                  enableGlow: false,
+                                  child: ListTile(
+                                    leading: const Icon(Icons.school_outlined),
+                                    title: Text(
+                                      row.user.fullName?.isNotEmpty == true
+                                          ? row.user.fullName!
+                                          : row.user.username,
+                                    ),
+                                    subtitle: Text(
+                                      'Section: ${row.user.location ?? 'Unassigned'}',
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Reflections: ${row.reflectionsCount}',
+                                        ),
+                                        Text('Skills: ${row.skillsCount}'),
+                                      ],
+                                    ),
                                   ),
-                                  subtitle: Text(
-                                    'Section: ${row.user.location ?? 'Unassigned'}',
-                                  ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'Reflections: ${row.reflectionsCount}',
-                                      ),
-                                      Text('Skills: ${row.skillsCount}'),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

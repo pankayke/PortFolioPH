@@ -17,7 +17,6 @@
 //   flutter build apk --flavor development -t lib/main_development.dart
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter/foundation.dart';
 
 enum Flavor { development, staging, production }
 
@@ -75,12 +74,9 @@ class AppConfig {
       return _apiBaseUrlOverride.trim();
     }
 
-    // Browser builds can fail DNS/CORS checks more often with localhost.
-    if (kIsWeb) {
-      return 'http://127.0.0.1:8000/api';
-    }
-
-    return 'http://localhost:8000/api';
+    // Keep dev app and admin panel on the same backend by default.
+    // Local API gateway runs on port 8000 in this workspace setup.
+    return 'http://127.0.0.1:8000/api';
   }
 
   static void _validateApiBaseUrl(Flavor flavor, String value) {

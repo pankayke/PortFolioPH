@@ -55,6 +55,8 @@ Required environment secrets (configure in each environment):
 
 Detailed setup runbook: [docs/DEPLOYMENT_PIPELINE_SETUP.md](docs/DEPLOYMENT_PIPELINE_SETUP.md)
 
+Quick access guide (how to run/view workflows and required secrets): [docs/PIPELINE_ACCESS_QUICKSTART.md](docs/PIPELINE_ACCESS_QUICKSTART.md)
+
 ## Scalability Profile (5k+ Users)
 
 This stack is tuned for higher concurrent load while preserving behavior:

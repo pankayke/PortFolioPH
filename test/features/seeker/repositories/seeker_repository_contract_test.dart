@@ -109,6 +109,52 @@ void main() {
 
       expect(() => seekerRepo.getJobs(), throwsA(isA<UnauthorizedException>()));
     });
+
+    test('getJobs sends trimmed filter queryParameters', () async {
+      apiService.getResponse = const [];
+
+      await seekerRepo.getJobs(
+        search: '  flutter  ',
+        category: '  Engineering ',
+        location: ' Remote ',
+        employmentType: ' full_time ',
+        experienceLevel: ' mid ',
+      );
+
+      expect(apiService.lastGetPath, '/jobs');
+      expect(apiService.lastGetQuery?['page'], 1);
+      expect(apiService.lastGetQuery?['search'], 'flutter');
+      expect(apiService.lastGetQuery?['category'], 'Engineering');
+      expect(apiService.lastGetQuery?['location'], 'Remote');
+      expect(apiService.lastGetQuery?['employment_type'], 'full_time');
+      expect(apiService.lastGetQuery?['experience_level'], 'mid');
+    });
+
+    test('getJobs parses map response with data list', () async {
+      apiService.getResponse = {
+        'data': [
+          {
+            'id': 7,
+            'title': 'Data Engineer',
+            'description': 'Own ETL pipelines',
+            'category': 'Engineering',
+            'location': 'Cebu',
+            'employment_type': 'contract',
+            'experience_level': 'mid',
+            'required_skills': ['SQL'],
+            'deadline': '2026-12-01T00:00:00Z',
+            'created_at': '2026-04-01T00:00:00Z',
+            'updated_at': '2026-04-02T00:00:00Z',
+          },
+        ],
+      };
+
+      final result = await seekerRepo.getJobs();
+
+      expect(result, hasLength(1));
+      expect(result.first.id, 7);
+      expect(result.first.title, 'Data Engineer');
+    });
   });
 
   group('SeekerApplicationRepositoryImpl', () {
@@ -151,6 +197,49 @@ void main() {
       );
 
       expect(apiService.lastDeletePath, '/applications/55');
+    });
+
+    test('getApplications sends expected queryParameters', () async {
+      apiService.getResponse = const [];
+
+      await applicationRepo.getApplications(
+        page: 3,
+        status: 'reviewing',
+        sortBy: 'applied_at',
+      );
+
+      expect(apiService.lastGetPath, '/applications');
+      expect(apiService.lastGetQuery?['page'], 3);
+      expect(apiService.lastGetQuery?['status'], 'reviewing');
+      expect(apiService.lastGetQuery?['sort_by'], 'applied_at');
+    });
+
+    test('getApplications parses map response with data list', () async {
+      apiService.getResponse = {
+        'data': [
+          {
+            'id': 88,
+            'status': 'applied',
+            'applied_at': '2026-04-09T00:00:00Z',
+            'job': {
+              'id': 501,
+              'title': 'QA Engineer',
+              'location': 'Remote',
+              'salary_min': 25000,
+              'salary_max': 40000,
+              'recruiter': {'name': 'Quality Corp'},
+            },
+          },
+        ],
+      };
+
+      final result = await applicationRepo.getApplications();
+
+      expect(result, hasLength(1));
+      expect(result.first.id, 88);
+      expect(result.first.jobId, 501);
+      expect(result.first.jobTitle, 'QA Engineer');
+      expect(result.first.recruiterName, 'Quality Corp');
     });
   });
 }

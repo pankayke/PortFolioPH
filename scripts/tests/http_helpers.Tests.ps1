@@ -92,15 +92,22 @@ Describe 'Invoke-JsonRequestWithRetry' {
     }
 
     It 'throws when failures exceed retries' {
-        Remove-Item Function:Invoke-RestMethod -ErrorAction SilentlyContinue
+        Remove-Item Function:global:Invoke-RestMethod -ErrorAction SilentlyContinue
         function global:Invoke-RestMethod {
-            param([string]$Uri, [string]$Method)
+            param([string]$Uri, [string]$Method, [hashtable]$Headers)
             $ex = New-Object System.Exception 'hard failure'
             Add-Member -InputObject $ex -MemberType NoteProperty -Name Response -Value ([pscustomobject]@{ StatusCode = 500 }) -Force
             throw $ex
         }
 
-        { Invoke-JsonRequestWithRetry -Method 'Get' -Url 'http://localhost/api/ping' -MaxRetries 1 } | Should Throw
+        $threw = $false
+        try {
+            Invoke-JsonRequestWithRetry -Method 'Get' -Url 'http://localhost/api/ping' -MaxRetries 1
+        } catch {
+            $threw = $true
+        }
+
+        $threw | Should Be $true
     }
 }
 

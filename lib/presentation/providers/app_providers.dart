@@ -215,7 +215,8 @@ class AppProviderRegistry {
       update: (_, apiService, _) => EducationRepository(apiService: apiService),
     ),
     ProxyProvider<ApiService, ExperienceRepository>(
-      update: (_, apiService, _) => ExperienceRepository(apiService: apiService),
+      update: (_, apiService, _) =>
+          ExperienceRepository(apiService: apiService),
     ),
     ProxyProvider<ApiService, CertificationRepository>(
       update: (_, apiService, _) =>
@@ -340,8 +341,9 @@ class AppProviderRegistry {
 
     /// Student skills provider — manages student-specific skills and competencies
     ChangeNotifierProxyProvider<StudentSkillsRepository, StudentSkillsProvider>(
-      create: (context) =>
-          StudentSkillsProvider(repository: context.read<StudentSkillsRepository>()),
+      create: (context) => StudentSkillsProvider(
+        repository: context.read<StudentSkillsRepository>(),
+      ),
       update: (_, repository, previous) =>
           previous ?? StudentSkillsProvider(repository: repository),
     ),

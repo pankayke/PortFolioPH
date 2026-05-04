@@ -60,7 +60,7 @@ class CVController extends Controller
         $application->loadMissing('job:id,recruiter_id', 'user:id,name,resume_path');
 
         abort_unless(
-            $viewer->role === 'admin' || $viewer->id === $application->job->recruiter_id,
+            $viewer->role === 'admin' || $viewer->id === $application->job?->recruiter_id,
             403,
             'You are not authorized to download this applicant CV.'
         );
@@ -82,7 +82,9 @@ class CVController extends Controller
 
         $filename = 'CV_'.Str::slug($user->name).'_'.now()->format('Y-m-d').'.pdf';
 
-        return $disk->download($user->resume_path, $filename, [
+        return response()->streamDownload(function () use ($disk, $user): void {
+            readfile($disk->path($user->resume_path));
+        }, $filename, [
             'Content-Type' => 'application/pdf',
         ]);
     }

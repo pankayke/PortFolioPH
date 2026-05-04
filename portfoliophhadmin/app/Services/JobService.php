@@ -65,9 +65,12 @@ class JobService
     public function createJob(User $recruiter, array $validated): Job
     {
         return DB::transaction(function () use ($recruiter, $validated) {
-            $job = $recruiter->jobs()->create($validated);
+            $job = $recruiter->jobs()->create([
+                ...$validated,
+                'status' => $validated['status'] ?? 'approved',
+            ]);
 
-            // Notify admins if job is pending
+            // Notify admins if the job is sent for review.
             if ($job->status === 'pending') {
                 $admins = User::where('role', 'admin')->get();
                 foreach ($admins as $admin) {

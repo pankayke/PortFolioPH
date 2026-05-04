@@ -1,6 +1,7 @@
 // lib/data/repositories/project_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/project_model.dart';
 
@@ -14,7 +15,8 @@ class ProjectRepository {
   static final Map<int, _FeaturedCacheEntry> _featuredCacheByUser =
       <int, _FeaturedCacheEntry>{};
 
-  ProjectRepository({required ApiService apiService}) : _apiService = apiService;
+  ProjectRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(ProjectModel project) async {
     try {
@@ -45,7 +47,7 @@ class ProjectRepository {
     try {
       final data = await _apiService.get('/projects/$id');
       if (data is Map<String, dynamic>) {
-        return ProjectModel.fromMap(data);
+        return _normalizeForCurrentPlatform(ProjectModel.fromMap(data));
       }
     } catch (_) {
       // Fallback lookup below.
@@ -82,6 +84,7 @@ class ProjectRepository {
         return data
             .whereType<Map<String, dynamic>>()
             .map(ProjectModel.fromMap)
+            .map(_normalizeForCurrentPlatform)
             .toList(growable: false);
       }
     } catch (_) {
@@ -90,7 +93,7 @@ class ProjectRepository {
 
     final source = List<ProjectModel>.from(
       _localByPortfolio[portfolioId] ?? const <ProjectModel>[],
-    );
+    ).map(_normalizeForCurrentPlatform).toList(growable: false);
     final hasSearch = searchQuery != null && searchQuery.trim().isNotEmpty;
     final filtered = hasSearch
         ? source
@@ -191,22 +194,82 @@ class ProjectRepository {
       return projectsData
           .whereType<Map<String, dynamic>>()
           .map(ProjectModel.fromMap)
+          .map(_normalizeForCurrentPlatform)
           .toList(growable: false);
     } catch (_) {
       return const <ProjectModel>[];
     }
   }
 
+  ProjectModel _normalizeForCurrentPlatform(ProjectModel project) {
+    if (!kIsWeb) {
+      return project;
+    }
+
+    final normalizedImages = project.imagePaths
+        .where(_isWebSafeImagePath)
+        .toList(growable: false);
+
+    final rawThumbnail = project.thumbnailPath;
+    final normalizedThumbnail =
+        rawThumbnail != null && _isWebSafeImagePath(rawThumbnail)
+        ? rawThumbnail
+        : null;
+
+    final resolvedThumbnail =
+        normalizedThumbnail ??
+        (normalizedImages.isNotEmpty ? normalizedImages.first : null);
+
+    final resolvedImages = normalizedImages.isNotEmpty
+        ? normalizedImages
+        : (resolvedThumbnail == null
+              ? const <String>[]
+              : <String>[resolvedThumbnail]);
+
+    final imageListChanged =
+        resolvedImages.length != project.imagePaths.length ||
+        !_sameStringList(project.imagePaths, resolvedImages);
+    final thumbnailChanged = resolvedThumbnail != project.thumbnailPath;
+
+    if (!imageListChanged && !thumbnailChanged) {
+      return project;
+    }
+
+    return project.copyWith(
+      imagePaths: resolvedImages,
+      thumbnailPath: resolvedThumbnail,
+    );
+  }
+
+  bool _isWebSafeImagePath(String path) {
+    final value = path.trim();
+    if (value.isEmpty) return false;
+
+    return value.startsWith('data:image/') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://') ||
+        value.startsWith('blob:');
+  }
+
+  bool _sameStringList(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
   Future<int> update(ProjectModel project) async {
     try {
-      await _apiService.put('/projects/${project.id}', data: project.toMap());
+      final payload = _normalizeForCurrentPlatform(project);
+      await _apiService.put('/projects/${project.id}', data: payload.toMap());
       _invalidateFeaturedCacheForUser(project.userId);
       return 1;
     } catch (_) {
       final list = _localByPortfolio[project.portfolioId] ?? <ProjectModel>[];
       final index = list.indexWhere((item) => item.id == project.id);
       if (index >= 0) {
-        list[index] = project;
+        list[index] = _normalizeForCurrentPlatform(project);
         _invalidateFeaturedCacheForUser(project.userId);
         return 1;
       }

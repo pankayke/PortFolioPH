@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 
 abstract final class JobPlatformTheme {
   static ThemeData get light => _buildTheme(Brightness.light);
@@ -9,19 +10,19 @@ abstract final class JobPlatformTheme {
     final isDark = brightness == Brightness.dark;
 
     final baseScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0A66C2),
+      seedColor: DesignTokens.accentBlue,
       brightness: brightness,
     );
 
     final colorScheme = baseScheme.copyWith(
-      primary: isDark ? const Color(0xFF3B82F6) : const Color(0xFF0A66C2),
-      secondary: const Color(0xFF8B5CF6),
-      error: const Color(0xFFEF4444),
-      surface: isDark ? const Color(0xFF0A0F1A) : const Color(0xFFF8FAFC),
+      primary: isDark ? DesignTokens.accentBlueBright : DesignTokens.accentBlue,
+      secondary: DesignTokens.accentPurple,
+      error: DesignTokens.accentPhilippineRed,
+      surface: isDark ? DesignTokens.darkBaseB : DesignTokens.lightBase,
       surfaceContainerHighest:
-          isDark ? const Color(0xFF1E293B) : const Color(0xFFEAF0FF),
+          isDark ? DesignTokens.darkSurface : DesignTokens.lightSurface,
       outlineVariant:
-          isDark ? const Color(0xFF334155) : const Color(0xFFD2DBF3),
+          isDark ? DesignTokens.outlineDark : DesignTokens.outlineLight,
     );
 
     return ThemeData(
@@ -37,12 +38,38 @@ abstract final class JobPlatformTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.secondary,
+          foregroundColor: colorScheme.onSecondary,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: colorScheme.secondary,
+          foregroundColor: colorScheme.onSecondary,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.secondary,
+          side: BorderSide(color: colorScheme.secondary.withValues(alpha: 0.35)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: colorScheme.secondary,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

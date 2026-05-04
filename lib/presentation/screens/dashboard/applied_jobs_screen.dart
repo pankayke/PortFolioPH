@@ -134,7 +134,8 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                 const SizedBox(height: 12),
                 if (application.jobLocation != null)
                   Text('Location: ${application.jobLocation!}'),
-                if (application.salaryMin != null || application.salaryMax != null)
+                if (application.salaryMin != null ||
+                    application.salaryMax != null)
                   Text('Salary: ${application.salaryDisplay}'),
                 Text('Applied: ${_formatDate(application.appliedAt)}'),
                 if (application.notes?.trim().isNotEmpty ?? false) ...[

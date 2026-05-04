@@ -225,7 +225,7 @@ PaginatedResult<T> _parsePaginatedResponse<T>(
   if (response is List) {
     final items = response
         .map((item) => fromJson(Map<String, dynamic>.from(item as Map)))
-        .toList(growable: false);
+        .toList(growable: true);
     return PaginatedResult<T>(
       items: items,
       currentPage: fallbackPage,
@@ -240,7 +240,7 @@ PaginatedResult<T> _parsePaginatedResponse<T>(
     final items = rawItems is List
         ? rawItems
               .map((item) => fromJson(Map<String, dynamic>.from(item as Map)))
-              .toList(growable: false)
+              .toList(growable: true)
         : <T>[];
     final pagination = response['pagination'];
     final paginationMap = pagination is Map<String, dynamic>

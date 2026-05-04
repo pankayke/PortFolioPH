@@ -20,6 +20,8 @@ class RecruiterPendingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final isDark = colorScheme.brightness == Brightness.dark;
         return PremiumAppBackground(
           child: Scaffold(
             backgroundColor: Colors.transparent,
@@ -50,16 +52,22 @@ class RecruiterPendingScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
                           colors: [
-                            Colors.amber.withValues(alpha: 0.24),
-                            Colors.orange.withValues(alpha: 0.18),
+                            Colors.amber.withValues(
+                              alpha: isDark ? 0.34 : 0.24,
+                            ),
+                            Colors.orange.withValues(
+                              alpha: isDark ? 0.28 : 0.18,
+                            ),
                           ],
                         ),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.26),
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.40,
+                          ),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.amber.withValues(alpha: 0.22),
+                            color: const Color(0xFFF7B500).withValues(alpha: 0.22),
                             blurRadius: 24,
                             offset: const Offset(0, 10),
                           ),
@@ -68,7 +76,7 @@ class RecruiterPendingScreen extends StatelessWidget {
                       child: Icon(
                         Icons.hourglass_empty_rounded,
                         size: 50,
-                        color: Colors.amber.shade200,
+                        color: Color(0xFFF7B500),
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -76,7 +84,7 @@ class RecruiterPendingScreen extends StatelessWidget {
                       'Account Under Review',
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
-                            color: Colors.white,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.w800,
                           ),
                       textAlign: TextAlign.center,
@@ -85,7 +93,7 @@ class RecruiterPendingScreen extends StatelessWidget {
                     Text(
                       'Your recruiter account is currently under review by our admin team.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.84),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -95,8 +103,12 @@ class RecruiterPendingScreen extends StatelessWidget {
                     RecruiterGlassCard(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.white.withValues(alpha: 0.14),
-                          Colors.blue.withValues(alpha: 0.12),
+                          colorScheme.surface.withValues(
+                            alpha: isDark ? 0.28 : 0.14,
+                          ),
+                          colorScheme.primary.withValues(
+                            alpha: isDark ? 0.20 : 0.12,
+                          ),
                         ],
                       ),
                       child: Column(
@@ -106,7 +118,7 @@ class RecruiterPendingScreen extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: Colors.blue.shade200,
+                                color: colorScheme.primary,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -114,7 +126,7 @@ class RecruiterPendingScreen extends StatelessWidget {
                                   'What happens next?',
                                   style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(
-                                        color: Colors.white,
+                                        color: colorScheme.onSurface,
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
@@ -128,9 +140,7 @@ class RecruiterPendingScreen extends StatelessWidget {
                             '• You will receive an email notification once approved\n'
                             '• You can then access all recruiter features',
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.84),
-                                ),
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -164,6 +174,7 @@ class _PendingContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.currentUser;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +182,7 @@ class _PendingContent extends StatelessWidget {
         Text(
           'Account Details',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.white,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -185,7 +196,7 @@ class _PendingContent extends StatelessWidget {
         RecruiterDetailRow(
           label: 'Status',
           value: 'Pending',
-          valueColor: Colors.amber.shade200,
+          valueColor: const Color(0xFFF7B500),
         ),
       ],
     );

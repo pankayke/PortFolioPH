@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/data/models/job_listing_model.dart';
 
 class StatBadge extends StatelessWidget {
@@ -20,7 +21,7 @@ class StatBadge extends StatelessWidget {
   }
 }
 
-class JobFeedCard extends StatelessWidget {
+class JobFeedCard extends StatefulWidget {
   final JobListingModel job;
   final bool saved;
   final int index;
@@ -39,10 +40,19 @@ class JobFeedCard extends StatelessWidget {
   });
 
   @override
+  State<JobFeedCard> createState() => _JobFeedCardState();
+}
+
+class _JobFeedCardState extends State<JobFeedCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final shouldShowSeeMore = widget.job.description.trim().length > 140;
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 260 + (index * 90)),
+      duration: Duration(milliseconds: 260 + (widget.index * 90)),
       curve: Curves.easeOutCubic,
       builder: (context, value, child) {
         return Opacity(
@@ -63,40 +73,58 @@ class JobFeedCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      '${job.title} @ ${job.company}',
+                      '${widget.job.title} @ ${widget.job.company}',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
                   Chip(
-                    label: Text(job.category),
+                    label: Text(widget.job.category),
                     visualDensity: VisualDensity.compact,
                   ),
                 ],
               ),
               const SizedBox(height: 4),
-              Text('${job.salary} • ${job.location}'),
+              Text('${widget.job.salary} • ${widget.job.location}'),
               const SizedBox(height: 6),
-              Text(job.description),
+              Text(
+                widget.job.description,
+                maxLines: _expanded ? null : 3,
+                overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+              ),
+              if (shouldShowSeeMore)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => setState(() => _expanded = !_expanded),
+                    style: TextButton.styleFrom(
+                      foregroundColor: DesignTokens.accentPurple,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(_expanded ? 'See less' : 'See more'),
+                  ),
+                ),
               const SizedBox(height: 10),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
                     FilledButton(
-                      onPressed: onApply,
+                      onPressed: widget.onApply,
                       child: const Text('Apply'),
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
-                      onPressed: onSaveToggle,
+                      onPressed: widget.onSaveToggle,
                       icon: Icon(
-                        saved ? Icons.bookmark : Icons.bookmark_border,
+                        widget.saved ? Icons.bookmark : Icons.bookmark_border,
                       ),
-                      label: Text(saved ? 'Saved' : 'Save'),
+                      label: Text(widget.saved ? 'Saved' : 'Save'),
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton(
-                      onPressed: onShare,
+                      onPressed: widget.onShare,
                       child: const Text('Share'),
                     ),
                   ],
@@ -187,5 +215,6 @@ Future<bool> showQuickApplySheet(
     },
   );
 
+  noteController.dispose();
   return submitted ?? false;
 }

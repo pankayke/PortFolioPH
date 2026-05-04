@@ -3,11 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/features/recruiter/models/job_model.dart';
 import 'package:portfolioph/features/recruiter/models/recruiter_dashboard_summary.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_dashboard_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
+import 'package:portfolioph/features/recruiter/utils/recruiter_identity_utils.dart';
 import 'package:portfolioph/features/recruiter/widgets/dashboard_activity_item.dart';
 import 'package:portfolioph/features/recruiter/widgets/dashboard_job_card.dart';
 import 'package:portfolioph/features/recruiter/widgets/dashboard_stat_card.dart';
@@ -54,10 +56,21 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
         }
 
         final user = authProvider.currentUser;
+        final recruiterName = RecruiterIdentityUtils.recruiterDisplayName(user);
+        final companyName = RecruiterIdentityUtils.companyDisplayName(user);
         final activityFeed = _buildActivityFeed(summary);
         final topJobs = summary.topJobs.isNotEmpty
             ? summary.topJobs
             : summary.recentJobs.take(3).toList();
+        final upcomingInterviews =
+            summary.recentApplications
+                .where(
+                  (application) =>
+                      application.interviewDate != null &&
+                      application.interviewDate!.isAfter(DateTime.now()),
+                )
+                .toList(growable: false)
+              ..sort((a, b) => a.interviewDate!.compareTo(b.interviewDate!));
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -68,11 +81,11 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
             ]);
           },
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
             children: [
               _HeroCard(
-                recruiterName: user?.fullName ?? 'Recruiter',
-                companyName: user?.location ?? 'PortfolioPH Hiring Desk',
+                recruiterName: recruiterName,
+                companyName: companyName,
                 newApplicants: summary.newApplicationsCount,
                 activeJobs: summary.activeJobs,
               ),
@@ -89,33 +102,61 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                     label: 'Total Jobs Posted',
                     value: summary.totalJobs.toString(),
                     icon: Icons.work_outline_rounded,
-                    accent: const Color(0xFF60A5FA),
+                    accent: DesignTokens.accentPurple,
                     caption: 'Live roles',
                   ),
                   DashboardStatCard(
                     label: 'Active Jobs',
                     value: summary.activeJobs.toString(),
                     icon: Icons.bolt_rounded,
-                    accent: const Color(0xFF34D399),
+                    accent: DesignTokens.accentTeal,
                     caption: 'Hiring now',
                   ),
                   DashboardStatCard(
                     label: 'Total Applications',
                     value: summary.totalApplications.toString(),
                     icon: Icons.groups_rounded,
-                    accent: const Color(0xFFF59E0B),
+                    accent: const Color(0xFFF7B500),
                     caption: 'Pipeline volume',
                   ),
                   DashboardStatCard(
                     label: 'New Applications',
                     value: summary.newApplicationsCount.toString(),
                     icon: Icons.notification_add_outlined,
-                    accent: const Color(0xFF8B5CF6),
+                    accent: DesignTokens.accentPurple,
                     caption: 'Last 24h',
                   ),
                 ],
               ),
               const SizedBox(height: 14),
+              if (upcomingInterviews.isNotEmpty)
+                RecruiterGlassCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionHeader(
+                        title: 'Upcoming Interviews',
+                        subtitle: 'Scheduled candidate touchpoints',
+                        actionLabel: 'ATS',
+                        onAction: onJumpToAts,
+                      ),
+                      const SizedBox(height: 10),
+                      ...upcomingInterviews
+                          .take(3)
+                          .map(
+                            (application) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                '${application.applicantName} • ${application.jobTitle} • ${_formatInterviewDate(application.interviewDate!)}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+              if (upcomingInterviews.isNotEmpty) const SizedBox(height: 14),
               RecruiterGlassCard(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -163,7 +204,11 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                           'Applications over the last 7 days and your top roles.',
                     ),
                     const SizedBox(height: 14),
-                    _ApplicationsChart(stats: summary.applicationStatsByDay),
+                    RepaintBoundary(
+                      child: _ApplicationsChart(
+                        stats: summary.applicationStatsByDay,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'Top 3 Jobs by Applicants',
@@ -294,22 +339,22 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
                         _AtsMetricCard(
                           label: 'Pending',
                           value: summary.pendingApplications,
-                          accent: const Color(0xFFF59E0B),
+                          accent: const Color(0xFFF7B500),
                         ),
                         _AtsMetricCard(
                           label: 'Reviewed',
                           value: summary.reviewedApplications,
-                          accent: const Color(0xFF60A5FA),
+                          accent: DesignTokens.accentPurple,
                         ),
                         _AtsMetricCard(
                           label: 'Shortlisted',
                           value: summary.shortlistedApplications,
-                          accent: const Color(0xFF8B5CF6),
+                          accent: DesignTokens.accentTeal,
                         ),
                         _AtsMetricCard(
                           label: 'Rejected',
                           value: summary.rejectedApplications,
-                          accent: const Color(0xFFEF4444),
+                          accent: DesignTokens.accentPhilippineRed,
                         ),
                       ],
                     ),
@@ -354,8 +399,8 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
           meta: _relativeLabel(job.createdAt),
           icon: Icons.work_outline_rounded,
           accent: job.isClosed
-              ? const Color(0xFFEF4444)
-              : const Color(0xFF34D399),
+              ? DesignTokens.accentPhilippineRed
+              : DesignTokens.accentTeal,
           sortKey: job.createdAt,
         ),
       );
@@ -368,15 +413,15 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
   Color _statusColor(String status) {
     switch (status) {
       case 'accepted':
-        return const Color(0xFF34D399);
+        return DesignTokens.accentTeal;
       case 'shortlisted':
-        return const Color(0xFF8B5CF6);
+        return DesignTokens.accentPurple;
       case 'reviewed':
-        return const Color(0xFF60A5FA);
+        return DesignTokens.accentPurple;
       case 'rejected':
-        return const Color(0xFFEF4444);
+        return DesignTokens.accentPhilippineRed;
       default:
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFF7B500);
     }
   }
 
@@ -386,6 +431,15 @@ class RecruiterDashboardOverviewTab extends StatelessWidget {
     if (difference.inHours < 1) return '${difference.inMinutes}m ago';
     if (difference.inDays < 1) return '${difference.inHours}h ago';
     return '${difference.inDays}d ago';
+  }
+
+  String _formatInterviewDate(DateTime value) {
+    final local = value.toLocal();
+    final month = local.month.toString().padLeft(2, '0');
+    final day = local.day.toString().padLeft(2, '0');
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${local.year}-$month-$day $hour:$minute';
   }
 }
 
@@ -405,6 +459,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return RecruiterGlassCard(
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -432,12 +487,18 @@ class _HeroCard extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  color: const Color(0xFFEFF6FF),
-                  border: Border.all(color: const Color(0xFFDBEAFE)),
+                  color: isDark
+                      ? colorScheme.primaryContainer.withValues(alpha: 0.72)
+                      : DesignTokens.lightBase,
+                  border: Border.all(
+                    color: isDark
+                        ? colorScheme.primary.withValues(alpha: 0.45)
+                        : DesignTokens.accentPurple.withValues(alpha: 0.20),
+                  ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.apartment_rounded,
-                  color: Color(0xFF2563EB),
+                  color: isDark ? colorScheme.primary : DesignTokens.accentPurple,
                 ),
               ),
             ],
@@ -519,6 +580,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -529,8 +591,12 @@ class _ActionButton extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade200),
+            color: colorScheme.surfaceContainerHighest.withValues(
+              alpha: isDark ? 0.78 : 1,
+            ),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+            ),
           ),
           child: Row(
             children: [
@@ -539,9 +605,11 @@ class _ActionButton extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
-                  color: const Color(0xFFEFF6FF),
+                  color: colorScheme.primaryContainer.withValues(
+                    alpha: isDark ? 0.85 : 1,
+                  ),
                 ),
-                child: Icon(icon, color: const Color(0xFF2563EB)),
+                child: Icon(icon, color: colorScheme.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -583,6 +651,8 @@ class _ApplicationsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     final maxCount = stats.fold<int>(
       0,
       (previous, stat) => stat.count > previous ? stat.count : previous,
@@ -614,7 +684,7 @@ class _ApplicationsChart extends StatelessWidget {
             Text(
               maxCount == 0 ? '0 apps' : '$maxCount peak',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: const Color(0xFF60A5FA),
+                color: DesignTokens.accentBlueBright,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -627,8 +697,12 @@ class _ApplicationsChart extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              color: Colors.grey.shade50,
-              border: Border.all(color: Colors.grey.shade200),
+              color: colorScheme.surfaceContainerHighest.withValues(
+                alpha: isDark ? 0.70 : 1,
+              ),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+              ),
             ),
             child: Text(
               'No application data available yet.',
@@ -657,8 +731,8 @@ class _ApplicationsChart extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(14),
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFF38BDF8),
-                                    Color(0xFF2563EB),
+                                    DesignTokens.accentBlueBright,
+                                    DesignTokens.accentBlue,
                                   ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
@@ -695,6 +769,8 @@ class _TopJobRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     final maxApplicants = job.applicationCount == 0 ? 1 : job.applicationCount;
     final isActive = job.status == 'approved' || job.status == 'active';
 
@@ -702,8 +778,12 @@ class _TopJobRow extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade200),
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isDark ? 0.78 : 1,
+        ),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -726,13 +806,13 @@ class _TopJobRow extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: (isActive ? Colors.green : Colors.red).withValues(
-                    alpha: 0.10,
+                  color: (isActive ? DesignTokens.accentTeal : DesignTokens.accentPhilippineRed).withValues(
+                    alpha: isDark ? 0.18 : 0.10,
                   ),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: (isActive ? Colors.green : Colors.red).withValues(
-                      alpha: 0.24,
+                    color: (isActive ? DesignTokens.accentTeal : DesignTokens.accentPhilippineRed).withValues(
+                      alpha: isDark ? 0.40 : 0.24,
                     ),
                   ),
                 ),
@@ -740,8 +820,8 @@ class _TopJobRow extends StatelessWidget {
                   isActive ? 'Active' : 'Closed',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: isActive
-                        ? Colors.green.shade700
-                        : Colors.red.shade700,
+                        ? (isDark ? DesignTokens.accentTeal : DesignTokens.accentTeal)
+                        : (isDark ? DesignTokens.accentPhilippineRed : DesignTokens.accentPhilippineRed),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -762,9 +842,11 @@ class _TopJobRow extends StatelessWidget {
             child: LinearProgressIndicator(
               minHeight: 8,
               value: job.applicationCount / maxApplicants,
-              backgroundColor: Colors.grey.shade200,
+              backgroundColor: colorScheme.surface.withValues(
+                alpha: isDark ? 0.92 : 1,
+              ),
               valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF38BDF8),
+                DesignTokens.accentPurple,
               ),
             ),
           ),
@@ -787,12 +869,18 @@ class _AtsMetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: Colors.white,
-        border: Border.all(color: accent.withValues(alpha: 0.26)),
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isDark ? 0.78 : 1,
+        ),
+        border: Border.all(
+          color: accent.withValues(alpha: isDark ? 0.40 : 0.26),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -862,12 +950,18 @@ class _PulseStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.grey.shade50,
-        border: Border.all(color: Colors.grey.shade200),
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isDark ? 0.70 : 1,
+        ),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -904,13 +998,19 @@ class _EmptyInlineState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade200),
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isDark ? 0.78 : 1,
+        ),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -924,7 +1024,7 @@ class _EmptyInlineState extends StatelessWidget {
           const SizedBox(height: 4),
           Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 10),
-          FilledButton.tonal(
+          FilledButton(
             onPressed: onTap,
             child: const Text('Create a job'),
           ),
@@ -964,15 +1064,54 @@ class _DashboardLoadingState extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
         children: [
-          const SizedBox(height: 80),
-          const Center(child: CircularProgressIndicator()),
-          const SizedBox(height: 20),
-          Text(
-            'Loading recruiter dashboard...',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
+          const _DashboardSkeletonBlock(height: 132),
+          const SizedBox(height: 14),
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 1.12,
+            children: const [
+              _DashboardSkeletonBlock(height: 110),
+              _DashboardSkeletonBlock(height: 110),
+              _DashboardSkeletonBlock(height: 110),
+              _DashboardSkeletonBlock(height: 110),
+            ],
           ),
+          const SizedBox(height: 14),
+          const _DashboardSkeletonBlock(height: 220),
+          const SizedBox(height: 14),
+          const _DashboardSkeletonBlock(height: 260),
         ],
+      ),
+    );
+  }
+}
+
+class _DashboardSkeletonBlock extends StatelessWidget {
+  final double height;
+
+  const _DashboardSkeletonBlock({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
+    return RecruiterGlassCard(
+      padding: EdgeInsets.zero,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: colorScheme.surfaceContainerHighest.withValues(
+            alpha: isDark ? 0.55 : 0.72,
+          ),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.35),
+          ),
+        ),
       ),
     );
   }
@@ -1023,12 +1162,16 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: colorScheme.surface.withValues(alpha: isDark ? 0.92 : 1),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
       ),
       child: Text(
         label,

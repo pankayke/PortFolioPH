@@ -13,4 +13,3 @@ class FileDownloadHelper {
     return impl.saveBytes(bytes: bytes, fileName: fileName, mimeType: mimeType);
   }
 }
-

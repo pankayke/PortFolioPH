@@ -15,7 +15,7 @@ class ApplicationStatus {
   static const String shortlisted = 'shortlisted';
   static const String rejected = 'rejected';
   static const String accepted = 'accepted';
-  static const String withdrawn = 'rejected';
+  static const String withdrawn = 'withdrawn';
 
   static const List<String> all = [
     applied,

@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     environment:
       APP_NAME: PortfolioPH
-      APP_KEY: ${APP_KEY:-base64:your-app-key-here}
+      APP_KEY: base64:jPhaONrQt/qVn1E8wBBEBYNZjsZ9lmGUfKlW8ozLDko=
       APP_URL: ${APP_URL:-http://127.0.0.1:8000}
       APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Manila}
       DB_CONNECTION: mysql
@@ -163,7 +163,7 @@ services:
     restart: unless-stopped
     environment:
       APP_NAME: PortfolioPH
-      APP_KEY: ${APP_KEY:-base64:your-app-key-here}
+      APP_KEY: base64:jPhaONrQt/qVn1E8wBBEBYNZjsZ9lmGUfKlW8ozLDko=
       APP_URL: ${APP_URL:-http://127.0.0.1:8000}
       APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Manila}
       DB_CONNECTION: mysql

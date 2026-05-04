@@ -34,11 +34,12 @@ function Invoke-JsonRequestWithRetry {
         } catch {
             $attempt++
             $statusCode = Get-HttpStatusCode -ErrorRecord $_
-            if ($attempt -lt $MaxRetries -and ($statusCode -eq 429 -or $statusCode -ge 500)) {
+            $parsedStatusCode = 0
+            if ([int]::TryParse([string]$statusCode, [ref]$parsedStatusCode) -and $attempt -lt $MaxRetries -and ($parsedStatusCode -eq 429 -or $parsedStatusCode -ge 500)) {
                 Start-Sleep -Seconds 1
                 continue
             }
-            throw
+            throw $_
         }
     }
 }
@@ -76,6 +77,7 @@ function Invoke-JsonPutWithRetry {
 }
 
 function Invoke-StatusGetWithRetry {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidNullComparison', '', Scope = 'Function', Target = 'Invoke-StatusGetWithRetry', Justification = 'Analyzer false positive on retry helper status handling.')]
     param(
         [Parameter(Mandatory = $true)][string]$Url,
         [hashtable]$Headers = @{},
@@ -93,13 +95,13 @@ function Invoke-StatusGetWithRetry {
             return (Invoke-WebRequest -Uri $Url -Method Get -UseBasicParsing -Headers $Headers -TimeoutSec 30).StatusCode
         } catch {
             $attempt++
-            $statusCode = Get-HttpStatusCode -ErrorRecord $_
-            if ($statusCode -ne $null) {
-                if ($attempt -lt $MaxRetries -and ($statusCode -eq 429 -or $statusCode -ge 500)) {
+            $parsedStatusCode = 0
+            if ([int]::TryParse([string](Get-HttpStatusCode -ErrorRecord $_), [ref]$parsedStatusCode)) {
+                if ($attempt -lt $MaxRetries -and ($parsedStatusCode -eq 429 -or $parsedStatusCode -ge 500)) {
                     Start-Sleep -Seconds 1
                     continue
                 }
-                return $statusCode
+                return $parsedStatusCode
             }
 
             if ($attempt -lt $MaxRetries) {

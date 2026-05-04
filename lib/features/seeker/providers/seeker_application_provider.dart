@@ -117,6 +117,7 @@ class SeekerApplicationProvider extends ChangeNotifier {
     try {
       final application = await _repository.applyForJob(jobId);
       _applications.insert(0, application);
+      _recalculateCounts();
       ToastService.showSuccess('Application submitted successfully! ✅');
       notifyListeners();
       return application;

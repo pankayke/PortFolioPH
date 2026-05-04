@@ -79,12 +79,25 @@ class GlassCard extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               gradient: gradient,
-              color: gradient == null ? Colors.white : null,
+              color: gradient == null
+                  ? colorScheme.surfaceContainerHighest.withValues(
+                      alpha: colorScheme.brightness == Brightness.dark
+                          ? 0.92
+                          : 1,
+                    )
+                  : null,
               borderRadius: borderRadius,
-              border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
-              boxShadow: const [
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+                width: 1,
+              ),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x0F000000),
+                  color: colorScheme.shadow.withValues(
+                    alpha: colorScheme.brightness == Brightness.dark
+                        ? 0.30
+                        : 0.08,
+                  ),
                   blurRadius: 6,
                   offset: Offset(0, 2),
                 ),
@@ -157,21 +170,29 @@ class GlassGlowChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final color = glowColor ?? colorScheme.primary;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        color: color.withValues(alpha: 0.16),
-        border: Border.all(color: color.withValues(alpha: 0.45)),
+        color: color.withValues(alpha: isDark ? 0.22 : 0.16),
+        border: Border.all(
+          color: color.withValues(alpha: isDark ? 0.60 : 0.45),
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.20),
+            color: color.withValues(alpha: isDark ? 0.26 : 0.20),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+      child: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: colorScheme.onSurface),
+      ),
     );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
+  // Local API gateway runs on port 8000 in this workspace setup.
   static const String _defaultDevApiBaseUrl = 'http://127.0.0.1:8000/api';
-  static const String _defaultProdApiBaseUrl = 'https://api.portfolioph.dev/api';
+  static const String _defaultProdApiBaseUrl =
+      'https://api.portfolioph.dev/api';
   static const String _apiBaseUrlOverride = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: '',
@@ -10,10 +12,9 @@ class AppConfig {
 
   static String get apiBaseUrl {
     final override = _apiBaseUrlOverride.trim();
-    final value =
-        override.isNotEmpty
-            ? override
-            : (kReleaseMode ? _defaultProdApiBaseUrl : _defaultDevApiBaseUrl);
+    final value = override.isNotEmpty
+        ? override
+        : (kReleaseMode ? _defaultProdApiBaseUrl : _defaultDevApiBaseUrl);
 
     _validateApiBaseUrl(value);
     return value;

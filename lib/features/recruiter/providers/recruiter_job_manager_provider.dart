@@ -23,6 +23,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   int _activeJobCount = 0;
   int _draftJobCount = 0;
   int _closedJobCount = 0;
+  DateTime? _lastSyncedAt;
 
   // ─────── Getters ──────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   int get openJobCount => _activeJobCount;
   int get draftJobCount => _draftJobCount;
   int get closedJobCount => _closedJobCount;
+  DateTime? get lastSyncedAt => _lastSyncedAt;
 
   // ─────── Constructor ───────────────────────────────────────────────────────
 
@@ -76,6 +78,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
       _currentPage = loadedJobs.currentPage;
       _totalPages = loadedJobs.totalPages;
       _hasMore = loadedJobs.hasMore;
+      _lastSyncedAt = DateTime.now();
       _recalculateCounts();
       _isLoading = false;
       notifyListeners();

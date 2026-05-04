@@ -3,6 +3,8 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:portfolioph/core/config/app_config.dart';
 import 'package:portfolioph/core/constants/app_constants.dart';
 import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/core/utils/logging_utils.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/providers/profile_provider.dart';
@@ -34,11 +37,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   File? _selectedAvatar;
   File? _selectedResume;
+  Uint8List? _selectedResumeBytes;
+  String? _selectedResumeName;
 
   @override
   void initState() {
     super.initState();
     _initializeForm();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final currentUser = context.read<AuthProvider>().currentUser;
+      if (currentUser?.id != null) {
+        context.read<ProfileProvider>().loadProfile(currentUser!.id!);
+      }
+    });
   }
 
   @override
@@ -83,12 +95,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickResume() async {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Resume upload is available from the CV screen.'),
-      ),
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf'],
+      withData: kIsWeb,
     );
+
+    if (result == null || result.files.isEmpty) return;
+    final picked = result.files.single;
+
+    if (kIsWeb) {
+      if (picked.bytes == null || picked.bytes!.isEmpty) return;
+      setState(() {
+        _selectedResume = null;
+        _selectedResumeBytes = picked.bytes;
+        _selectedResumeName = picked.name;
+      });
+      return;
+    }
+
+    final path = picked.path;
+    if (path == null || path.isEmpty) return;
+
+    setState(() {
+      _selectedResume = File(path);
+      _selectedResumeBytes = null;
+      _selectedResumeName = picked.name;
+    });
   }
 
   Future<void> _submit(ProfileProvider profileProvider) async {
@@ -104,6 +137,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         websiteUrl: _websiteController.text.trim(),
         avatarFile: _selectedAvatar,
         resumeFile: _selectedResume,
+        resumeBytes: _selectedResumeBytes,
+        resumeFileName: _selectedResumeName,
       );
 
       if (!mounted) return;
@@ -155,14 +190,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (context, profileProvider, _) {
         final colorScheme = Theme.of(context).colorScheme;
 
-        return PremiumAppBackground(
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Edit Profile'),
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-            ),
-            body: SingleChildScrollView(
+        final localScheme = colorScheme.copyWith(
+          primary: DesignTokens.accentPurple,
+          secondary: DesignTokens.accentPurple,
+        );
+
+        return Theme(
+          data: Theme.of(context).copyWith(colorScheme: localScheme),
+          child: PremiumAppBackground(
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('Edit Profile'),
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+              ),
+              body: SingleChildScrollView(
               padding: const EdgeInsets.all(AppConstants.spacingMd),
               child: Form(
                 key: _formKey,
@@ -312,11 +354,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _selectedResume != null
-                                            ? _selectedResume!.path
-                                                  .split('/')
-                                                  .last
-                                            : 'No resume selected',
+                                        _selectedResumeName ??
+                                            (_selectedResume != null
+                                                ? _selectedResume!.path
+                                                      .split('/')
+                                                      .last
+                                                : 'No resume selected'),
                                         style: Theme.of(
                                           context,
                                         ).textTheme.bodyMedium,
@@ -413,10 +456,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }
 
 class _EditProfileHeaderCard extends StatelessWidget {
