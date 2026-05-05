@@ -33,10 +33,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Ensure repo checked out
+        uses: actions/checkout@v4
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.10.7'
+          cache: true
 
       - name: Decode Android keystore
         run: |
