@@ -1,6 +1,6 @@
 name: Android Release Pipeline
 
-on:
+'on':
   workflow_dispatch:
     inputs:
       branch:
