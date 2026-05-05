@@ -48,11 +48,11 @@ jobs:
         run: |
           mkdir -p android
           cat > android/key.properties <<'EOF'
-storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-storeFile=release-signing.jks
-EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release-signing.jks
+          EOF
 
       - name: Flutter pub get
         run: flutter pub get
