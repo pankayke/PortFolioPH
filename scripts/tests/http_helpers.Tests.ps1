@@ -1,7 +1,8 @@
 $ErrorActionPreference = 'Stop'
 
-$helperPath = Join-Path $PSScriptRoot '..\lib\http_helpers.ps1'
-. $helperPath
+BeforeAll {
+    . (Join-Path $PSScriptRoot '..\lib\http_helpers.ps1')
+}
 
 Describe 'Get-HttpStatusCode' {
     It 'returns status code when response exists on exception' {
@@ -15,7 +16,7 @@ Describe 'Get-HttpStatusCode' {
         )
 
         $statusCode = Get-HttpStatusCode -ErrorRecord $err
-        $statusCode | Should Be 429
+        $statusCode | Should -Be 429
     }
 
     It 'returns null when exception has no response' {
@@ -28,7 +29,7 @@ Describe 'Get-HttpStatusCode' {
         )
 
         $statusCode = Get-HttpStatusCode -ErrorRecord $err
-        $statusCode | Should Be $null
+        $statusCode | Should -BeNullOrEmpty
     }
 }
 
@@ -46,9 +47,9 @@ Describe 'Invoke-JsonRequestWithRetry' {
 
         $result = Invoke-JsonRequestWithRetry -Method 'Get' -Url 'http://localhost/api/health' -Headers @{ 'X-Test' = '1' } -MaxRetries 1
 
-        $result.method | Should Be 'Get'
-        $result.uri | Should Be 'http://localhost/api/health'
-        $result.headerCount | Should Be 1
+        $result.method | Should -Be 'Get'
+        $result.uri | Should -Be 'http://localhost/api/health'
+        $result.headerCount | Should -Be 1
     }
 
     It 'supports POST requests with JSON body' {
@@ -65,9 +66,9 @@ Describe 'Invoke-JsonRequestWithRetry' {
 
         $result = Invoke-JsonRequestWithRetry -Method 'Post' -Url 'http://localhost/api/auth/login' -Body @{ email = 'a@b.com' } -MaxRetries 1
 
-        $result.method | Should Be 'Post'
-        $result.contentType | Should Be 'application/json'
-        $result.body | Should Match 'a@b.com'
+        $result.method | Should -Be 'Post'
+        $result.contentType | Should -Be 'application/json'
+        $result.body | Should -Match 'a@b.com'
     }
 
     It 'retries transient 500 responses and succeeds before max retries' {
@@ -87,8 +88,8 @@ Describe 'Invoke-JsonRequestWithRetry' {
 
         $result = Invoke-JsonRequestWithRetry -Method 'Get' -Url 'http://localhost/api/ping' -MaxRetries 3
 
-        $result.ok | Should Be $true
-        $script:restAttempt | Should Be 2
+        $result.ok | Should -Be $true
+        $script:restAttempt | Should -Be 2
     }
 
     It 'throws when failures exceed retries' {
@@ -107,7 +108,7 @@ Describe 'Invoke-JsonRequestWithRetry' {
             $threw = $true
         }
 
-        $threw | Should Be $true
+        $threw | Should -Be $true
     }
 }
 
@@ -122,7 +123,7 @@ Describe 'Invoke-StatusGetWithRetry' {
         }
 
         $statusCode = Invoke-StatusGetWithRetry -Url 'http://localhost/missing' -MaxRetries 1
-        $statusCode | Should Be 404
+        $statusCode | Should -Be 404
     }
 
     It 'passes no-redirect mode to web request call' {
@@ -135,7 +136,7 @@ Describe 'Invoke-StatusGetWithRetry' {
         }
 
         $statusCode = Invoke-StatusGetWithRetry -Url 'http://localhost/admin' -NoRedirect -MaxRetries 1
-        $statusCode | Should Be 302
-        $script:maxRedirection | Should Be 0
+        $statusCode | Should -Be 302
+        $script:maxRedirection | Should -Be 0
     }
 }
