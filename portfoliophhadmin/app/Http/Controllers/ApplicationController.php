@@ -8,6 +8,7 @@ use App\Http\Resources\ApiResponse;
 use App\Models\Application;
 use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
 {
@@ -16,9 +17,10 @@ class ApplicationController extends Controller
     /**
      * Get applications (current user as job seeker, or for recruiter's jobs if recruiter)
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $applications = $this->applicationService->getApplications(auth()->user());
+        $perPage = $this->resolvePerPage($request);
+        $applications = $this->applicationService->getApplications($request->user(), $perPage);
 
         return ApiResponse::paginated($applications, 'Applications retrieved successfully', 200);
     }
@@ -44,17 +46,37 @@ class ApplicationController extends Controller
      */
     public function store(CreateApplicationRequest $request): JsonResponse
     {
+        $user = $request->user();
+        if ($user?->role !== 'job_seeker') {
+            return ApiResponse::error('Only job seekers can apply for jobs.', 403);
+        }
+
         try {
             $application = $this->applicationService->createApplication(
-                auth()->user(),
+                $user,
                 $request->validated()
             );
 
-            return ApiResponse::success(
+            $response = ApiResponse::success(
                 $application,
                 'Application submitted successfully',
                 201
             );
+
+            if (config('app.debug')) {
+                $response->headers->set(
+                    'X-Application-Debug',
+                    sprintf(
+                        'saved=1;application_id=%d;job_id=%d;user_id=%d;status=%s',
+                        $application->id,
+                        $application->job_id,
+                        $application->user_id,
+                        $application->status
+                    )
+                );
+            }
+
+            return $response;
         } catch (\Exception $e) {
             if ($e->getCode() === 409) {
                 return ApiResponse::error($e->getMessage(), 409);
@@ -82,5 +104,64 @@ class ApplicationController extends Controller
             'Application status updated successfully',
             200
         );
+    }
+
+    /**
+     * Bulk update application status (recruiter only)
+     */
+    public function bulkUpdateStatus(Request $request): JsonResponse
+    {
+        $request->validate([
+            'application_ids' => 'required|array',
+            'application_ids.*' => 'integer|exists:applications,id',
+            'status' => 'required|in:pending,reviewed,shortlisted,accepted,rejected',
+        ]);
+
+        $status = $request->input('status');
+        $applicationIds = $request->input('application_ids');
+
+        $applications = Application::whereIn('id', $applicationIds)->get();
+
+        $updatedCount = 0;
+
+        foreach ($applications as $application) {
+            // Check authorization for each application
+            if ($request->user()->can('updateStatus', $application)) {
+                $this->applicationService->updateApplicationStatus(
+                    $application,
+                    ['status' => $status]
+                );
+                $updatedCount++;
+            }
+        }
+
+        return ApiResponse::success(
+            ['updated_count' => $updatedCount],
+            "Successfully updated {$updatedCount} applications",
+            200
+        );
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        $perPage = (int) $request->input('per_page', 15);
+
+        return max(1, min(100, $perPage));
+    }
+
+    /**
+     * Withdraw an application
+     */
+    public function destroy(Request $request, Application $application): JsonResponse
+    {
+        $this->authorize('delete', $application);
+
+        if ($application->status !== 'pending') {
+            return ApiResponse::error('You can only withdraw pending applications.', 400);
+        }
+
+        $application->delete();
+
+        return ApiResponse::success(null, 'Application withdrawn successfully', 200);
     }
 }

@@ -111,6 +111,55 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
     }
   }
 
+  void _showApplicationDetails(SeekerApplication application) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(application.jobTitle, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 6),
+                Text(
+                  '${application.recruiterName} • ${application.statusDisplay}',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                if (application.jobLocation != null)
+                  Text('Location: ${application.jobLocation!}'),
+                if (application.salaryMin != null ||
+                    application.salaryMax != null)
+                  Text('Salary: ${application.salaryDisplay}'),
+                Text('Applied: ${_formatDate(application.appliedAt)}'),
+                if (application.notes?.trim().isNotEmpty ?? false) ...[
+                  const SizedBox(height: 10),
+                  Text('Notes', style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(application.notes!),
+                ],
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<SeekerApplicationProvider>(
@@ -188,7 +237,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'No applications yet',
+                                  'No applications yet. Start applying to jobs to track them here.',
                                   style: Theme.of(context).textTheme.bodyLarge,
                                 ),
                                 const SizedBox(height: 8),
@@ -267,9 +316,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () {
-          // Navigate to job details if needed
-        },
+        onTap: () => _showApplicationDetails(application),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

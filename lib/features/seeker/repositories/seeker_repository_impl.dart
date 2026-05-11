@@ -24,26 +24,41 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
     String? experienceLevel,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        if (search != null && search.isNotEmpty) 'search': search,
-        if (category != null && category.isNotEmpty) 'category': category,
-        if (location != null && location.isNotEmpty) 'location': location,
-        if (employmentType != null && employmentType.isNotEmpty)
-          'employment_type': employmentType,
-        if (experienceLevel != null && experienceLevel.isNotEmpty)
-          'experience_level': experienceLevel,
-      };
+      final queryParameters = <String, dynamic>{'page': page};
+      if (search != null && search.trim().isNotEmpty) {
+        queryParameters['search'] = search.trim();
+      }
+      if (category != null && category.trim().isNotEmpty) {
+        queryParameters['category'] = category.trim();
+      }
+      if (location != null && location.trim().isNotEmpty) {
+        queryParameters['location'] = location.trim();
+      }
+      if (employmentType != null && employmentType.trim().isNotEmpty) {
+        queryParameters['employment_type'] = employmentType.trim();
+      }
+      if (experienceLevel != null && experienceLevel.trim().isNotEmpty) {
+        queryParameters['experience_level'] = experienceLevel.trim();
+      }
 
       final response = await _apiService.get(
         '/jobs',
-        queryParameters: queryParams,
+        queryParameters: queryParameters,
       );
 
       if (response is List) {
         return response
             .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
             .toList();
+      }
+
+      if (response is Map<String, dynamic>) {
+        final data = response['data'];
+        if (data is List) {
+          return data
+              .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       return [];
@@ -65,7 +80,7 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
   @override
   Future<void> saveJob(int jobId) async {
     try {
-      await _apiService.post('/jobs/$jobId/save');
+      await _apiService.post('/saved-jobs', data: {'job_id': jobId});
     } catch (e) {
       rethrow;
     }
@@ -74,7 +89,7 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
   @override
   Future<void> unsaveJob(int jobId) async {
     try {
-      await _apiService.delete('/jobs/$jobId/save');
+      await _apiService.delete('/saved-jobs/$jobId');
     } catch (e) {
       rethrow;
     }
@@ -84,7 +99,7 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
   Future<List<SeekerJob>> getSavedJobs({int page = 1}) async {
     try {
       final response = await _apiService.get(
-        '/seeker/saved-jobs',
+        '/saved-jobs',
         queryParameters: {'page': page},
       );
 
@@ -92,6 +107,15 @@ class SeekerRepositoryImpl implements SeekerJobRepository {
         return response
             .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
             .toList();
+      }
+
+      if (response is Map<String, dynamic>) {
+        final data = response['data'];
+        if (data is List) {
+          return data
+              .map((j) => SeekerJob.fromJson(j as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       return [];
@@ -113,21 +137,32 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
     String sortBy = 'applied_at',
   }) async {
     try {
-      final queryParams = <String, dynamic>{
+      final queryParameters = <String, dynamic>{
         'page': page,
         'sort_by': sortBy,
-        if (status != null && status.isNotEmpty) 'status': status,
       };
+      if (status != null && status.isNotEmpty) {
+        queryParameters['status'] = status;
+      }
 
       final response = await _apiService.get(
-        '/seeker/applications',
-        queryParameters: queryParams,
+        '/applications',
+        queryParameters: queryParameters,
       );
 
       if (response is List) {
         return response
             .map((a) => SeekerApplication.fromJson(a as Map<String, dynamic>))
             .toList();
+      }
+
+      if (response is Map<String, dynamic>) {
+        final data = response['data'];
+        if (data is List) {
+          return data
+              .map((a) => SeekerApplication.fromJson(a as Map<String, dynamic>))
+              .toList();
+        }
       }
 
       return [];
@@ -139,9 +174,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   @override
   Future<SeekerApplication> getApplicationById(int applicationId) async {
     try {
-      final response = await _apiService.get(
-        '/seeker/applications/$applicationId',
-      );
+      final response = await _apiService.get('/applications/$applicationId');
       return SeekerApplication.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -152,7 +185,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   Future<SeekerApplication> applyForJob(int jobId) async {
     try {
       final response = await _apiService.post(
-        '/seeker/applications',
+        '/applications',
         data: {'job_id': jobId},
       );
       return SeekerApplication.fromJson(response as Map<String, dynamic>);
@@ -164,7 +197,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   @override
   Future<void> withdrawApplication(int applicationId) async {
     try {
-      await _apiService.post('/seeker/applications/$applicationId/withdraw');
+      await _apiService.delete('/applications/$applicationId');
     } catch (e) {
       rethrow;
     }
@@ -177,7 +210,7 @@ class SeekerApplicationRepositoryImpl implements SeekerApplicationRepository {
   ) async {
     try {
       await _apiService.post(
-        '/seeker/applications/$applicationId/resume',
+        '/applications/$applicationId/resume',
         data: {'resume': resumeFile},
       );
     } catch (e) {

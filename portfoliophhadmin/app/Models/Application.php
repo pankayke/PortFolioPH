@@ -14,6 +14,9 @@ class Application extends Model
         'user_id',
         'cover_letter',
         'status',
+        'source',
+        'device',
+        'notes',
     ];
 
     protected $casts = [

@@ -258,7 +258,7 @@ class _SkillsScreenState extends State<SkillsScreen>
                     child: Padding(
                       padding: EdgeInsets.all(AppConstants.spacingMd),
                       child: Text(
-                        'No skills yet. Tap the + button to add one.',
+                        'No skills yet. Tap + to add your first skill.',
                       ),
                     ),
                   )

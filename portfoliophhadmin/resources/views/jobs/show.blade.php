@@ -91,14 +91,14 @@
         @if(auth()->user()->role === 'recruiter' && auth()->user()->id === $job->recruiter_id)
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">
-                    <i class="fas fa-file-alt mr-2 text-blue-600"></i>Applications ({{ $job->applications->count() }})
+                    <i class="fas fa-file-alt mr-2 text-blue-600"></i>Applications ({{ $applicationCount ?? $applications->total() }})
                 </h2>
 
-                @if($job->applications->isEmpty())
+                @if($applications->isEmpty())
                     <p class="text-gray-500 text-center py-8">No applications yet</p>
                 @else
                     <div class="space-y-4">
-                        @foreach($job->applications as $application)
+                        @foreach($applications as $application)
                             <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                                 <div class="flex justify-between items-start mb-2">
                                     <div>
@@ -129,6 +129,10 @@
                             </div>
                         @endforeach
                     </div>
+
+                    <div class="mt-6">
+                        {{ $applications->links() }}
+                    </div>
                 @endif
             </div>
         @else
@@ -137,7 +141,24 @@
                 $hasApplied = auth()->user()->applications()->where('job_id', $job->id)->exists();
             @endphp
             <div class="bg-white rounded-lg shadow p-6">
-                @if($hasApplied)
+                @if(session('application_debug') && is_array(session('application_debug')) && (int) session('application_debug.job_id') === (int) $job->id)
+                    <div class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                        <h3 class="text-xs font-semibold uppercase tracking-wide text-indigo-800">Application Debug (Latest Submit)</h3>
+                        <div class="mt-2 grid grid-cols-1 gap-1 text-xs text-indigo-900 sm:grid-cols-2">
+                            <p><span class="font-medium">Application ID:</span> {{ session('application_debug.application_id') }}</p>
+                            <p><span class="font-medium">Job ID:</span> {{ session('application_debug.job_id') }}</p>
+                            <p><span class="font-medium">User ID:</span> {{ session('application_debug.user_id') }}</p>
+                            <p><span class="font-medium">Status:</span> {{ session('application_debug.status') }}</p>
+                            <p class="sm:col-span-2"><span class="font-medium">Created At:</span> {{ session('application_debug.created_at') }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                @if(auth()->user()->role !== 'job_seeker')
+                    <p class="text-amber-700 font-medium">
+                        <i class="fas fa-info-circle mr-2"></i>Only job seeker accounts can submit applications.
+                    </p>
+                @elseif($hasApplied)
                     <p class="text-green-600 font-medium">
                         <i class="fas fa-check-circle mr-2"></i>You have already applied for this job
                     </p>
@@ -182,7 +203,7 @@
                 </div>
                 <div>
                     <p class="text-gray-600 text-sm">Applications</p>
-                    <p class="text-gray-900 font-medium">{{ $job->applications->count() }}</p>
+                    <p class="text-gray-900 font-medium">{{ $applicationCount ?? $applications->total() }}</p>
                 </div>
                 @if(auth()->user()->role === 'recruiter' && auth()->user()->id === $job->recruiter_id)
                     <div>

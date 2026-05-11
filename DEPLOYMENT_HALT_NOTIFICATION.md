@@ -5,6 +5,8 @@
 **Status:** 🔴 **DO NOT DEPLOY**  
 **Recommendation:** Return to development for fixes
 
+> Historical incident report. Current verified status is documented in [CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md).
+
 ---
 
 ## 🚨 Critical Findings

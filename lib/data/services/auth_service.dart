@@ -27,9 +27,24 @@ class AuthService {
   final UserRepository _userRepository;
   final ApiService _apiService;
 
-  AuthService({UserRepository? userRepository, ApiService? apiService})
-    : _userRepository = userRepository ?? UserRepository(),
-      _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  factory AuthService({
+    UserRepository? userRepository,
+    ApiService? apiService,
+  }) {
+    final resolvedApi = apiService ?? ApiService(const FlutterSecureStorage());
+    final resolvedUserRepository =
+        userRepository ?? UserRepository(apiService: resolvedApi);
+    return AuthService._(
+      userRepository: resolvedUserRepository,
+      apiService: resolvedApi,
+    );
+  }
+
+  AuthService._({
+    required UserRepository userRepository,
+    required ApiService apiService,
+  }) : _userRepository = userRepository,
+       _apiService = apiService;
 
   // ── Register ──────────────────────────────────────────────────────────────────
   /// Creates a new user account.

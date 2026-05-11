@@ -2,6 +2,88 @@
 
 **Unified Full-Stack Job Platform with Flutter Frontend + Node.js Backend**
 
+## Docker Quick Start
+
+Before running Docker, review and update [.env.docker](.env.docker) with local secrets and credentials.
+
+Run the full stack in Docker Desktop (frontend, API, MySQL, nginx, phpMyAdmin, Mailpit):
+
+```powershell
+./scripts/docker-up.ps1
+```
+
+Optional flags:
+
+```powershell
+./scripts/docker-up.ps1 -NoBuild
+./scripts/docker-up.ps1 -FollowLogs
+```
+
+Stop all containers:
+
+```powershell
+./scripts/docker-down.ps1
+```
+
+Service URLs:
+
+- Frontend: http://localhost:3000
+- API: http://localhost:8000
+- phpMyAdmin: http://localhost:8080
+- Mailpit: http://localhost:8025
+- MySQL from host tools: localhost:3307
+
+## Deployment Pipeline (GitHub Actions)
+
+This repository includes a full deployment workflow at [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
+It also includes a manual rollback workflow at [.github/workflows/rollback.yml](.github/workflows/rollback.yml).
+For live environment checks, use runtime smoke workflow at [.github/workflows/runtime-smoke.yml](.github/workflows/runtime-smoke.yml).
+
+How it works:
+
+- Automatic staging deploy after successful `Full Codebase CI` on `develop`
+- Manual deploy to `staging` or `production` via `workflow_dispatch`
+- Optional post-deploy Laravel migrations (`run_migrations` input)
+- Environment gates use GitHub Environments (`staging` and `production`) for approval protection rules
+
+Required environment secrets (configure in each environment):
+
+- `DEPLOY_HOST`
+- `DEPLOY_USER`
+- `DEPLOY_PATH`
+- `DEPLOY_SSH_PRIVATE_KEY`
+
+Detailed setup runbook: [docs/DEPLOYMENT_PIPELINE_SETUP.md](docs/DEPLOYMENT_PIPELINE_SETUP.md)
+
+Quick access guide (how to run/view workflows and required secrets): [docs/PIPELINE_ACCESS_QUICKSTART.md](docs/PIPELINE_ACCESS_QUICKSTART.md)
+
+## Scalability Profile (5k+ Users)
+
+This stack is tuned for higher concurrent load while preserving behavior:
+
+- Redis enabled for sessions, cache, and queues
+- Dedicated queue worker container for background jobs
+- PHP-FPM process manager tuned for higher concurrency
+- OPcache enabled with larger memory and file cache limits
+- MySQL tuned with larger connection/cache/buffer settings
+- Nginx API gateway tuned with higher worker connections and fastcgi buffers
+
+Operational commands:
+
+```powershell
+# Start or refresh all services (including queue worker + redis)
+docker compose up -d --build
+
+# Check health
+docker compose ps
+
+# Scale API containers horizontally (when needed)
+docker compose up -d --scale api=2
+
+# Follow queue worker logs
+docker compose logs -f queue-worker
+```
+
 ## 🏗️ Architecture
 
 ```
@@ -53,29 +135,29 @@ flutter run -d chrome
 
 **Access URLs**
 - App: http://localhost:54725
-- API: http://localhost:8000/api/v1
+- API: http://localhost:8000/api
 
 ## 📚 API Endpoints
 
 ### Authentication (Public)
-- `POST /api/v1/auth/register` - Register user
-- `POST /api/v1/auth/login` - Login user
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/login` - Login user
 
 ### Jobs (Protected)
-- `GET /api/v1/jobs` - List all jobs
-- `POST /api/v1/jobs` - Create new job
-- `GET /api/v1/jobs/{id}` - Get job details
-- `PUT /api/v1/jobs/{id}` - Update job
-- `DELETE /api/v1/jobs/{id}` - Delete job
+- `GET /api/jobs` - List all jobs
+- `POST /api/jobs` - Create new job
+- `GET /api/jobs/{id}` - Get job details
+- `PUT /api/jobs/{id}` - Update job
+- `DELETE /api/jobs/{id}` - Delete job
 
 ### Applications (Protected)
-- `POST /api/v1/applications` - Submit application
-- `GET /api/v1/applications` - List applications
-- `PUT /api/v1/applications/{id}/status` - Update status
+- `POST /api/applications` - Submit application
+- `GET /api/applications` - List applications
+- `PUT /api/applications/{id}/status` - Update status
 
 ### Users (Protected)
-- `GET /api/v1/users/{id}` - Get user
-- `GET /api/v1/users/search` - Search users
+- `GET /api/users/{id}` - Get user
+- `GET /api/users/search` - Search users
 
 ## 👥 User Roles
 
@@ -105,12 +187,12 @@ flutter run -d chrome
 
 ```bash
 # Register new user
-curl -X POST http://localhost:8000/api/v1/auth/register \
+curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"John","email":"john@test.com","password":"pass123","role":"job_seeker"}'
 
 # Check health
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/api/health
 ```
 
 ## 🔄 Development Workflow

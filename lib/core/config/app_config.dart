@@ -17,7 +17,6 @@
 //   flutter build apk --flavor development -t lib/main_development.dart
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter/foundation.dart';
 
 enum Flavor { development, staging, production }
 
@@ -56,6 +55,8 @@ class AppConfig {
         break;
     }
 
+    _validateApiBaseUrl(flavor, _apiBaseUrl);
+
     _isInitialized = true;
   }
 
@@ -73,12 +74,30 @@ class AppConfig {
       return _apiBaseUrlOverride.trim();
     }
 
-    // Browser builds can fail DNS/CORS checks more often with localhost.
-    if (kIsWeb) {
-      return 'http://127.0.0.1:8000/api';
+    // Keep dev app and admin panel on the same backend by default.
+    // Local API gateway runs on port 8000 in this workspace setup.
+    return 'http://127.0.0.1:8000/api';
+  }
+
+  static void _validateApiBaseUrl(Flavor flavor, String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw StateError('Invalid API_BASE_URL: $value');
     }
 
-    return 'http://localhost:8000/api';
+    final isLocalHost = uri.host == 'localhost' || uri.host == '127.0.0.1';
+    if (flavor != Flavor.development) {
+      if (uri.scheme != 'https') {
+        throw StateError(
+          'Non-development flavors must use https API endpoints. Received: $value',
+        );
+      }
+      if (isLocalHost) {
+        throw StateError(
+          'Non-development flavors cannot use localhost API endpoints. Received: $value',
+        );
+      }
+    }
   }
 
   /// Check if debug logs are enabled (disabled in prod)

@@ -17,9 +17,13 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   String? _error;
   String? _selectedStatus;
   int _currentPage = 1;
-  final int _totalPages = 1;
+  int _totalPages = 1;
   bool _hasMore = true;
   String? _searchQuery;
+  int _activeJobCount = 0;
+  int _draftJobCount = 0;
+  int _closedJobCount = 0;
+  DateTime? _lastSyncedAt;
 
   // ─────── Getters ──────────────────────────────────────────────────────────
 
@@ -32,14 +36,11 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   bool get hasMore => _hasMore;
   String? get searchQuery => _searchQuery;
 
-  int get activeJobCount => _jobs
-      .where((j) => j.status == 'approved' || j.status == 'pending')
-      .length;
-  int get openJobCount => _jobs
-      .where((j) => j.status == 'approved' || j.status == 'pending')
-      .length;
-  int get draftJobCount => _jobs.where((j) => j.status == 'draft').length;
-  int get closedJobCount => _jobs.where((j) => j.status == 'closed').length;
+  int get activeJobCount => _activeJobCount;
+  int get openJobCount => _activeJobCount;
+  int get draftJobCount => _draftJobCount;
+  int get closedJobCount => _closedJobCount;
+  DateTime? get lastSyncedAt => _lastSyncedAt;
 
   // ─────── Constructor ───────────────────────────────────────────────────────
 
@@ -58,7 +59,6 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
 
     _isLoading = true;
     _error = null;
-    _currentPage = page;
     _selectedStatus = status;
     _searchQuery = search;
 
@@ -70,12 +70,16 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
       );
 
       if (refresh || page == 1) {
-        _jobs = loadedJobs;
+        _jobs = loadedJobs.items;
       } else {
-        _jobs.addAll(loadedJobs);
+        _jobs.addAll(loadedJobs.items);
       }
 
-      _hasMore = loadedJobs.isNotEmpty;
+      _currentPage = loadedJobs.currentPage;
+      _totalPages = loadedJobs.totalPages;
+      _hasMore = loadedJobs.hasMore;
+      _lastSyncedAt = DateTime.now();
+      _recalculateCounts();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -89,12 +93,21 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   /// Load next page of jobs
   Future<void> loadMoreJobs() async {
     if (!hasMore || isLoading) return;
-    await loadJobs(page: _currentPage + 1);
+    await loadJobs(
+      page: _currentPage + 1,
+      status: _selectedStatus,
+      search: _searchQuery,
+    );
   }
 
   /// Refresh job list
   Future<void> refreshJobs() async {
-    await loadJobs(refresh: true);
+    await loadJobs(
+      page: 1,
+      status: _selectedStatus,
+      search: _searchQuery,
+      refresh: true,
+    );
   }
 
   /// Get a single job by ID
@@ -117,6 +130,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
     try {
       final newJob = await _repository.createJob(request);
       _jobs.insert(0, newJob); // Add to top of list
+      _recalculateCounts();
       _isLoading = false;
       notifyListeners();
       return newJob;
@@ -141,6 +155,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
       final index = _jobs.indexWhere((j) => j.id == jobId);
       if (index != -1) {
         _jobs[index] = updatedJob;
+        _recalculateCounts();
       }
 
       _isLoading = false;
@@ -163,6 +178,7 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
     try {
       await _repository.deleteJob(jobId);
       _jobs.removeWhere((j) => j.id == jobId);
+      _recalculateCounts();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -177,7 +193,13 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
   Future<void> closeJob(int jobId) async {
     try {
       await _repository.closeJob(jobId);
-      await updateJob(jobId, {'status': 'closed'});
+
+      final index = _jobs.indexWhere((j) => j.id == jobId);
+      if (index != -1) {
+        _jobs[index] = _jobs[index].copyWith(status: 'closed');
+        _recalculateCounts();
+        notifyListeners();
+      }
     } catch (e) {
       _error = _handleError(e);
       notifyListeners();
@@ -187,16 +209,22 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
 
   /// Filter jobs by status
   Future<void> filterByStatus(String? status) async {
-    await loadJobs(status: status, refresh: true);
+    await loadJobs(
+      page: 1,
+      status: status,
+      search: _searchQuery,
+      refresh: true,
+    );
   }
 
   /// Search jobs by title/description
   Future<void> searchJobs(String query) async {
-    if (query.isEmpty) {
-      await loadJobs(refresh: true);
-    } else {
-      await loadJobs(search: query, refresh: true);
-    }
+    final normalizedQuery = query.trim();
+    await loadJobs(
+      status: _selectedStatus,
+      search: normalizedQuery.isEmpty ? null : normalizedQuery,
+      refresh: true,
+    );
   }
 
   // ─────── Private Methods ───────────────────────────────────────────────────
@@ -206,5 +234,27 @@ class RecruiterJobManagerProvider extends ChangeNotifier {
     if (error is String) return error;
     if (error is Exception) return error.toString();
     return error?.toString() ?? 'Unable to complete job action.';
+  }
+
+  void _recalculateCounts() {
+    var active = 0;
+    var draft = 0;
+    var closed = 0;
+
+    for (final job in _jobs) {
+      if (job.status == 'approved' || job.status == 'pending') {
+        active++;
+      }
+      if (job.status == 'draft') {
+        draft++;
+      }
+      if (job.status == 'closed') {
+        closed++;
+      }
+    }
+
+    _activeJobCount = active;
+    _draftJobCount = draft;
+    _closedJobCount = closed;
   }
 }

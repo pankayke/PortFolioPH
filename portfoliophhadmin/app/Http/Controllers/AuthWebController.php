@@ -28,6 +28,7 @@ class AuthWebController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -86,7 +87,7 @@ class AuthWebController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . auth()->user()->id,
+            'email' => 'required|email|unique:users,email,'.auth()->user()->id,
         ]);
 
         auth()->user()->update($validated);

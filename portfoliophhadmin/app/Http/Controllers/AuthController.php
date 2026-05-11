@@ -39,8 +39,8 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $user = $this->authService->authenticate($request->validated());
-        
-        if (!$user) {
+
+        if (! $user) {
             return ApiResponse::error('Invalid credentials', 401);
         }
 
@@ -77,7 +77,7 @@ class AuthController extends Controller
             return ApiResponse::success(null, 'If the email exists, a reset token has been issued.', 200);
         }
 
-        if (app()->environment(['local', 'development', 'testing'])) {
+        if (app()->environment('local')) {
             return ApiResponse::success(
                 ['reset_token' => $token],
                 'Use this reset token to confirm password reset.',
@@ -121,7 +121,7 @@ class AuthController extends Controller
             $request->string('new_password')->toString(),
         );
 
-        if (!$ok) {
+        if (! $ok) {
             return ApiResponse::error('Invalid or expired reset token.', 422);
         }
 
@@ -134,12 +134,16 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return ApiResponse::error('Not authenticated', 401);
         }
 
         return ApiResponse::success(
-            $user->only(['id', 'name', 'email', 'role']),
+            $user->only([
+                'id', 'name', 'email', 'role', 'username', 'full_name',
+                'bio', 'avatar_path', 'phone_number', 'location',
+                'website_url', 'resume_path', 'active',
+            ]),
             'Current user',
             200
         );

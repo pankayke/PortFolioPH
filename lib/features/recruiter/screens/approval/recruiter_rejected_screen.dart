@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
@@ -21,6 +22,8 @@ class RecruiterRejectedScreen extends StatelessWidget {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         final user = authProvider.currentUser;
+        final colorScheme = Theme.of(context).colorScheme;
+        final isDark = colorScheme.brightness == Brightness.dark;
 
         return PremiumAppBackground(
           child: Scaffold(
@@ -52,16 +55,20 @@ class RecruiterRejectedScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
                           colors: [
-                            Colors.red.withValues(alpha: 0.20),
-                            Colors.orange.withValues(alpha: 0.16),
+                            DesignTokens.accentPhilippineRed.withValues(alpha: isDark ? 0.30 : 0.20),
+                            Colors.orange.withValues(
+                              alpha: isDark ? 0.24 : 0.16,
+                            ),
                           ],
                         ),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.26),
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.40,
+                          ),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.red.withValues(alpha: 0.20),
+                            color: DesignTokens.accentPhilippineRed.withValues(alpha: 0.20),
                             blurRadius: 24,
                             offset: const Offset(0, 10),
                           ),
@@ -70,7 +77,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                       child: Icon(
                         Icons.cancel_rounded,
                         size: 50,
-                        color: Colors.red.shade200,
+                        color: DesignTokens.accentPhilippineRed,
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -78,7 +85,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                       'Account Not Approved',
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
-                            color: Colors.white,
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.w800,
                           ),
                       textAlign: TextAlign.center,
@@ -87,7 +94,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                     Text(
                       'Unfortunately, your recruiter account application was not approved.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.84),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -95,8 +102,10 @@ class RecruiterRejectedScreen extends StatelessWidget {
                     RecruiterGlassCard(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.red.withValues(alpha: 0.16),
-                          Colors.white.withValues(alpha: 0.12),
+                          DesignTokens.accentPhilippineRed.withValues(alpha: isDark ? 0.24 : 0.16),
+                          colorScheme.surface.withValues(
+                            alpha: isDark ? 0.24 : 0.12,
+                          ),
                         ],
                       ),
                       child: Column(
@@ -106,7 +115,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                             'Rejection Information',
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
-                                  color: Colors.white,
+                                  color: colorScheme.onSurface,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -124,7 +133,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                           RecruiterDetailRow(
                             label: 'Status',
                             value: 'Rejected',
-                            valueColor: Colors.red.shade200,
+                            valueColor: DesignTokens.accentPhilippineRed,
                           ),
                         ],
                       ),
@@ -133,8 +142,10 @@ class RecruiterRejectedScreen extends StatelessWidget {
                     RecruiterGlassCard(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.orange.withValues(alpha: 0.14),
-                          Colors.white.withValues(alpha: 0.12),
+                          Colors.orange.withValues(alpha: isDark ? 0.22 : 0.14),
+                          colorScheme.surface.withValues(
+                            alpha: isDark ? 0.24 : 0.12,
+                          ),
                         ],
                       ),
                       child: Column(
@@ -144,7 +155,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.warning_amber_rounded,
-                                color: Colors.orange.shade200,
+                                color: colorScheme.tertiary,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -152,7 +163,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                                   'Possible Reasons',
                                   style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(
-                                        color: Colors.white,
+                                        color: colorScheme.onSurface,
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
@@ -167,9 +178,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                             '• Policy violations\n'
                             '• Other verification concerns',
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.84),
-                                ),
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -178,8 +187,12 @@ class RecruiterRejectedScreen extends StatelessWidget {
                     RecruiterGlassCard(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.blue.withValues(alpha: 0.14),
-                          Colors.white.withValues(alpha: 0.12),
+                          colorScheme.primary.withValues(
+                            alpha: isDark ? 0.22 : 0.14,
+                          ),
+                          colorScheme.surface.withValues(
+                            alpha: isDark ? 0.24 : 0.12,
+                          ),
                         ],
                       ),
                       child: Column(
@@ -189,7 +202,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.help_outline_rounded,
-                                color: Colors.blue.shade200,
+                                color: colorScheme.primary,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -197,7 +210,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                                   'Need Help?',
                                   style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(
-                                        color: Colors.white,
+                                        color: colorScheme.onSurface,
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
@@ -208,9 +221,7 @@ class RecruiterRejectedScreen extends StatelessWidget {
                           Text(
                             'If you believe this is a mistake, please contact our support team at support@jobplatform.com',
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.84),
-                                ),
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),

@@ -16,6 +16,20 @@
     </p>
 </div>
 
+@if(session('application_debug') && is_array(session('application_debug')))
+    <div class="mb-6 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-indigo-800">Application Debug (Latest Submit)</h2>
+        <div class="mt-3 grid grid-cols-1 gap-2 text-sm text-indigo-900 sm:grid-cols-2 lg:grid-cols-3">
+            <p><span class="font-medium">Application ID:</span> {{ session('application_debug.application_id') }}</p>
+            <p><span class="font-medium">Job ID:</span> {{ session('application_debug.job_id') }}</p>
+            <p><span class="font-medium">User ID:</span> {{ session('application_debug.user_id') }}</p>
+            <p><span class="font-medium">Status:</span> {{ session('application_debug.status') }}</p>
+            <p class="sm:col-span-2 lg:col-span-2"><span class="font-medium">Created At:</span> {{ session('application_debug.created_at') }}</p>
+            <p><span class="font-medium">Saved:</span> yes</p>
+        </div>
+    </div>
+@endif
+
 <!-- Filters -->
 <div class="mb-6 bg-white rounded-lg shadow p-4 flex flex-wrap gap-2 items-center">
     <form method="GET" action="{{ route('applications.index') }}" class="w-full flex flex-wrap gap-2">

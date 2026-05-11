@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Auth\Middleware\Authenticate;
 
 class ApiGuard
 {
@@ -19,7 +18,7 @@ class ApiGuard
             $request->headers->set('X-Requested-With', 'XMLHttpRequest');
 
             // Resolve user from Sanctum for API route handling.
-            $request->setUserResolver(function () use ($request) {
+            $request->setUserResolver(function () {
                 return auth('sanctum')->user();
             });
         }

@@ -9,7 +9,7 @@ class StoreJobRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === 'recruiter';
+        return $this->user()?->role === 'recruiter';
     }
 
     public function rules(): array
@@ -20,7 +20,7 @@ class StoreJobRequest extends FormRequest
             'location' => ['required', 'string', 'max:255'],
             'salary_min' => ['nullable', 'numeric', 'min:0'],
             'salary_max' => ['nullable', 'numeric', 'gte:salary_min'],
-            'job_type' => ['required', Rule::in('full_time', 'part_time', 'contract', 'freelance')],
+            'job_type' => ['required', Rule::in(['full_time', 'part_time', 'contract', 'freelance'])],
             'required_skills' => ['nullable', 'array'],
             'required_skills.*' => ['string', 'max:100'],
             'deadline' => ['nullable', 'date', 'after:now'],

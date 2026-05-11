@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 
 class PremiumTitanMobileHeader extends StatefulWidget
     implements PreferredSizeWidget {
@@ -14,7 +15,7 @@ class PremiumTitanMobileHeader extends StatefulWidget
   final VoidCallback? onNotificationTap;
   final VoidCallback? onProfileTap;
   final VoidCallback? onLogoutTap;
-  final bool hasUnreadNotifications;
+  final int unreadNotificationCount;
 
   const PremiumTitanMobileHeader({
     super.key,
@@ -27,7 +28,7 @@ class PremiumTitanMobileHeader extends StatefulWidget
     this.onNotificationTap,
     this.onProfileTap,
     this.onLogoutTap,
-    this.hasUnreadNotifications = true,
+    this.unreadNotificationCount = 0,
   });
 
   @override
@@ -62,7 +63,7 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
@@ -82,8 +83,8 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withValues(alpha: 0.18),
-                      const Color(0xFF0A66C2).withValues(alpha: 0.22),
+                      Colors.white.withValues(alpha: 0.16),
+                      DesignTokens.accentBlue.withValues(alpha: 0.18),
                     ],
                   ),
                 ),
@@ -141,16 +142,22 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                               svg: _bellSvg,
                               onTap: widget.onNotificationTap,
                             ),
-                            if (widget.hasUnreadNotifications)
+                            if (widget.unreadNotificationCount > 0)
                               Positioned(
                                 right: -1,
                                 top: -1,
                                 child: Container(
-                                  width: 9,
-                                  height: 9,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 1,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF22C55E),
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(999),
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(
@@ -160,6 +167,19 @@ class _PremiumTitanMobileHeaderState extends State<PremiumTitanMobileHeader> {
                                         spreadRadius: 1,
                                       ),
                                     ],
+                                  ),
+                                  child: Text(
+                                    widget.unreadNotificationCount > 99
+                                        ? '99+'
+                                        : widget.unreadNotificationCount
+                                              .toString(),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.1,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -275,11 +295,11 @@ class _LiveAvatar extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(
-              colors: [Color(0xFF0A66C2), Color(0xFF38BDF8)],
+              colors: [DesignTokens.accentBlue, DesignTokens.accentPurple],
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                color: DesignTokens.accentPurple.withValues(alpha: 0.26),
                 blurRadius: 12,
                 spreadRadius: 1,
               ),
@@ -336,8 +356,8 @@ class _SvgActionButton extends StatelessWidget {
           height: 34,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: Colors.white.withValues(alpha: 0.12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            color: Colors.white.withValues(alpha: 0.10),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
           ),
           child: Center(
             child: SvgPicture.string(

@@ -34,7 +34,7 @@ class Job {
     this.applicationCount = 0,
   });
 
-  bool get isActive => status == 'active';
+  bool get isActive => status == 'approved' || status == 'active';
   bool get isClosed => status == 'closed';
   bool get isArchived => status == 'archived';
 
@@ -43,9 +43,9 @@ class Job {
 
   String get salaryDisplay {
     if (salaryMin == null && salaryMax == null) return 'Competitive';
-    if (salaryMin == null) return '\$${salaryMax?.toStringAsFixed(0)}';
-    if (salaryMax == null) return '\$${salaryMin?.toStringAsFixed(0)}+';
-    return '\$${salaryMin?.toStringAsFixed(0)} - \$${salaryMax?.toStringAsFixed(0)}';
+    if (salaryMin == null) return 'PHP ${salaryMax?.toStringAsFixed(0)}';
+    if (salaryMax == null) return 'PHP ${salaryMin?.toStringAsFixed(0)}+';
+    return 'PHP ${salaryMin?.toStringAsFixed(0)} - PHP ${salaryMax?.toStringAsFixed(0)}';
   }
 
   static double? _asDouble(dynamic value) {

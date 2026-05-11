@@ -3,6 +3,465 @@
 > Keep this file updated in real time for every non-trivial task.
 
 ## Current Task (Update)
+- Jira/Issue: System Gap Recommendations Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 1
+
+## Atomic Plan (Update)
+- [x] 1. Identify the main gap-analysis documents
+- [x] 2. Add a prioritized recommendations section
+- [x] 3. Sync the roadmap with the same priority order
+- [x] 4. Record the documentation pass in the lessons log
+
+## Evidence (Update)
+- `COMPLETE_CODEBASE_SCAN_SUMMARY.md` now includes a prioritized recommendations section above the feature inventory.
+- `PRODUCTION_UPGRADE_ROADMAP.md` now lists a clear gap-fix order so the next work cycle has a concrete sequence.
+- Validation for this pass is documentation-level; no code paths were changed.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Theme Toggle Fix for Seeker and Recruiter
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 3
+
+## Atomic Plan (Update)
+- [x] 1. Locate theme wiring and toggle entry points for both role dashboards
+- [x] 2. Remove recruiter light-theme override that blocked dark mode
+- [x] 3. Add explicit seeker dashboard theme toggle control
+- [x] 4. Validate with analyzer and Flutter tests
+
+## Evidence (Update)
+- `RecruiterDashboardScreen` now uses app-level theme colors (`colorScheme.surface` / `surfaceContainer`) instead of a forced light `Theme` wrapper.
+- Recruiter popup toggle remains wired to `ThemeProvider.toggleDarkMode()` and now visibly affects dashboard shell colors.
+- `SeekerDashboardScreen` profile tab now exposes a `Dark Mode` switch tied to `ThemeProvider.toggleDarkMode()`.
+- Validation: `flutter analyze` on edited dashboard files and `flutter test --no-pub` completed successfully.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Seeker Dashboard Job Filter Feature
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Scan seeker dashboard for missing feature controls
+- [x] 2. Add employment-type and remote-only filters in jobs tab
+- [x] 3. Wire filters into provider-backed job queries
+- [x] 4. Validate analyzer and Flutter tests
+
+## Evidence (Update)
+- `SeekerJobListProvider` now includes explicit `filterByEmploymentType` and `filterByExperienceLevel` helpers.
+- `SeekerDashboardScreen` now supports in-tab quick filters: All Types, Full-time, Part-time, Contract, and Remote Only.
+- Search + filters now execute as a combined query path via `_loadJobsWithActiveFilters()`.
+- Validation: `flutter analyze` passed for edited files and full `flutter test --no-pub` passed (41 tests).
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: System + Codebase Hardening Sweep
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-24
+- Target Completion: 2026-04-24
+- Risk Level (1-10): 4
+
+## Atomic Plan (Update)
+- [x] 1. Harden diagnostic scripts with local-only and explicit mutation flags
+- [x] 2. Fix API route drift in diagnostics (auth logout path)
+- [x] 3. Add non-development API URL guardrails in Flutter configs
+- [x] 4. Re-run Laravel and Flutter test suites
+
+## Evidence (Update)
+- `portfoliophhadmin/diagnostic_test.php` now blocks non-CLI, non-localhost, and missing `--allow-mutations` runs.
+- `portfoliophhadmin/run_validation_tests.php` now blocks non-CLI, non-localhost, and missing `--allow-mutations` runs.
+- Route check corrected from `/api/logout` to `/api/auth/logout` in diagnostics.
+- `lib/core/config/app_config.dart` validates that staging/production flavors cannot use localhost or non-https API URLs.
+- `mobile-jobs/lib/core/config/app_config.dart` now resolves environment-aware base URL and enforces release-safe URL validation.
+- Validation: Laravel feature suite and Flutter tests passed after hardening changes.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Repo Context + Optimization Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Map the main repo flows and hot paths
+- [x] 2. Trim broad eager loads and summary queries
+- [x] 3. Validate the affected Laravel test suite
+
+## Evidence (Update)
+- Admin and dashboard screens now load only the columns each view renders.
+- `DashboardController`, `JobWebController`, and `AdminWebController` were tightened without changing route behavior.
+- Validation: `php artisan test` passed (81 tests, 317 assertions).
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Recruiter ATS Polish Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add a richer candidate header card
+- [x] 2. Improve ATS queue cards and empty state
+- [x] 3. Validate the recruiter ATS screens with analyzer
+
+## Evidence (Update)
+- `CandidateProfileView` now has a stronger header card with summary pills and a clearer CV action.
+- `ApplicantTrackingScreen` now has a richer queue header, better list cards, and a more deliberate empty state.
+- Validation: `flutter analyze lib/features/recruiter/screens/ats/candidate_profile_view.dart lib/features/recruiter/screens/ats/applicant_tracking_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Edit Profile + CV Upload Polish
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Rebuild edit profile with polished sections
+- [x] 2. Restyle CV upload for lively mobile feedback
+- [x] 3. Validate both screens with analyzer
+
+## Evidence (Update)
+- `EditProfileScreen` now has a branded header card, stronger section panels, and cleaner resume controls.
+- `CVUploadScreen` now uses a glass-style upload card and works cleanly with the existing web-safe file flow.
+- Validation: `flutter analyze lib/presentation/screens/profile/edit_profile_screen.dart lib/features/seeker/screens/profile/cv_upload_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Profile UI Liveliness Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add a lively profile momentum card
+- [x] 2. Restyle profile section cards for consistency
+- [x] 3. Validate the modified profile screen with analyzer
+
+## Evidence (Update)
+- `ProfileScreen` now includes a profile pulse card with metric tiles and direct action buttons.
+- `_SectionCard` now uses a glassier gradient treatment with a stronger header marker.
+- Validation: `flutter analyze lib/presentation/screens/profile/profile_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Dashboard UI Liveliness Pass
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-13
+- Target Completion: 2026-04-13
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add a lively summary section to the seeker home dashboard
+- [x] 2. Fill recruiter home/company whitespace with real cards and metrics
+- [x] 3. Validate the edited Flutter files with analyzer
+
+## Evidence (Update)
+- `DashboardScreen` now includes a new momentum board with featured roles and live seeker stats.
+- `RecruiterDashboardScreen` now includes a hiring pulse card and a richer company snapshot section.
+- Validation: `flutter analyze lib/presentation/screens/dashboard/dashboard_screen.dart lib/features/recruiter/screens/dashboard/recruiter_dashboard_screen.dart` passed with no issues.
+- Status: Completed.
+
+## Current Task (Update)
+- Jira/Issue: Public Job Detail Payload Optimization
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Paginate recruiter applications in the public job detail controller
+- [x] 2. Update the job detail view to consume the paginated collection
+- [x] 3. Add regression coverage for the recruiter detail view
+- [x] 4. Regenerate the QA DOCX source and validate the output
+
+## Evidence (Update)
+- `JobWebController::show` now loads recruiter data minimally and paginates applications.
+- `resources/views/jobs/show.blade.php` now renders the paginated applications collection.
+- Added a feature test covering the recruiter web job detail page and applications total.
+- Validation: `php artisan test` passed (73 tests, 295 assertions).
+- Validation: regenerated [docs/PortFolioPH_10_Page_Test_Cases.docx](docs/PortFolioPH_10_Page_Test_Cases.docx) and confirmed 9 explicit page-break markers.
+
+## Status
+- Completed
+
+## Current Task (Update)
+- Jira/Issue: Admin List Aggregate Count Cleanup
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 1
+
+## Atomic Plan (Update)
+- [x] 1. Replace remaining collection-based summary counts with query aggregates
+- [x] 2. Validate controller syntax and full Laravel suite
+
+## Evidence (Update)
+- `AdminWebController::users` now computes active and total counts with query aggregates instead of collection scans.
+- `AdminWebController::jobs` now computes moderation summary counts with query aggregates instead of collection scans.
+- Validation: `php artisan test` passed (73 tests, 295 assertions).
+
+## Status
+- Completed
+
+## Current Task (Update)
+- Jira/Issue: Audit Stream + Job Detail Payload Optimization
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Move audit-page counters and relations into the controller
+- [x] 2. Trim job-detail API to count applications instead of hydrating them
+- [x] 3. Add regression coverage for audit and job detail payloads
+- [x] 4. Regenerate the QA DOCX source and validate output structure
+
+## Evidence (Update)
+- `AdminWebController::auditLog` now eager loads job recruiter and application user/job relations, and computes `activeSessions`/`serverLoad` in the controller.
+- `resources/views/admin/audit.blade.php` no longer performs inline count math.
+- `JobService::getJob` now uses `loadCount('applications')` instead of loading the full `applications` relation.
+- Added feature tests for the admin audit page and job detail API count payload.
+- Validation: `php artisan test` passed (72 tests, 292 assertions).
+- Validation: regenerated [docs/PortFolioPH_10_Page_Test_Cases.docx](docs/PortFolioPH_10_Page_Test_Cases.docx) and confirmed 9 explicit page-break markers.
+
+## Status
+- Completed
+
+## Current Task (Update)
+- Jira/Issue: QA Doc Sync for Latest API Safety Changes
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 1
+
+## Atomic Plan (Update)
+- [x] 1. Update the source doc generator with latest API safety scenarios
+- [x] 2. Regenerate the DOCX artifact from the updated source
+- [x] 3. Verify document structure and page-break layout
+
+## Evidence (Update)
+- Updated [scripts/generate_portfolioph_testcases_docx.py](scripts/generate_portfolioph_testcases_docx.py) so PFVT-059 through PFVT-061 cover the latest per-page guardrails, route-safety behavior, and audit-stream optimization.
+- Regenerated [docs/PortFolioPH_10_Page_Test_Cases.docx](docs/PortFolioPH_10_Page_Test_Cases.docx) from the updated source.
+- Validation: DOCX still contains 9 explicit page-break markers, preserving the 10-page section layout.
+
+## Current Task (Update)
+- Jira/Issue: API Route Safety + Pagination Guardrails + Composite Index Expansion
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 3
+
+## Atomic Plan (Update)
+- [x] 1. Enforce per-page bounds on high-traffic job listing APIs
+- [x] 2. Fix parameterized route shadowing of static endpoints
+- [x] 3. Add missing composite indexes for common filter + sort paths
+- [x] 4. Validate with focused and full regression suites
+
+## Evidence (Update)
+- `JobController` now clamps `per_page` to 1..100 for both `/api/jobs` and `/api/jobs/mine`.
+- Added route numeric constraints in `routes/api.php` to prevent static endpoint shadowing (`jobs/mine`, `users/search`, etc.).
+- Added migration `2026_04_11_150000_add_composite_performance_indexes.php` with guarded composite indexes:
+	- jobs: `(status, created_at)`, `(recruiter_id, status, created_at)`
+	- applications: `(user_id, created_at)`, `(job_id, status, created_at)`
+	- users: `(role, active, created_at)`
+- Added tests in `JobControllerTest` for per-page cap behavior on public jobs and recruiter mine endpoints.
+- Validation: full `php artisan test` passed (70 tests, 284 assertions).
+- Validation: `php artisan migrate --pretend` confirms SQL for new indexes.
+- Validation: root `flutter analyze` clean and root `flutter test` all passed.
+
+## Current Task (Update)
+- Jira/Issue: Admin Controller Query Efficiency Pass (N+1 + Redundant Loads)
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Remove redundant relation preloads before paginated queries
+- [x] 2. Replace row-level relation count calls with `withCount` in admin job/user views
+- [x] 3. Normalize recruiter job filters in service layer
+- [x] 4. Re-run full Laravel suite
+
+## Evidence (Update)
+- `AdminWebController::showUser` now paginates `jobs` with `withCount('applications')` and `applications` with eager-loaded job title.
+- `AdminWebController::jobs` now uses `withCount('applications')` + constrained recruiter eager load.
+- `AdminWebController::showJob` now eager loads recruiter minimally and paginates applications with eager-loaded applicant info.
+- `resources/views/admin/jobs/index.blade.php` now uses `applications_count` (precomputed) instead of per-row relation counting.
+- `resources/views/admin/users/show.blade.php` recruiter jobs table now uses `applications_count`.
+- `JobService::getRecruiterJobs` now trims/normalizes filter values and whitelists status filter values.
+- Validation: `php -l app/Http/Controllers/AdminWebController.php` clean.
+- Validation: `php -l app/Services/JobService.php` clean.
+- Validation: full `php artisan test` passed (68 tests, 280 assertions).
+
+## Current Task (Update)
+- Jira/Issue: Full Optimization Pass + 10-Page QA Test Case Document (DOCX)
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 4
+
+## Atomic Plan (Update)
+- [x] 1. Continue backend optimization in high-impact query paths
+- [x] 2. Keep regression safety through full Laravel test suite
+- [x] 3. Generate 10-page test-case document in requested tabular format (.docx)
+
+## Evidence (Update)
+- Optimized `DashboardController` recruiter/seeker counters to use aggregate queries instead of repeated count calls.
+- Corrected `JobService::getApprovedJobs` search grouping so `orWhere` cannot bypass approved status filtering.
+- Validation: full `php artisan test` passed after optimization changes (68 tests).
+- Generated document: `docs/PortFolioPH_10_Page_Test_Cases.docx`.
+- Document built with 10 module sections and page breaks between sections to match 10-page structure request.
+
+## Current Task (Update)
+- Jira/Issue: Admin Users List Filter/Sort Regression Coverage
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add users-list search/role/status filter assertions
+- [x] 2. Add active-sort and invalid-sort fallback assertions
+- [x] 3. Re-run targeted and full Laravel test suites
+
+## Evidence (Update)
+- Extended `portfoliophhadmin/tests/Feature/AdminWebControllerTest.php` with 5 users-index tests.
+- Added coverage for multi-term search across name/email/username.
+- Added coverage for role alias normalization (`job seeker` → `job_seeker`).
+- Added coverage for suspended-only filter behavior.
+- Added coverage for active sort prioritization and invalid sort fallback to `created_at desc`.
+- Validation: `php artisan test --filter=AdminWebControllerTest` passed (18 tests).
+- Validation: full `php artisan test` passed (68 tests, 280 assertions).
+
+## Current Task (Update)
+- Jira/Issue: Admin Edge-Case Test Expansion (Settings + Role Transitions)
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Add invalid settings payload validation coverage
+- [x] 2. Add settings default-session coverage
+- [x] 3. Add invalid role update and recruiter demotion side-effect coverage
+- [x] 4. Re-run targeted and full Laravel tests
+
+## Evidence (Update)
+- Extended `portfoliophhadmin/tests/Feature/AdminWebControllerTest.php` with 4 new edge-case tests.
+- Added validation-failure assertions for settings update payload constraints.
+- Added default settings assertions when no admin settings are stored in session.
+- Added invalid role update validation test.
+- Added recruiter-to-job-seeker demotion test asserting job closure and application status neutralization to `reviewed`.
+- Validation: `php artisan test --filter=AdminWebControllerTest` passed (13 tests).
+- Validation: full `php artisan test` passed (63 tests, 270 assertions).
+
+## Current Task (Update)
+- Jira/Issue: AdminWebController Feature Test Coverage
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 3
+
+## Atomic Plan (Update)
+- [x] 1. Add dedicated feature tests for admin web controller routes/flows
+- [x] 2. Fix route-name mismatches revealed by tests
+- [x] 3. Re-run targeted and full Laravel test suites
+
+## Evidence (Update)
+- Added `portfoliophhadmin/tests/Feature/AdminWebControllerTest.php` with 9 passing tests.
+- Covered auth boundary, non-admin access denial, dashboard payload, user suspend/unsuspend, user delete cascade behavior, job approve/suspend/delete, settings update session persistence, and applications stats payload.
+- Fixed invalid redirect route names in `AdminWebController` from `admin.users`/`admin.jobs` to `admin.users.index`/`admin.jobs.index`.
+- Validation: `php artisan test --filter=AdminWebControllerTest` passed; full `php artisan test` passed (59 tests).
+
+## Current Task (Update)
+- Jira/Issue: AdminWebController Query Optimization + Safety Hardening
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 3
+
+## Atomic Plan (Update)
+- [x] 1. Consolidate repeated dashboard/application count queries
+- [x] 2. Add transaction safety for destructive deletes
+- [x] 3. Validate with PHP lint + Laravel tests + Flutter analyze
+
+## Evidence (Update)
+- Admin dashboard/user/job/application aggregate counts now use consolidated SQL aggregates.
+- User and job deletion flows now execute in DB transactions.
+- Validation: `php -l app/Http/Controllers/AdminWebController.php` clean.
+- Validation: `php artisan test` passed (50 tests, 214 assertions).
+- Validation: root `flutter analyze` clean.
+
+## Current Task (Update)
+- Jira/Issue: RadioListTile Deprecation Cleanup (RadioGroup Migration)
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Remove deprecated-member ignore directives
+- [x] 2. Migrate deprecated RadioListTile APIs to RadioGroup
+- [x] 3. Run analyzer and tests for proof-of-fix
+
+## Evidence (Update)
+- Removed file-level ignore directives from settings and resume export screens.
+- Migrated deprecated `RadioListTile` `groupValue`/`onChanged` usage to `RadioGroup` in both screens.
+- Root validation: `flutter analyze` clean and `flutter test` all passed.
+
+## Current Task (Update)
+- Jira/Issue: Repository Compatibility Cleanup + ApiService Smoke Test
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 3
+
+## Atomic Plan (Update)
+- [x] 1. Remove stale repository compatibility path
+- [x] 2. Fix seed-account registration password flow
+- [x] 3. Add shared ApiService smoke test
+- [x] 4. Re-run root and nested app validation
+
+## Evidence (Update)
+- Removed deprecated shim file: `lib/data/services/api_service.dart`.
+- Removed legacy `insert(UserModel)` compatibility wrapper in user repository.
+- Updated `createIfMissingByEmail` to require explicit `plainPassword` for API registration.
+- Updated seed-account callers in auth service to pass plain passwords explicitly.
+- Added test: `test/core/services/api_service_smoke_test.dart` covering save/get/has/clear token lifecycle.
+- Validation: root `flutter analyze` clean, root `flutter test` all passed; nested `mobile-jobs` analyze and tests both passed.
+
+## Current Task (Update)
+- Jira/Issue: Codebase Scan and API Service Optimization
+- Owner: GitHub Copilot + Mark
+- Start: 2026-04-11
+- Target Completion: 2026-04-11
+- Risk Level (1-10): 2
+
+## Atomic Plan (Update)
+- [x] 1. Scan analyzer and tests across both Flutter apps
+- [x] 2. Remove safe duplication in the shared API service
+- [x] 3. Re-run validation and confirm no regressions
+
+## Evidence (Update)
+- Root app analyzer: clean.
+- Root app tests: all passed.
+- Nested mobile-jobs analyzer: clean.
+- API service refactor: request wrappers consolidated into one helper; unused `userKey` removed.
+- Validation fix: reverted unsupported `const` usage on Dio `Options`.
+
+## Current Task (Update)
 - Jira/Issue: Full Rewrite Program (Expected Output Alignment) — Phase 1: Essays + Offline Portfolio Coverage
 - Owner: GitHub Copilot + Mark
 - Start: 2026-03-16

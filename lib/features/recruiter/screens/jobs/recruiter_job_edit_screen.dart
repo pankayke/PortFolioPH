@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
@@ -52,6 +53,7 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<RecruiterJobManagerProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return PremiumAppBackground(
       child: Scaffold(
@@ -59,6 +61,7 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
         appBar: AppBar(
           title: const Text('Edit Job'),
           backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
         body: FutureBuilder(
           future: provider.getJob(widget.jobId),
@@ -85,8 +88,11 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 RecruiterGlassCard(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
+                  gradient: LinearGradient(
+                    colors: [
+                      colorScheme.primary.withValues(alpha: 0.14),
+                      colorScheme.surface.withValues(alpha: 0.12),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -96,17 +102,14 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                       Text(
                         'Update Job Posting',
                         style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Refine the role details, salary, and publishing status without breaking the existing posting.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.84),
-                        ),
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       ),
                     ],
                   ),
@@ -165,7 +168,8 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                         DropdownButtonFormField<String>(
                           initialValue: _status,
                           decoration: _glassDecoration('Status'),
-                          dropdownColor: const Color(0xFF0F172A),
+                          dropdownColor: colorScheme.surface,
+                          style: Theme.of(context).textTheme.bodyMedium,
                           items: const [
                             DropdownMenuItem(
                               value: 'draft',
@@ -204,8 +208,7 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
                             try {
                               await provider.updateJob(job.id, {
                                 'title': _titleController.text.trim(),
-                                'description': _descriptionController.text
-                                    .trim(),
+                                'description': _descriptionController.text.trim(),
                                 'location': _locationController.text.trim(),
                                 'salary_min': double.tryParse(
                                   _salaryMinController.text.trim(),
@@ -260,17 +263,15 @@ class _RecruiterJobEditScreenState extends State<RecruiterJobEditScreen> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+      fillColor: Colors.white,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.22)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(
-          color: const Color(0xFF38BDF8).withValues(alpha: 0.9),
-        ),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: DesignTokens.accentPurple),
       ),
     );
   }

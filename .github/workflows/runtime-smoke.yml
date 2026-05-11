@@ -1,0 +1,83 @@
+name: Runtime Smoke Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Environment gate to use'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      run_admin_smoke:
+        description: 'Run admin-authenticated smoke checks'
+        required: true
+        default: true
+        type: boolean
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_run:
+    workflows:
+      - Deployment Pipeline
+    types:
+      - completed
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-smoke-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'develop' && github.event.workflow_run.conclusion == 'success')
+    name: Runtime smoke on ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}
+    env:
+      TARGET_ENV: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}
+      RUN_ADMIN_SMOKE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_admin_smoke || 'true' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate smoke secrets
+        shell: bash
+        env:
+          SMOKE_BASE_URL: ${{ secrets.SMOKE_BASE_URL }}
+          ADMIN_SMOKE_EMAIL: ${{ secrets.ADMIN_SMOKE_EMAIL }}
+          ADMIN_SMOKE_PASSWORD: ${{ secrets.ADMIN_SMOKE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [[ -n "${SMOKE_BASE_URL}" ]] || { echo "Missing SMOKE_BASE_URL secret"; exit 1; }
+
+          if [[ "${RUN_ADMIN_SMOKE}" == "true" ]]; then
+            [[ -n "${ADMIN_SMOKE_EMAIL}" ]] || { echo "Missing ADMIN_SMOKE_EMAIL secret"; exit 1; }
+            [[ -n "${ADMIN_SMOKE_PASSWORD}" ]] || { echo "Missing ADMIN_SMOKE_PASSWORD secret"; exit 1; }
+          fi
+
+      - name: Run seeker/recruiter smoke
+        shell: pwsh
+        run: ./scripts/e2e_role_smoke.ps1 -BaseUrl "${{ secrets.SMOKE_BASE_URL }}/api" -RunAdminProbe $false | Out-File -FilePath runtime-smoke-role.json -Encoding utf8
+
+      - name: Run admin smoke
+        if: env.RUN_ADMIN_SMOKE == 'true'
+        shell: pwsh
+        env:
+          ADMIN_SMOKE_EMAIL: ${{ secrets.ADMIN_SMOKE_EMAIL }}
+          ADMIN_SMOKE_PASSWORD: ${{ secrets.ADMIN_SMOKE_PASSWORD }}
+        run: ./scripts/e2e_admin_smoke.ps1 -BaseUrl "${{ secrets.SMOKE_BASE_URL }}" | Out-File -FilePath runtime-smoke-admin.json -Encoding utf8
+
+      - name: Upload runtime smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-smoke-${{ env.TARGET_ENV }}-${{ github.run_id }}
+          path: |
+            runtime-smoke-role.json
+            runtime-smoke-admin.json
+          if-no-files-found: warn

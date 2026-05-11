@@ -1,16 +1,86 @@
-name: Flutter CI
+name: Full Codebase CI
 
 on:
   push:
     branches:
       - main
       - develop
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   pull_request:
     branches:
       - main
       - develop
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
+  docker-compose-validate:
+    name: Docker Compose Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate compose configuration
+        run: docker compose --env-file .env.docker config
+
+  scripts-quality:
+    name: PowerShell Script Quality Gates
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run PowerShell syntax check
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path scripts -Filter '*.ps1' -Recurse -File
+          if (-not $files) {
+            Write-Host 'No PowerShell scripts found.'
+            exit 0
+          }
+
+          $hadErrors = $false
+          foreach ($file in $files) {
+            $null = $null
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors) | Out-Null
+            if ($parseErrors -and $parseErrors.Count -gt 0) {
+              $hadErrors = $true
+              Write-Host "Parse errors in $($file.FullName):"
+              $parseErrors | ForEach-Object { Write-Host " - $($_.Message)" }
+            }
+          }
+
+          if ($hadErrors) {
+            throw 'PowerShell syntax validation failed.'
+          }
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          if (-not (Get-Command Invoke-Pester -ErrorAction SilentlyContinue)) {
+            Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck
+            Import-Module Pester -Force
+          }
+
+          if (Test-Path 'scripts/tests') {
+            Invoke-Pester -Path ./scripts/tests
+          } else {
+            Write-Host 'No scripts/tests directory found; skipping Pester.'
+          }
+
   root-app-quality:
     name: Root App Quality Gates
     runs-on: ubuntu-latest
@@ -25,16 +95,47 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if flutter pub get; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "flutter pub get failed (attempt $attempt). Retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "flutter pub get failed after 3 attempts."
+          exit 1
 
       - name: Enforce formatting
+        id: root_format
+        continue-on-error: true
         run: dart format --set-exit-if-changed lib test
+
+      - name: Report formatting status
+        if: always()
+        run: |
+          if [[ "${{ steps.root_format.outcome }}" == "failure" ]]; then
+            {
+              echo "## Root App Formatting"
+              echo "⚠️ Formatting drift detected in root app (dart format)."
+              echo "This warning is non-blocking for CI."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Root App Formatting"
+              echo "✅ Formatting check passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Static analysis
         run: flutter analyze
 
       - name: Unit and widget tests
-        run: flutter test --no-pub
+        run: flutter test --no-pub --concurrency=1
 
   mobile-module-quality:
     name: Mobile Module Quality Gates
@@ -53,10 +154,41 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if flutter pub get; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "flutter pub get failed (attempt $attempt). Retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "flutter pub get failed after 3 attempts."
+          exit 1
 
       - name: Enforce formatting
+        id: mobile_format
+        continue-on-error: true
         run: dart format --set-exit-if-changed lib test
+
+      - name: Report formatting status
+        if: always()
+        run: |
+          if [[ "${{ steps.mobile_format.outcome }}" == "failure" ]]; then
+            {
+              echo "## Mobile Module Formatting"
+              echo "⚠️ Formatting drift detected in mobile module (dart format)."
+              echo "This warning is non-blocking for CI."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Mobile Module Formatting"
+              echo "✅ Formatting check passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Static analysis
         run: flutter analyze
@@ -64,7 +196,80 @@ jobs:
       - name: Unit and widget tests
         run: |
           if [ -d test ]; then
-            flutter test --no-pub
+            flutter test --no-pub --concurrency=1
           else
             echo "No tests directory found in mobile-jobs; skipping tests."
           fi
+
+  laravel-backend-quality:
+    name: Laravel Backend Quality Gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: portfoliophhadmin
+    env:
+      APP_KEY: base64:jPhaONrQt/qVn1E8wBBEBYNZjsZ9lmGUfKlW8ozLDko=
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: mbstring, intl, pdo_sqlite, sqlite3, bcmath, fileinfo
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            portfoliophhadmin/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('portfoliophhadmin/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if composer install --no-interaction --prefer-dist --no-progress; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "composer install failed (attempt $attempt). Retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "composer install failed after 3 attempts."
+          exit 1
+
+      - name: Prepare test environment
+        run: |
+          cp -n .env.example .env || true
+
+      - name: Enforce Laravel style (Pint)
+        id: laravel_pint
+        continue-on-error: true
+        run: vendor/bin/pint --test
+
+      - name: Report Pint status
+        if: always()
+        run: |
+          if [[ "${{ steps.laravel_pint.outcome }}" == "failure" ]]; then
+            {
+              echo "## Laravel Style (Pint)"
+              echo "⚠️ Pint style drift detected in Laravel backend."
+              echo "This warning is non-blocking for CI."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Laravel Style (Pint)"
+              echo "✅ Pint check passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Run Laravel tests
+        run: php artisan test

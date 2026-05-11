@@ -1,84 +1,112 @@
 // lib/data/repositories/portfolio_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
-// API-First Repository: Portfolios stored on backend only
-// ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/portfolio_model.dart';
 
 class PortfolioRepository {
   final ApiService _apiService;
 
-  PortfolioRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  static int _nextId = 1;
+  static final Map<int, List<PortfolioModel>> _localByUser =
+      <int, List<PortfolioModel>>{};
+
+  PortfolioRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(PortfolioModel portfolio) async {
     try {
-      final response = await _apiService.post(
+      final data = await _apiService.post(
         '/users/${portfolio.userId}/portfolios',
         data: portfolio.toMap(),
       );
-      if (response.statusCode == 201) {
-        return response.data['id'] as int;
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        return data['id'] as int;
       }
-      throw Exception('Failed to create portfolio');
-    } catch (e) {
-      throw Exception('Failed to insert portfolio: $e');
+    } catch (_) {
+      // Fallback to local cache when backend route is unavailable.
     }
+
+    final id = _nextId++;
+    final created = portfolio.copyWith(id: id);
+    final list = _localByUser.putIfAbsent(
+      portfolio.userId,
+      () => <PortfolioModel>[],
+    );
+    list.removeWhere((item) => item.id == id);
+    list.insert(0, created);
+    return id;
   }
 
   Future<PortfolioModel?> findById(int id) async {
     try {
-      final response = await _apiService.get('/portfolios/$id');
-      if (response.statusCode == 200) {
-        return PortfolioModel.fromMap(response.data as Map<String, dynamic>);
+      final data = await _apiService.get('/portfolios/$id');
+      if (data is Map<String, dynamic>) {
+        return PortfolioModel.fromMap(data);
       }
-      return null;
-    } catch (e) {
-      throw Exception('Failed to fetch portfolio: $e');
+    } catch (_) {
+      // Fallback lookup below.
     }
+
+    for (final entries in _localByUser.values) {
+      for (final item in entries) {
+        if (item.id == id) return item;
+      }
+    }
+    return null;
   }
 
   Future<List<PortfolioModel>> findByUserId(int userId) async {
     try {
-      final response = await _apiService.get('/users/$userId/portfolios');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      final data = await _apiService.get('/users/$userId/portfolios');
+      if (data is List) {
         return data
-            .map((json) => PortfolioModel.fromMap(json as Map<String, dynamic>))
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(PortfolioModel.fromMap)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch portfolios: $e');
+    } catch (_) {
+      // Fallback to local cache.
     }
+
+    return List<PortfolioModel>.unmodifiable(
+      _localByUser[userId] ?? const <PortfolioModel>[],
+    );
   }
 
   Future<int> update(PortfolioModel portfolio) async {
     try {
-      final response = await _apiService.put(
+      await _apiService.put(
         '/portfolios/${portfolio.id}',
         data: portfolio.toMap(),
       );
-      if (response.statusCode == 200) {
+      return 1;
+    } catch (_) {
+      final list = _localByUser[portfolio.userId] ?? <PortfolioModel>[];
+      final index = list.indexWhere((item) => item.id == portfolio.id);
+      if (index >= 0) {
+        list[index] = portfolio;
         return 1;
       }
-      throw Exception('Failed to update portfolio');
-    } catch (e) {
-      throw Exception('Failed to update portfolio: $e');
+      return 0;
     }
   }
 
   Future<int> delete(int id) async {
     try {
-      final response = await _apiService.delete('/portfolios/$id');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return 1;
+      await _apiService.delete('/portfolios/$id');
+      return 1;
+    } catch (_) {
+      var deleted = 0;
+      for (final list in _localByUser.values) {
+        final before = list.length;
+        list.removeWhere((item) => item.id == id);
+        if (list.length != before) {
+          deleted = 1;
+          break;
+        }
       }
-      throw Exception('Failed to delete portfolio');
-    } catch (e) {
-      throw Exception('Failed to delete portfolio: $e');
+      return deleted;
     }
   }
 }

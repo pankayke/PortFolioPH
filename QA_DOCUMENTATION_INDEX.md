@@ -8,6 +8,14 @@
 
 ## 📌 START HERE
 
+### For Current Verified Status (2 minutes)
+👉 **[CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md)**
+- Current pass status snapshot
+- API route-to-test coverage matrix
+- QA API sign-off checklist
+
+> Note: The deployment-halt summaries below are historical snapshots from April 5, 2026.
+
 ### For Quick Understanding (5 minutes)
 👉 **[FINAL_QA_SUMMARY.md](FINAL_QA_SUMMARY.md)**
 - Executive summary

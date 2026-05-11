@@ -10,7 +10,7 @@ class JobWebController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        $user = request()->user();
 
         if ($user->role === 'recruiter') {
             // Show recruiter's jobs
@@ -19,7 +19,7 @@ class JobWebController extends Controller
         } else {
             // Show all jobs for job seekers
             $jobs = Job::where('status', 'approved')
-                ->with('recruiter')
+                ->with('recruiter:id,name,email')
                 ->paginate(12);
         }
 
@@ -28,12 +28,22 @@ class JobWebController extends Controller
 
     public function show(Job $job)
     {
-        return view('jobs.show', compact('job'));
+        $job->load('recruiter:id,name,email');
+
+        $applications = $job->applications()
+            ->with('user:id,name,email')
+            ->latest()
+            ->paginate(10);
+
+        $applicationCount = (int) $applications->total();
+
+        return view('jobs.show', compact('job', 'applications', 'applicationCount'));
     }
 
     public function create()
     {
         Gate::authorize('create', Job::class);
+
         return view('jobs.form');
     }
 
@@ -52,7 +62,7 @@ class JobWebController extends Controller
             'required_skills' => 'nullable|string',
         ]);
 
-        $validated['recruiter_id'] = auth()->user()->id;
+        $validated['recruiter_id'] = request()->user()->id;
         $validated['required_skills'] = $validated['required_skills']
             ? array_map('trim', explode(',', $validated['required_skills']))
             : null;
@@ -66,6 +76,7 @@ class JobWebController extends Controller
     public function edit(Job $job)
     {
         Gate::authorize('update', $job);
+
         return view('jobs.form', compact('job'));
     }
 
@@ -74,25 +85,33 @@ class JobWebController extends Controller
         Gate::authorize('update', $job);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'title' => 'required|string|min:5|max:255',
+            'description' => 'required|string|min:20',
             'location' => 'required|string|max:255',
             'job_type' => 'required|in:full_time,part_time,contract,freelance',
             'salary_min' => 'nullable|numeric|min:0',
-            'salary_max' => 'nullable|numeric|min:0',
+            'salary_max' => 'nullable|numeric|gte:salary_min',
             'deadline' => 'nullable|date|after:now',
             'required_skills' => 'nullable|string',
-            'status' => 'required|in:approved,closed',
+            // Recruiters can only close or revert to draft — never self-approve.
+            // Admin approval is done via the admin panel.
+            'status' => 'required|in:draft,closed',
         ]);
 
         $validated['required_skills'] = $validated['required_skills']
             ? array_map('trim', explode(',', $validated['required_skills']))
             : null;
 
+        // If the job was previously approved, editing its content resets it to pending
+        // so admins can re-review the changes.
+        if ($job->status === 'approved' && $validated['status'] !== 'closed') {
+            $validated['status'] = 'pending';
+        }
+
         $job->update($validated);
 
         return redirect()->route('jobs.show', $job)
-            ->with('success', 'Job updated successfully!');
+            ->with('success', 'Job updated successfully! If it was previously approved, it has been moved back to pending review.');
     }
 
     public function destroy(Job $job)
@@ -122,7 +141,7 @@ class JobWebController extends Controller
     {
         // For job seekers to browse all jobs
         $jobs = Job::where('status', 'approved')
-            ->with('recruiter')
+            ->with('recruiter:id,name,email')
             ->paginate(12);
 
         return view('jobs.index', compact('jobs'));

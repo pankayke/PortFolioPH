@@ -2,12 +2,6 @@
 
 @section('content')
 @include('admin.partials.command_center_styles')
-@php
-    $approvedCount = $jobs->where('status', 'approved')->count();
-    $closedCount = $jobs->where('status', 'closed')->count();
-    $activeSessions = max(2, (int) round($jobs->count() * 0.33));
-    $serverLoad = min(87, max(18, (int) round(($approvedCount / max($jobs->count(), 1)) * 100)));
-@endphp
 
 <div class="cc-theme cc-ultra-shell">
     <div class="cc-ultra-grid">
@@ -67,14 +61,25 @@
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-slate-50/85 p-3 text-sm">
                         <p class="text-slate-500">Pending</p>
-                        <p class="mt-1 text-xl font-bold text-amber-600">{{ $jobs->where('status', 'pending')->count() }}</p>
+                        <p class="mt-1 text-xl font-bold text-amber-600">{{ $pendingCount }}</p>
                     </div>
                     <div class="rounded-xl border border-slate-200 bg-slate-50/85 p-3 text-sm">
                         <p class="text-slate-500">Draft</p>
-                        <p class="mt-1 text-xl font-bold text-indigo-600">{{ $jobs->where('status', 'draft')->count() }}</p>
+                        <p class="mt-1 text-xl font-bold text-indigo-600">{{ $draftCount }}</p>
                     </div>
                 </div>
             </header>
+
+            <div class="flex gap-2">
+                <a href="{{ route('admin.jobs.export-excel') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                    Export Excel
+                </a>
+                <a href="{{ route('admin.jobs.export-csv') }}" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                    Export CSV
+                </a>
+            </div>
 
             <div class="cc-elevated-card overflow-hidden">
                 <div class="overflow-x-auto">
@@ -109,7 +114,7 @@
                                             {{ ucfirst($job->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2.5 text-sm text-slate-700">{{ $job->applications->count() }} applications</td>
+                                    <td class="px-4 py-2.5 text-sm text-slate-700">{{ $job->applications_count ?? 0 }} applications</td>
                                     <td class="px-4 py-2.5 text-sm text-slate-600">{{ $job->updated_at->diffForHumans() }}</td>
                                     <td class="px-4 py-2.5">
                                         <div class="cc-quick-actions inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">

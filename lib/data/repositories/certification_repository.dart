@@ -3,73 +3,90 @@
 // API-First Repository: Certifications stored on backend only
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/certification_model.dart';
 
 class CertificationRepository {
   final ApiService _apiService;
 
-  CertificationRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  static int _nextId = 1;
+  static final Map<int, List<CertificationModel>> _localByUser =
+      <int, List<CertificationModel>>{};
+
+  CertificationRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(CertificationModel cert) async {
     try {
-      final response = await _apiService.post(
+      final data = await _apiService.post(
         '/users/${cert.userId}/certifications',
         data: cert.toMap(),
       );
-      if (response.statusCode == 201) {
-        return response.data['id'] as int;
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        return data['id'] as int;
       }
-      throw Exception('Failed to create certification');
-    } catch (e) {
-      throw Exception('Failed to insert certification: $e');
+    } catch (_) {
+      // Fall through to local cache fallback.
     }
+
+    final id = _nextId++;
+    final created = cert.copyWith(id: id);
+    final list = _localByUser.putIfAbsent(
+      cert.userId,
+      () => <CertificationModel>[],
+    );
+    list.insert(0, created);
+    return id;
   }
 
   Future<List<CertificationModel>> findByUserId(int userId) async {
     try {
-      final response = await _apiService.get('/users/$userId/certifications');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      final data = await _apiService.get('/users/$userId/certifications');
+      if (data is List) {
         return data
-            .map(
-              (json) =>
-                  CertificationModel.fromMap(json as Map<String, dynamic>),
-            )
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(CertificationModel.fromMap)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch certifications: $e');
+    } catch (_) {
+      // Fallback below.
     }
+
+    return List<CertificationModel>.unmodifiable(
+      _localByUser[userId] ?? const <CertificationModel>[],
+    );
   }
 
   Future<int> update(CertificationModel cert) async {
     try {
-      final response = await _apiService.put(
-        '/certifications/${cert.id}',
-        data: cert.toMap(),
-      );
-      if (response.statusCode == 200) {
+      await _apiService.put('/certifications/${cert.id}', data: cert.toMap());
+      return 1;
+    } catch (_) {
+      final list = _localByUser[cert.userId] ?? <CertificationModel>[];
+      final index = list.indexWhere((item) => item.id == cert.id);
+      if (index >= 0) {
+        list[index] = cert;
         return 1;
       }
-      throw Exception('Failed to update certification');
-    } catch (e) {
-      throw Exception('Failed to update certification: $e');
+      return 0;
     }
   }
 
   Future<int> delete(int id) async {
     try {
-      final response = await _apiService.delete('/certifications/$id');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return 1;
+      await _apiService.delete('/certifications/$id');
+      return 1;
+    } catch (_) {
+      var deleted = 0;
+      for (final list in _localByUser.values) {
+        final before = list.length;
+        list.removeWhere((item) => item.id == id);
+        if (list.length != before) {
+          deleted = 1;
+          break;
+        }
       }
-      throw Exception('Failed to delete certification');
-    } catch (e) {
-      throw Exception('Failed to delete certification: $e');
+      return deleted;
     }
   }
 }

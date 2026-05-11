@@ -14,11 +14,13 @@ class UserController extends Controller
 
     public function search(Request $request)
     {
+        $this->authorize('viewAny', User::class); // Protect route to admin only
+
         $search = $request->input('q', '');
 
         $users = User::where('name', 'like', "%$search%")
             ->orWhere('email', 'like', "%$search%")
-            ->select('id', 'name', 'email', 'role')
+            ->select('id', 'name', 'email', 'role', 'active')
             ->limit(20)
             ->get();
 
@@ -39,7 +41,7 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'string|max:255',
-            'email' => 'string|email|unique:users,email,' . $user->id,
+            'email' => 'string|email|unique:users,email,'.$user->id,
         ]);
 
         $user->update($validated);

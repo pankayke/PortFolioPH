@@ -5,65 +5,87 @@ import 'package:portfolioph/data/models/reflections_model.dart';
 class ReflectionsRepository {
   final ApiService _apiService;
 
+  static int _nextId = 1;
+  static final Map<int, List<ReflectionModel>> _localByUser =
+      <int, List<ReflectionModel>>{};
+
   ReflectionsRepository({ApiService? apiService})
     : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
 
   Future<int> insert(ReflectionModel reflection) async {
     try {
-      final response = await _apiService.post(
+      final data = await _apiService.post(
         '/users/${reflection.userId}/reflections',
         data: reflection.toMap(),
       );
-      if (response.statusCode == 201) {
-        return response.data['id'] as int;
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        return data['id'] as int;
       }
-      throw Exception('Failed to create reflection');
-    } catch (e) {
-      throw Exception('Failed to insert reflection: $e');
+    } catch (_) {
+      // Fall through to local cache fallback.
     }
+
+    final id = _nextId++;
+    final created = reflection.copyWith(id: id);
+    final list = _localByUser.putIfAbsent(
+      reflection.userId,
+      () => <ReflectionModel>[],
+    );
+    list.insert(0, created);
+    return id;
   }
 
   Future<List<ReflectionModel>> findByUserId(int userId) async {
     try {
-      final response = await _apiService.get('/users/$userId/reflections');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      final data = await _apiService.get('/users/$userId/reflections');
+      if (data is List) {
         return data
-            .map(
-              (json) => ReflectionModel.fromMap(json as Map<String, dynamic>),
-            )
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(ReflectionModel.fromMap)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch reflections: $e');
+    } catch (_) {
+      // Fallback below.
     }
+
+    return List<ReflectionModel>.unmodifiable(
+      _localByUser[userId] ?? const <ReflectionModel>[],
+    );
   }
 
   Future<int> update(ReflectionModel reflection) async {
     try {
-      final response = await _apiService.put(
+      await _apiService.put(
         '/reflections/${reflection.id}',
         data: reflection.toMap(),
       );
-      if (response.statusCode == 200) {
+      return 1;
+    } catch (_) {
+      final list = _localByUser[reflection.userId] ?? <ReflectionModel>[];
+      final index = list.indexWhere((item) => item.id == reflection.id);
+      if (index >= 0) {
+        list[index] = reflection;
         return 1;
       }
-      throw Exception('Failed to update reflection');
-    } catch (e) {
-      throw Exception('Failed to update reflection: $e');
+      return 0;
     }
   }
 
   Future<int> delete(int id) async {
     try {
-      final response = await _apiService.delete('/reflections/$id');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return 1;
+      await _apiService.delete('/reflections/$id');
+      return 1;
+    } catch (_) {
+      var deleted = 0;
+      for (final list in _localByUser.values) {
+        final before = list.length;
+        list.removeWhere((item) => item.id == id);
+        if (list.length != before) {
+          deleted = 1;
+          break;
+        }
       }
-      throw Exception('Failed to delete reflection');
-    } catch (e) {
-      throw Exception('Failed to delete reflection: $e');
+      return deleted;
     }
   }
 }

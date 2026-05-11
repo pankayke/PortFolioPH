@@ -1,0 +1,284 @@
+name: Deployment Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Deployment target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      production_confirmation:
+        description: "Type DEPLOY_PRODUCTION to confirm a production deployment"
+        required: false
+        default: ''
+        type: string
+      deploy_ref:
+        description: 'Git ref (branch, tag, or SHA) to deploy'
+        required: true
+        default: develop
+        type: string
+      run_migrations:
+        description: 'Run database migrations after deployment'
+        required: true
+        default: true
+        type: boolean
+      enforce_healthcheck:
+        description: 'Run post-deploy health check (requires DEPLOY_HEALTHCHECK_URL secret)'
+        required: true
+        default: true
+        type: boolean
+  workflow_run:
+    workflows:
+      - Full Codebase CI
+    types:
+      - completed
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve Deployment Target
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.resolve.outputs.should_deploy }}
+      target_environment: ${{ steps.resolve.outputs.target_environment }}
+      production_confirmation: ${{ steps.resolve.outputs.production_confirmation }}
+      deploy_ref: ${{ steps.resolve.outputs.deploy_ref }}
+      run_migrations: ${{ steps.resolve.outputs.run_migrations }}
+      enforce_healthcheck: ${{ steps.resolve.outputs.enforce_healthcheck }}
+    steps:
+      - name: Resolve mode and target
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "target_environment=${{ github.event.inputs.target_environment }}" >> "$GITHUB_OUTPUT"
+            echo "production_confirmation=${{ github.event.inputs.production_confirmation }}" >> "$GITHUB_OUTPUT"
+            echo "deploy_ref=${{ github.event.inputs.deploy_ref }}" >> "$GITHUB_OUTPUT"
+            echo "run_migrations=${{ github.event.inputs.run_migrations }}" >> "$GITHUB_OUTPUT"
+            echo "enforce_healthcheck=${{ github.event.inputs.enforce_healthcheck }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "target_environment=staging" >> "$GITHUB_OUTPUT"
+            echo "production_confirmation=" >> "$GITHUB_OUTPUT"
+            echo "deploy_ref=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+            echo "run_migrations=true" >> "$GITHUB_OUTPUT"
+            echo "enforce_healthcheck=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "target_environment=staging" >> "$GITHUB_OUTPUT"
+            echo "production_confirmation=" >> "$GITHUB_OUTPUT"
+            echo "deploy_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "run_migrations=false" >> "$GITHUB_OUTPUT"
+            echo "enforce_healthcheck=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Deploy to ${{ needs.resolve.outputs.target_environment }}
+    runs-on: ubuntu-latest
+    needs: resolve
+    if: needs.resolve.outputs.should_deploy == 'true'
+    environment: ${{ needs.resolve.outputs.target_environment }}
+    steps:
+      - name: Checkout target ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.deploy_ref }}
+
+      - name: Validate deployment secrets
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_HEALTHCHECK_URL: ${{ secrets.DEPLOY_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          [[ -n "${DEPLOY_HOST}" ]] || { echo "Missing DEPLOY_HOST secret"; exit 1; }
+          [[ -n "${DEPLOY_USER}" ]] || { echo "Missing DEPLOY_USER secret"; exit 1; }
+          [[ -n "${DEPLOY_PATH}" ]] || { echo "Missing DEPLOY_PATH secret"; exit 1; }
+          [[ -n "${DEPLOY_SSH_PRIVATE_KEY}" ]] || { echo "Missing DEPLOY_SSH_PRIVATE_KEY secret"; exit 1; }
+
+          if [[ "${{ needs.resolve.outputs.enforce_healthcheck }}" == "true" ]]; then
+            [[ -n "${DEPLOY_HEALTHCHECK_URL}" ]] || { echo "Missing DEPLOY_HEALTHCHECK_URL secret while health check is enabled"; exit 1; }
+          fi
+
+      - name: Validate production ref policy
+        if: needs.resolve.outputs.target_environment == 'production'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ needs.resolve.outputs.production_confirmation }}" != "DEPLOY_PRODUCTION" ]]; then
+            echo "Production deployment confirmation missing. Re-run workflow_dispatch and set production_confirmation=DEPLOY_PRODUCTION."
+            exit 1
+          fi
+
+          ref="${{ needs.resolve.outputs.deploy_ref }}"
+          if [[ "$ref" != "main" && ! "$ref" =~ ^refs/tags/ ]]; then
+            echo "Production deploys are limited to 'main' branch or a tag ref. Received: $ref"
+            exit 1
+          fi
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Add remote host to known_hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Create rollback snapshot on server
+        id: snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          backup_file=$(ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            mkdir -p .deploy-backups
+            backup_file='.deploy-backups/predeploy-'\"$(date +%Y%m%d%H%M%S)\"'.tar.gz'
+            tar \
+              --exclude='.deploy-backups' \
+              --exclude='release.tar.gz' \
+              -czf \"$backup_file\" .
+            echo \"$backup_file\"
+          ")
+          echo "backup_file=$backup_file" >> "$GITHUB_OUTPUT"
+
+      - name: Build release archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar \
+            --exclude-vcs \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='build' \
+            --exclude='.dart_tool' \
+            --exclude='portfoliophhadmin/vendor' \
+            -czf release.tar.gz .
+
+      - name: Upload release archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "mkdir -p '${{ secrets.DEPLOY_PATH }}'"
+          scp release.tar.gz "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/release.tar.gz"
+
+      - name: Deploy release on server
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            tar -xzf release.tar.gz
+            docker compose --env-file .env.docker config >/dev/null
+            docker compose --env-file .env.docker up -d --build
+            docker compose ps
+          "
+
+      - name: Run database migrations
+        if: needs.resolve.outputs.run_migrations == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            docker compose --env-file .env.docker exec -T api php artisan migrate --force
+          "
+
+      - name: Verify health endpoint
+        if: needs.resolve.outputs.enforce_healthcheck == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent "${{ secrets.DEPLOY_HEALTHCHECK_URL }}" >/dev/null
+
+      - name: Automatic rollback on failure
+        if: failure() && steps.snapshot.outputs.backup_file != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            backup_file='${{ steps.snapshot.outputs.backup_file }}'
+            [ -f \"$backup_file\" ] || { echo 'Rollback backup not found'; exit 1; }
+
+            find . -mindepth 1 -maxdepth 1 \
+              ! -name '.deploy-backups' \
+              ! -name 'release.tar.gz' \
+              -exec rm -rf {} +
+
+            tar -xzf \"$backup_file\"
+            docker compose --env-file .env.docker config >/dev/null
+            docker compose --env-file .env.docker up -d --build
+            docker compose ps
+          "
+
+      - name: Cleanup release archive on server
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            rm -f release.tar.gz
+          "
+
+      - name: Publish deployment summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '## Deployment Summary'
+            echo "- Environment: ${{ needs.resolve.outputs.target_environment }}"
+            echo "- Ref: ${{ needs.resolve.outputs.deploy_ref }}"
+            echo "- Migrations: ${{ needs.resolve.outputs.run_migrations }}"
+            echo "- Health check: ${{ needs.resolve.outputs.enforce_healthcheck }}"
+            if [[ "${{ needs.resolve.outputs.target_environment }}" == "production" ]]; then
+              echo '- Production confirmation: received'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prune old rollback backups
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          retention="${{ secrets.DEPLOY_BACKUP_RETENTION }}"
+          if [[ -z "$retention" || ! "$retention" =~ ^[0-9]+$ ]]; then
+            retention=5
+          fi
+
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "
+            set -euo pipefail
+            cd '${{ secrets.DEPLOY_PATH }}'
+            mkdir -p .deploy-backups
+            ls -1t .deploy-backups/predeploy-*.tar.gz 2>/dev/null | awk 'NR>'\"$retention\"' {print}' | xargs -r rm -f
+          "

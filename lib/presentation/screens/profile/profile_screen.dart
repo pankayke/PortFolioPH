@@ -10,21 +10,41 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/mixins/screen_mixins.dart';
+import 'package:portfolioph/core/router/app_router.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/providers/certification_provider.dart';
+import 'package:portfolioph/presentation/providers/education_provider.dart';
+import 'package:portfolioph/presentation/providers/experience_provider.dart';
+import 'package:portfolioph/presentation/providers/file_download_provider.dart';
+import 'package:portfolioph/presentation/providers/skills_provider.dart';
 import 'package:portfolioph/presentation/providers/theme_provider.dart';
+import 'package:portfolioph/presentation/widgets/file_download_widgets.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  static const List<String> _regionalBadges = ['Cebu', 'Manila', 'Davao'];
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-  static const List<({String skill, int rating})> _skillRatings = [
-    (skill: 'Email Management', rating: 5),
-    (skill: 'Canva', rating: 4),
-    (skill: 'Zoom Coordination', rating: 5),
-    (skill: 'Customer Support', rating: 4),
-  ];
+class _ProfileScreenState extends State<ProfileScreen>
+    with UserAwareScreenMixin {
+  bool _didInitUserLoad = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitUserLoad) return;
+    _didInitUserLoad = true;
+    loadDataForUserWithId((userId) {
+      context.read<ExperienceProvider>().loadForUser(userId);
+      context.read<SkillsProvider>().loadForUser(userId);
+      context.read<EducationProvider>().loadForUser(userId);
+      context.read<CertificationProvider>().loadForUser(userId);
+    });
+  }
 
   Future<void> _logout(BuildContext context) async {
     final confirm = await showDialog<bool>(
@@ -49,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
 
     await context.read<AuthProvider>().logout();
     if (!context.mounted) return;
-    context.go('/login');
+    context.go(AppRoutes.login);
   }
 
   @override
@@ -65,6 +85,27 @@ class ProfileScreen extends StatelessWidget {
     final displayName = (user.fullName?.trim().isNotEmpty ?? false)
         ? user.fullName!
         : user.username;
+    final roleLabel = user.role
+        .split('_')
+        .map(
+          (word) => word.isEmpty
+              ? word
+              : '${word[0].toUpperCase()}${word.substring(1)}',
+        )
+        .join(' ');
+    final locationBadges = (user.location?.trim().isNotEmpty ?? false)
+        ? user.location!
+              .split(',')
+              .map((item) => item.trim())
+              .where((item) => item.isNotEmpty)
+              .toList(growable: false)
+        : const <String>[];
+    final experience = context.watch<ExperienceProvider>().experience;
+    final skills = context.watch<SkillsProvider>().skills;
+    final education = context.watch<EducationProvider>().education;
+    final certifications = context
+        .watch<CertificationProvider>()
+        .certifications;
 
     return PremiumAppBackground(
       child: Scaffold(
@@ -122,7 +163,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Virtual Assistant | Cebu | 50+ Connections',
+                          locationBadges.isNotEmpty
+                              ? '$roleLabel | ${locationBadges.first}'
+                              : roleLabel,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 2),
@@ -131,20 +174,22 @@ class ProfileScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: _regionalBadges
-                              .map(
-                                (badge) => Chip(
-                                  label: Text(badge),
-                                  avatar: const Icon(Icons.flag, size: 14),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              )
-                              .toList(growable: false),
-                        ),
-                        const SizedBox(height: 8),
+                        if (locationBadges.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: locationBadges
+                                .map(
+                                  (badge) => Chip(
+                                    label: Text(badge),
+                                    avatar: const Icon(Icons.flag, size: 14),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                )
+                                .toList(growable: false),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
@@ -166,74 +211,145 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
+            _ProfileMomentumCard(
+              displayName: displayName,
+              roleLabel: roleLabel,
+              experienceCount: experience.length,
+              skillsCount: skills.length,
+              educationCount: education.length,
+              certificationCount: certifications.length,
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'About',
               child: Text(
                 (user.bio?.trim().isNotEmpty ?? false)
                     ? user.bio!
-                    : 'No bio yet. You can add this in profile setup/edit later.',
+                    : 'Add a short bio to introduce your strengths to recruiters.',
               ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'Experience',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Virtual Assistant @ RemoteBoss',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 4),
-                  const Text('Jan 2025 - Present • ₱25k/mo'),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Managed emails and calendar workflows for 5 CEOs.',
-                  ),
-                ],
-              ),
+              child: experience.isEmpty
+                  ? const Text(
+                      'No experience added yet. Add your latest role in Resume.',
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${experience.first.jobTitle} @ ${experience.first.company}',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${experience.first.startDate ?? 'Start date not set'}'
+                          '${experience.first.isCurrent ? ' - Present' : (experience.first.endDate != null ? ' - ${experience.first.endDate}' : '')}',
+                        ),
+                        if (experience.first.description?.trim().isNotEmpty ??
+                            false) ...[
+                          const SizedBox(height: 6),
+                          Text(experience.first.description!),
+                        ],
+                      ],
+                    ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'Skills',
-              child: Column(
-                children: _skillRatings
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Expanded(child: Text(item.skill)),
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => Icon(
-                                  index < item.rating
-                                      ? Icons.star_rounded
-                                      : Icons.star_outline_rounded,
-                                  size: 18,
-                                  color: index < item.rating
-                                      ? AppConstants.warningColor
-                                      : null,
-                                ),
+              child: skills.isEmpty
+                  ? const Text(
+                      'No skills added yet. Add your strongest skills in the Skills tab.',
+                    )
+                  : Column(
+                      children: skills
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Text(item.name)),
+                                  Row(
+                                    children: List.generate(
+                                      5,
+                                      (index) => Icon(
+                                        index < item.proficiency
+                                            ? Icons.star_rounded
+                                            : Icons.star_outline_rounded,
+                                        size: 18,
+                                        color: index < item.proficiency
+                                            ? AppConstants.warningColor
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          )
+                          .toList(growable: false),
+                    ),
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
+            _SectionCard(
+              title: 'Resume / CV',
+              child: Consumer<FileDownloadProvider>(
+                builder: (context, downloadProvider, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Download your current CV or upload a fresh version.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: DownloadButton(
+                          label: 'Download CV',
+                          icon: Icons.file_download_outlined,
+                          isLoading: downloadProvider.isDownloading,
+                          onPressed: () {
+                            if (downloadProvider.isDownloading) return;
+                            downloadProvider.downloadMyCV();
+                          },
                         ),
                       ),
-                    )
-                    .toList(growable: false),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.upload_file_outlined),
+                          label: const Text('Upload CV'),
+                          onPressed: () {
+                            context.push(AppRoutes.seekerCvUpload);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
             const SizedBox(height: AppConstants.spacingMd),
             _SectionCard(
               title: 'Education & Certifications',
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('BS IT - LNU 2024 • Dean\'s Lister'),
-                  SizedBox(height: 6),
-                  Text('Google IT Support • TESDA Bookkeeping'),
+                  if (education.isEmpty && certifications.isEmpty)
+                    const Text(
+                      'No education or certifications added yet. Add them in Resume to strengthen your profile.',
+                    ),
+                  if (education.isNotEmpty)
+                    Text(
+                      '${education.first.degree} - ${education.first.institution}',
+                    ),
+                  if (certifications.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(certifications.take(2).map((c) => c.name).join(' • ')),
+                  ],
                 ],
               ),
             ),
@@ -264,7 +380,7 @@ class ProfileScreen extends StatelessWidget {
                     leading: const Icon(Icons.settings_outlined),
                     title: const Text('Settings'),
                     subtitle: const Text('Theme, display, and app preferences'),
-                    onTap: () => context.push('/settings'),
+                    onTap: () => context.push(AppRoutes.settings),
                   ),
                   if (user.role == AppConstants.roleAdmin) ...[
                     const Divider(height: 8),
@@ -273,7 +389,7 @@ class ProfileScreen extends StatelessWidget {
                       leading: const Icon(Icons.admin_panel_settings_outlined),
                       title: const Text('Admin dashboard'),
                       subtitle: const Text('Manage platform-level features'),
-                      onTap: () => context.push('/admin-dashboard'),
+                      onTap: () => context.push(AppRoutes.adminDashboard),
                     ),
                   ],
                   if (user.role == AppConstants.roleTeacher ||
@@ -287,7 +403,7 @@ class ProfileScreen extends StatelessWidget {
                       subtitle: const Text(
                         'View student progress by class and section',
                       ),
-                      onTap: () => context.push('/teacher-dashboard'),
+                      onTap: () => context.push(AppRoutes.teacherDashboard),
                     ),
                   ],
                 ],
@@ -349,18 +465,214 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.surface.withValues(alpha: 0.92),
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.72),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.68),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppConstants.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+            const SizedBox(height: 10),
             child,
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ProfileMomentumCard extends StatelessWidget {
+  final String displayName;
+  final String roleLabel;
+  final int experienceCount;
+  final int skillsCount;
+  final int educationCount;
+  final int certificationCount;
+
+  const _ProfileMomentumCard({
+    required this.displayName,
+    required this.roleLabel,
+    required this.experienceCount,
+    required this.skillsCount,
+    required this.educationCount,
+    required this.certificationCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.spacingMd),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.primary.withValues(alpha: 0.16),
+            colorScheme.secondary.withValues(alpha: 0.12),
+            colorScheme.tertiary.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Profile Pulse',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$displayName • $roleLabel',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () => context.push(AppRoutes.editProfile),
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _MetricTile(
+                label: 'Experience',
+                value: '$experienceCount',
+                icon: Icons.work_outline,
+              ),
+              _MetricTile(
+                label: 'Skills',
+                value: '$skillsCount',
+                icon: Icons.star_outline,
+              ),
+              _MetricTile(
+                label: 'Education',
+                value: '$educationCount',
+                icon: Icons.school_outlined,
+              ),
+              _MetricTile(
+                label: 'Certs',
+                value: '$certificationCount',
+                icon: Icons.verified_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => context.push(AppRoutes.seekerCvUpload),
+                  icon: const Icon(Icons.upload_file_outlined),
+                  label: const Text('Upload CV'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(AppRoutes.settings),
+                  icon: const Icon(Icons.tune_outlined),
+                  label: const Text('Settings'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _MetricTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 110,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.60),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: colorScheme.primary),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
+        ],
       ),
     );
   }

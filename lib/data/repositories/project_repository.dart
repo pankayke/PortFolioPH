@@ -1,43 +1,64 @@
 // lib/data/repositories/project_repository.dart
 // ─────────────────────────────────────────────────────────────────────────────
-// API-First Repository: Projects stored on backend only
-// ─────────────────────────────────────────────────────────────────────────────
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/project_model.dart';
 
 class ProjectRepository {
   final ApiService _apiService;
 
-  ProjectRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  static int _nextId = 1;
+  static const Duration _featuredCacheTtl = Duration(minutes: 2);
+  static final Map<int, List<ProjectModel>> _localByPortfolio =
+      <int, List<ProjectModel>>{};
+  static final Map<int, _FeaturedCacheEntry> _featuredCacheByUser =
+      <int, _FeaturedCacheEntry>{};
+
+  ProjectRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   Future<int> insert(ProjectModel project) async {
     try {
-      final response = await _apiService.post(
+      final data = await _apiService.post(
         '/portfolios/${project.portfolioId}/projects',
         data: project.toMap(),
       );
-      if (response.statusCode == 201) {
-        return response.data['id'] as int;
+      if (data is Map<String, dynamic> && data['id'] is int) {
+        _invalidateFeaturedCacheForUser(project.userId);
+        return data['id'] as int;
       }
-      throw Exception('Failed to create project');
-    } catch (e) {
-      throw Exception('Failed to insert project: $e');
+    } catch (_) {
+      // Fallback to local cache when backend route is unavailable.
     }
+
+    final id = _nextId++;
+    final created = project.copyWith(id: id);
+    final list = _localByPortfolio.putIfAbsent(
+      project.portfolioId,
+      () => <ProjectModel>[],
+    );
+    list.insert(0, created);
+    _invalidateFeaturedCacheForUser(project.userId);
+    return id;
   }
 
   Future<ProjectModel?> findById(int id) async {
     try {
-      final response = await _apiService.get('/projects/$id');
-      if (response.statusCode == 200) {
-        return ProjectModel.fromMap(response.data as Map<String, dynamic>);
+      final data = await _apiService.get('/projects/$id');
+      if (data is Map<String, dynamic>) {
+        return _normalizeForCurrentPlatform(ProjectModel.fromMap(data));
       }
-      return null;
-    } catch (e) {
-      throw Exception('Failed to fetch project: $e');
+    } catch (_) {
+      // Fallback lookup below.
     }
+
+    for (final list in _localByPortfolio.values) {
+      for (final item in list) {
+        if (item.id == id) return item;
+      }
+    }
+    return null;
   }
 
   Future<List<ProjectModel>> findByPortfolioId(
@@ -54,65 +75,238 @@ class ProjectRepository {
       if (limit != null) queryParams['limit'] = limit;
       if (offset != null) queryParams['offset'] = offset;
 
-      final response = await _apiService.get(
+      final data = await _apiService.get(
         '/portfolios/$portfolioId/projects',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
-      if (response.statusCode == 200) {
-        final data = response.data as List;
+      if (data is List) {
         return data
-            .map((json) => ProjectModel.fromMap(json as Map<String, dynamic>))
-            .toList();
+            .whereType<Map<String, dynamic>>()
+            .map(ProjectModel.fromMap)
+            .map(_normalizeForCurrentPlatform)
+            .toList(growable: false);
       }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch projects: $e');
+    } catch (_) {
+      // Fallback to local cache.
     }
+
+    final source = List<ProjectModel>.from(
+      _localByPortfolio[portfolioId] ?? const <ProjectModel>[],
+    ).map(_normalizeForCurrentPlatform).toList(growable: false);
+    final hasSearch = searchQuery != null && searchQuery.trim().isNotEmpty;
+    final filtered = hasSearch
+        ? source
+              .where((item) {
+                final q = searchQuery.toLowerCase();
+                return item.title.toLowerCase().contains(q) ||
+                    (item.description?.toLowerCase().contains(q) ?? false) ||
+                    (item.techStack?.toLowerCase().contains(q) ?? false);
+              })
+              .toList(growable: false)
+        : source;
+
+    final start = (offset ?? 0).clamp(0, filtered.length);
+    final end = limit == null
+        ? filtered.length
+        : (start + limit).clamp(start, filtered.length);
+    return filtered.sublist(start, end);
   }
 
   Future<List<ProjectModel>> findFeaturedByUserId(int userId) async {
-    try {
-      final response = await _apiService.get(
-        '/users/$userId/projects/featured',
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data as List;
-        return data
-            .map((json) => ProjectModel.fromMap(json as Map<String, dynamic>))
-            .toList();
-      }
-      return [];
-    } catch (e) {
-      throw Exception('Failed to fetch featured projects: $e');
+    final cached = _featuredCacheByUser[userId];
+    if (cached != null && DateTime.now().isBefore(cached.expiresAt)) {
+      return cached.projects;
     }
+
+    try {
+      final portfoliosData = await _apiService.get('/users/$userId/portfolios');
+      if (portfoliosData is List) {
+        final portfolioIds = portfoliosData
+            .whereType<Map<String, dynamic>>()
+            .map((item) => _asInt(item['id']))
+            .whereType<int>()
+            .toList(growable: false);
+
+        final projectsPerPortfolio = await Future.wait(
+          portfolioIds.map(_loadPortfolioProjectsSafely),
+        );
+
+        final featured = projectsPerPortfolio
+            .expand((items) => items)
+            .where((project) => project.userId == userId && project.isFeatured)
+            .toList(growable: false);
+
+        featured.sort((a, b) {
+          final sortOrderCompare = a.sortOrder.compareTo(b.sortOrder);
+          if (sortOrderCompare != 0) return sortOrderCompare;
+          return b.createdAt.compareTo(a.createdAt);
+        });
+
+        final deduped = <ProjectModel>[];
+        final seenIds = <int>{};
+        for (final project in featured) {
+          final id = project.id;
+          if (id != null) {
+            if (seenIds.contains(id)) continue;
+            seenIds.add(id);
+          }
+          deduped.add(project);
+        }
+
+        _featuredCacheByUser[userId] = _FeaturedCacheEntry(
+          projects: List<ProjectModel>.unmodifiable(deduped),
+          expiresAt: DateTime.now().add(_featuredCacheTtl),
+        );
+        return deduped;
+      }
+    } catch (_) {
+      // Fallback to local cache.
+    }
+
+    final fallback = _localByPortfolio.values
+        .expand((list) => list)
+        .where((item) => item.userId == userId && item.isFeatured)
+        .toList(growable: false);
+
+    _featuredCacheByUser[userId] = _FeaturedCacheEntry(
+      projects: List<ProjectModel>.unmodifiable(fallback),
+      expiresAt: DateTime.now().add(_featuredCacheTtl),
+    );
+    return fallback;
+  }
+
+  static int? _asInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  Future<List<ProjectModel>> _loadPortfolioProjectsSafely(
+    int portfolioId,
+  ) async {
+    try {
+      final projectsData = await _apiService.get(
+        '/portfolios/$portfolioId/projects',
+      );
+      if (projectsData is! List) return const <ProjectModel>[];
+      return projectsData
+          .whereType<Map<String, dynamic>>()
+          .map(ProjectModel.fromMap)
+          .map(_normalizeForCurrentPlatform)
+          .toList(growable: false);
+    } catch (_) {
+      return const <ProjectModel>[];
+    }
+  }
+
+  ProjectModel _normalizeForCurrentPlatform(ProjectModel project) {
+    if (!kIsWeb) {
+      return project;
+    }
+
+    final normalizedImages = project.imagePaths
+        .where(_isWebSafeImagePath)
+        .toList(growable: false);
+
+    final rawThumbnail = project.thumbnailPath;
+    final normalizedThumbnail =
+        rawThumbnail != null && _isWebSafeImagePath(rawThumbnail)
+        ? rawThumbnail
+        : null;
+
+    final resolvedThumbnail =
+        normalizedThumbnail ??
+        (normalizedImages.isNotEmpty ? normalizedImages.first : null);
+
+    final resolvedImages = normalizedImages.isNotEmpty
+        ? normalizedImages
+        : (resolvedThumbnail == null
+              ? const <String>[]
+              : <String>[resolvedThumbnail]);
+
+    final imageListChanged =
+        resolvedImages.length != project.imagePaths.length ||
+        !_sameStringList(project.imagePaths, resolvedImages);
+    final thumbnailChanged = resolvedThumbnail != project.thumbnailPath;
+
+    if (!imageListChanged && !thumbnailChanged) {
+      return project;
+    }
+
+    return project.copyWith(
+      imagePaths: resolvedImages,
+      thumbnailPath: resolvedThumbnail,
+    );
+  }
+
+  bool _isWebSafeImagePath(String path) {
+    final value = path.trim();
+    if (value.isEmpty) return false;
+
+    return value.startsWith('data:image/') ||
+        value.startsWith('http://') ||
+        value.startsWith('https://') ||
+        value.startsWith('blob:');
+  }
+
+  bool _sameStringList(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   Future<int> update(ProjectModel project) async {
     try {
-      final response = await _apiService.put(
-        '/projects/${project.id}',
-        data: project.toMap(),
-      );
-      if (response.statusCode == 200) {
+      final payload = _normalizeForCurrentPlatform(project);
+      await _apiService.put('/projects/${project.id}', data: payload.toMap());
+      _invalidateFeaturedCacheForUser(project.userId);
+      return 1;
+    } catch (_) {
+      final list = _localByPortfolio[project.portfolioId] ?? <ProjectModel>[];
+      final index = list.indexWhere((item) => item.id == project.id);
+      if (index >= 0) {
+        list[index] = _normalizeForCurrentPlatform(project);
+        _invalidateFeaturedCacheForUser(project.userId);
         return 1;
       }
-      throw Exception('Failed to update project');
-    } catch (e) {
-      throw Exception('Failed to update project: $e');
+      return 0;
     }
   }
 
   Future<int> delete(int id) async {
     try {
-      final response = await _apiService.delete('/projects/$id');
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return 1;
+      await _apiService.delete('/projects/$id');
+      _featuredCacheByUser.clear();
+      return 1;
+    } catch (_) {
+      var deleted = 0;
+      for (final list in _localByPortfolio.values) {
+        final before = list.length;
+        list.removeWhere((item) => item.id == id);
+        if (list.length != before) {
+          deleted = 1;
+          break;
+        }
       }
-      throw Exception('Failed to delete project');
-    } catch (e) {
-      throw Exception('Failed to delete project: $e');
+      if (deleted == 1) {
+        _featuredCacheByUser.clear();
+      }
+      return deleted;
     }
   }
+
+  void _invalidateFeaturedCacheForUser(int userId) {
+    _featuredCacheByUser.remove(userId);
+  }
+}
+
+class _FeaturedCacheEntry {
+  final List<ProjectModel> projects;
+  final DateTime expiresAt;
+
+  const _FeaturedCacheEntry({required this.projects, required this.expiresAt});
 }

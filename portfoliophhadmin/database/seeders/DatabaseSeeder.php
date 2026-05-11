@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Application;
-use App\Models\Job;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,32 +19,41 @@ class DatabaseSeeder extends Seeder
         // Always ensure admin accounts exist first.
         $this->call(AdminSeeder::class);
 
-        // Create test job seeker
-        $jobSeeker = User::factory()->jobSeeker()->create([
-            'name' => 'Test Job Seeker',
-            'email' => 'jobseeker@example.com',
-        ]);
+        // Populate role-distributed dummy users for development/testing.
+        $this->call(BulkUserSeeder::class);
 
-        // Create test recruiter
-        $recruiter = User::factory()->recruiter()->create([
-            'name' => 'Test Recruiter',
-            'email' => 'recruiter@example.com',
-        ]);
+        // Populate jobs and applications for realistic dashboard and workflow data.
+        $this->call(BulkPlatformDataSeeder::class);
 
-        // Create additional users for testing
-        User::factory(5)->jobSeeker()->create();
-        User::factory(3)->recruiter()->create();
+        // Create labeled dummy job seeker account.
+        User::updateOrCreate(
+            ['email' => 'jobseeker@example.com'],
+            [
+                'name' => 'Miguel Santos',
+                'password' => Hash::make('password'),
+                'role' => 'job_seeker',
+                'active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Create jobs posted by recruiter
-        $jobs = Job::factory(8)
-            ->for($recruiter, 'recruiter')
-            ->create();
+        // Create labeled dummy recruiter account.
+        User::updateOrCreate(
+            ['email' => 'recruiter@example.com'],
+            [
+                'name' => 'Angela Sy - Northstar Talent',
+                'password' => Hash::make('password'),
+                'role' => 'recruiter',
+                'active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Create some applications
-        foreach ($jobs->take(3) as $job) {
-            Application::factory(5)->create([
-                'job_id' => $job->id,
-            ]);
-        }
+        echo "Core dummy accounts created/verified:\n";
+        echo "- Dummy Admin (Primary): admin@portfolio.ph\n";
+        echo "- Dummy Admin (Backup): admin@portfolioph.com\n";
+        echo "- Miguel Santos (Job Seeker): jobseeker@example.com\n";
+        echo "- Angela Sy - Northstar Talent (Recruiter): recruiter@example.com\n";
+        echo "Password: password\n";
     }
 }

@@ -104,7 +104,7 @@
                                                 <td class="px-5 py-4">
                                                     <span class="cc-glass-chip {{ $job->status === 'approved' ? 'border-emerald-200 bg-emerald-50/90 text-emerald-700' : ($job->status === 'pending' ? 'border-amber-200 bg-amber-50/90 text-amber-700' : 'border-slate-200 bg-slate-100/90 text-slate-700') }}">{{ ucfirst($job->status) }}</span>
                                                 </td>
-                                                <td class="px-5 py-4 text-sm text-slate-600">{{ $job->applications->count() }}</td>
+                                                <td class="px-5 py-4 text-sm text-slate-600">{{ $job->applications_count ?? 0 }}</td>
                                                 <td class="px-5 py-4 text-sm"><a href="{{ route('admin.jobs.show', $job) }}" class="font-semibold text-indigo-600 hover:text-indigo-800">Review</a></td>
                                             </tr>
                                         @empty

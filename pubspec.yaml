@@ -48,6 +48,7 @@ dependencies:
 
   # Image handling
   image_picker: ^1.1.2
+  file_picker: ^10.1.9
   cached_network_image: ^3.4.1
 
   # Utilities

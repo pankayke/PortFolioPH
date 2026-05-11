@@ -15,7 +15,7 @@ class ApplicationStatus {
   static const String shortlisted = 'shortlisted';
   static const String rejected = 'rejected';
   static const String accepted = 'accepted';
-  static const String withdrawn = 'rejected';
+  static const String withdrawn = 'withdrawn';
 
   static const List<String> all = [
     applied,
@@ -36,8 +36,15 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
   String? _selectedStatus;
   int? _selectedJobId;
   int _currentPage = 1;
+  int _totalPages = 1;
   bool _hasMore = true;
+  String _sortBy = 'created_at';
   Set<int> _selectedApplicationIds = {};
+  int _appliedCount = 0;
+  int _reviewingCount = 0;
+  int _shortlistedCount = 0;
+  int _rejectedCount = 0;
+  int _acceptedCount = 0;
 
   // ─────── Getters ──────────────────────────────────────────────────────────
 
@@ -48,25 +55,20 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
   String? get selectedStatus => _selectedStatus;
   int? get selectedJobId => _selectedJobId;
   int get currentPage => _currentPage;
+  int get totalPages => _totalPages;
   bool get hasMore => _hasMore;
+  String get sortBy => _sortBy;
   Set<int> get selectedApplicationIds =>
       Set.unmodifiable(_selectedApplicationIds);
   bool get hasSelected => _selectedApplicationIds.isNotEmpty;
   int get selectedCount => _selectedApplicationIds.length;
 
   // Status counts
-  int get appliedCount =>
-      _applications.where((a) => a.status == ApplicationStatus.applied).length;
-  int get reviewingCount => _applications
-      .where((a) => a.status == ApplicationStatus.reviewing)
-      .length;
-  int get shortlistedCount => _applications
-      .where((a) => a.status == ApplicationStatus.shortlisted)
-      .length;
-  int get rejectedCount =>
-      _applications.where((a) => a.status == ApplicationStatus.rejected).length;
-  int get acceptedCount =>
-      _applications.where((a) => a.status == ApplicationStatus.accepted).length;
+  int get appliedCount => _appliedCount;
+  int get reviewingCount => _reviewingCount;
+  int get shortlistedCount => _shortlistedCount;
+  int get rejectedCount => _rejectedCount;
+  int get acceptedCount => _acceptedCount;
 
   // ─────── Constructor ───────────────────────────────────────────────────────
 
@@ -89,6 +91,7 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
     _currentPage = page;
     _selectedStatus = status;
     _selectedJobId = jobId;
+    _sortBy = sortBy;
 
     try {
       final loaded = await _repository.getApplications(
@@ -99,12 +102,15 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
       );
 
       if (refresh || page == 1) {
-        _applications = loaded;
+        _applications = loaded.items;
       } else {
-        _applications.addAll(loaded);
+        _applications.addAll(loaded.items);
       }
 
-      _hasMore = loaded.isNotEmpty;
+      _currentPage = loaded.currentPage;
+      _totalPages = loaded.totalPages;
+      _hasMore = loaded.hasMore;
+      _recalculateStatusCounts();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -122,13 +128,19 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
       page: _currentPage + 1,
       status: _selectedStatus,
       jobId: _selectedJobId,
+      sortBy: _sortBy,
     );
   }
 
   /// Refresh application list
   Future<void> refreshApplications() async {
     _selectedApplicationIds.clear();
-    await loadApplications(refresh: true);
+    await loadApplications(
+      status: _selectedStatus,
+      jobId: _selectedJobId,
+      sortBy: _sortBy,
+      refresh: true,
+    );
   }
 
   /// Get single application details
@@ -166,6 +178,7 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
           status: status,
           notes: notes,
         );
+        _recalculateStatusCounts();
       }
 
       _isLoading = false;
@@ -186,25 +199,24 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
   }) async {
     final idsToUpdate = ids ?? _selectedApplicationIds;
     if (idsToUpdate.isEmpty) return;
+    final idsList = idsToUpdate.toList(growable: false);
 
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      await _repository.bulkUpdateApplicationStatus(
-        idsToUpdate.toList(),
-        status,
-      );
+      await _repository.bulkUpdateApplicationStatus(idsList, status);
 
       // Update in local list
-      for (final id in idsToUpdate) {
+      for (final id in idsList) {
         final index = _applications.indexWhere((a) => a.id == id);
         if (index != -1) {
           _applications[index] = _applications[index].copyWith(status: status);
         }
       }
 
+      _recalculateStatusCounts();
       _selectedApplicationIds.clear();
       _isLoading = false;
       notifyListeners();
@@ -219,19 +231,24 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
   /// Filter by status
   Future<void> filterByStatus(String? status) async {
     _selectedApplicationIds.clear();
-    await loadApplications(status: status, refresh: true);
+    await loadApplications(status: status, sortBy: _sortBy, refresh: true);
   }
 
   /// Filter by job
   Future<void> filterByJob(int? jobId) async {
     _selectedApplicationIds.clear();
-    await loadApplications(jobId: jobId, refresh: true);
+    await loadApplications(jobId: jobId, sortBy: _sortBy, refresh: true);
   }
 
   /// Sort applications
   Future<void> sortApplications(String sortBy) async {
     _selectedApplicationIds.clear();
-    await loadApplications(sortBy: sortBy, refresh: true);
+    await loadApplications(
+      status: _selectedStatus,
+      jobId: _selectedJobId,
+      sortBy: sortBy,
+      refresh: true,
+    );
   }
 
   // ─────── Selection Methods ──────────────────────────────────────────────────
@@ -272,5 +289,39 @@ class RecruiterApplicationManagerProvider extends ChangeNotifier {
   void dispose() {
     _selectedApplicationIds.clear();
     super.dispose();
+  }
+
+  void _recalculateStatusCounts() {
+    var applied = 0;
+    var reviewing = 0;
+    var shortlisted = 0;
+    var rejected = 0;
+    var accepted = 0;
+
+    for (final application in _applications) {
+      switch (application.status) {
+        case ApplicationStatus.applied:
+          applied++;
+          break;
+        case ApplicationStatus.reviewing:
+          reviewing++;
+          break;
+        case ApplicationStatus.shortlisted:
+          shortlisted++;
+          break;
+        case ApplicationStatus.rejected:
+          rejected++;
+          break;
+        case ApplicationStatus.accepted:
+          accepted++;
+          break;
+      }
+    }
+
+    _appliedCount = applied;
+    _reviewingCount = reviewing;
+    _shortlistedCount = shortlisted;
+    _rejectedCount = rejected;
+    _acceptedCount = accepted;
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -18,20 +19,6 @@ import 'package:portfolioph/presentation/widgets/dark_scaffold_with_bottom_nav.d
 import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
-class _ShowcaseProfile {
-  final String name;
-  final String role;
-  final String highlight;
-  final List<String> links;
-
-  const _ShowcaseProfile({
-    required this.name,
-    required this.role,
-    required this.highlight,
-    required this.links,
-  });
-}
-
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
 
@@ -42,33 +29,6 @@ class PortfolioScreen extends StatefulWidget {
 class _PortfolioScreenState extends State<PortfolioScreen>
     with TickerProviderStateMixin, BokehAnimationMixin, UserAwareScreenMixin {
   final TextEditingController _searchController = TextEditingController();
-
-  static const List<_ShowcaseProfile> _showcaseProfiles = [
-    _ShowcaseProfile(
-      name: 'Maria Santos',
-      role: 'Virtual Assistant',
-      highlight: 'Managed 5 CEOs • 98% client retention',
-      links: ['Resume PDF', 'LinkedIn', 'Contact'],
-    ),
-    _ShowcaseProfile(
-      name: 'Juan Cruz',
-      role: 'Graphic Designer',
-      highlight: '200+ logos • Jollibee & SM Mall clients',
-      links: ['Portfolio Site', 'Dribbble'],
-    ),
-    _ShowcaseProfile(
-      name: 'Anna Lopez',
-      role: 'Fresh Grad Accountant',
-      highlight: 'Top 3 BS Accountancy LNU • Looking for OJT',
-      links: ['Transcript', 'Recommendations'],
-    ),
-    _ShowcaseProfile(
-      name: 'Carlo Ramirez',
-      role: 'Sales Executive',
-      highlight: '₱2M quota at 120% • 5-star awards',
-      links: ['Performance Report'],
-    ),
-  ];
 
   @override
   void initState() {
@@ -222,77 +182,8 @@ class _PortfolioScreenState extends State<PortfolioScreen>
                               context,
                             ).colorScheme.primaryContainer,
                           ),
-                          child: const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Kapwa Pinoy Showcase'),
-                              SizedBox(height: 4),
-                              Text(
-                                'Discover Filipino portfolios from students, freelancers, and professionals.',
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          height: 168,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _showcaseProfiles.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(width: 10),
-                            itemBuilder: (context, index) {
-                              final profile = _showcaseProfiles[index];
-                              return SizedBox(
-                                width: 280,
-                                child: Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${profile.name} • ${profile.role}',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.titleSmall,
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          profile.highlight,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const Spacer(),
-                                        Wrap(
-                                          spacing: 6,
-                                          runSpacing: 6,
-                                          children: profile.links
-                                              .map(
-                                                (link) => OutlinedButton(
-                                                  onPressed: () {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          '$link is a demo action for now.',
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Text(link),
-                                                ),
-                                              )
-                                              .toList(growable: false),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                          child: const Text(
+                            'Show your strongest work samples. Add complete descriptions and updated links so recruiters can evaluate your portfolio quickly.',
                           ),
                         ),
                       ]),
@@ -435,16 +326,7 @@ class _ProjectCard extends StatelessWidget {
                           alignment: Alignment.center,
                           child: const Icon(Icons.image_outlined),
                         )
-                      : Image.file(
-                          File(coverImage),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                                color: Colors.grey.shade200,
-                                alignment: Alignment.center,
-                                child: const Icon(Icons.broken_image_outlined),
-                              ),
-                        ),
+                      : _buildProjectImage(coverImage),
                 ),
               ),
               const SizedBox(height: 8),
@@ -489,6 +371,42 @@ class _ProjectCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildProjectImage(String imagePath) {
+  if (imagePath.startsWith('data:image/')) {
+    final commaIndex = imagePath.indexOf(',');
+    if (commaIndex > -1) {
+      try {
+        final bytes = base64Decode(imagePath.substring(commaIndex + 1));
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image_outlined),
+          ),
+        );
+      } catch (_) {
+        return Container(
+          color: Colors.grey.shade200,
+          alignment: Alignment.center,
+          child: const Icon(Icons.broken_image_outlined),
+        );
+      }
+    }
+  }
+
+  return Image.file(
+    File(imagePath),
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) => Container(
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: const Icon(Icons.broken_image_outlined),
+    ),
+  );
 }
 
 class _ProjectCardSkeleton extends StatelessWidget {

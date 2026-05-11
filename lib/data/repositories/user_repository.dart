@@ -10,7 +10,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/exceptions/custom_exceptions.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/user_model.dart';
@@ -18,8 +17,7 @@ import 'package:portfolioph/data/models/user_model.dart';
 class UserRepository {
   final ApiService _apiService;
 
-  UserRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  UserRepository({required ApiService apiService}) : _apiService = apiService;
 
   // ── Create ──────────────────────────────────────────────────────────────────
   /// Registers a new user via the API (online-only).
@@ -307,6 +305,10 @@ class UserRepository {
     String? websiteUrl,
     File? avatarFile,
     File? resumeFile,
+    Uint8List? avatarBytes,
+    Uint8List? resumeBytes,
+    String? avatarFileName,
+    String? resumeFileName,
   }) async {
     try {
       final formData = FormData();
@@ -332,7 +334,19 @@ class UserRepository {
       }
 
       // Add avatar file if provided
-      if (avatarFile != null && await avatarFile.exists()) {
+      if (avatarBytes != null && avatarBytes.isNotEmpty) {
+        formData.files.add(
+          MapEntry(
+            'avatar',
+            MultipartFile.fromBytes(
+              avatarBytes,
+              filename:
+                  avatarFileName ??
+                  'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            ),
+          ),
+        );
+      } else if (avatarFile != null && await avatarFile.exists()) {
         formData.files.add(
           MapEntry(
             'avatar',
@@ -345,7 +359,19 @@ class UserRepository {
       }
 
       // Add resume file if provided
-      if (resumeFile != null && await resumeFile.exists()) {
+      if (resumeBytes != null && resumeBytes.isNotEmpty) {
+        formData.files.add(
+          MapEntry(
+            'resume',
+            MultipartFile.fromBytes(
+              resumeBytes,
+              filename:
+                  resumeFileName ??
+                  'resume_${DateTime.now().millisecondsSinceEpoch}.pdf',
+            ),
+          ),
+        );
+      } else if (resumeFile != null && await resumeFile.exists()) {
         formData.files.add(
           MapEntry(
             'resume',

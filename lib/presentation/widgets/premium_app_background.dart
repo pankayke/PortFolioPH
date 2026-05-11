@@ -5,8 +5,14 @@ import 'package:portfolioph/core/styling/design_tokens.dart';
 class PremiumAppBackground extends StatelessWidget {
   final Widget child;
   final AnimationController? animation;
+  final bool lite;
 
-  const PremiumAppBackground({super.key, required this.child, this.animation});
+  const PremiumAppBackground({
+    super.key,
+    required this.child,
+    this.animation,
+    this.lite = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +63,8 @@ class PremiumAppBackground extends StatelessWidget {
           ),
         ),
 
-        /// Animated bokeh particles (optional - requires animation controller)
-        if (animation != null)
+        // Animated bokeh particles (optional - requires animation controller)
+        if (!lite && animation != null)
           CustomPaint(
             painter: _BokehBackgroundPainter(
               animation: animation!,
@@ -89,35 +95,27 @@ class _BokehBackgroundPainter extends CustomPainter {
       ..strokeWidth = 0;
     final linePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1
+      ..strokeWidth = 0.9
       ..color = (isDark ? Colors.white : DesignTokens.accentBlue).withAlpha(
-        isDark ? 14 : 20,
+        isDark ? 8 : 12,
       );
 
-    // Generate 12 bokeh circles with subtle movement
+    // Generate a small set of bokeh circles (lighter for performance)
     final circles = [
-      (dx: 20.0, dy: 60.0, size: 120.0),
-      (dx: 80.0, dy: 150.0, size: 200.0),
-      (dx: 200.0, dy: 40.0, size: 150.0),
-      (dx: 320.0, dy: 200.0, size: 100.0),
-      (dx: 150.0, dy: 300.0, size: 180.0),
-      (dx: 400.0, dy: 100.0, size: 130.0),
-      (dx: 50.0, dy: 400.0, size: 160.0),
-      (dx: 300.0, dy: 320.0, size: 110.0),
-      (dx: 450.0, dy: 200.0, size: 140.0),
-      (dx: 100.0, dy: 500.0, size: 120.0),
-      (dx: 350.0, dy: 450.0, size: 100.0),
-      (dx: 200.0, dy: 550.0, size: 150.0),
+      (dx: 80.0, dy: 150.0, size: 140.0),
+      (dx: 200.0, dy: 40.0, size: 120.0),
+      (dx: 320.0, dy: 200.0, size: 90.0),
+      (dx: 150.0, dy: 300.0, size: 140.0),
     ];
 
     for (var i = 0; i < circles.length; i++) {
       final circle = circles[i];
-      final offset = animation.value * 8;
+      final offset = animation.value * 6;
       final yOffset = (i % 2 == 0) ? offset : -offset;
 
       paint.color = isDark
-          ? DesignTokens.accentBlue.withAlpha(30)
-          : DesignTokens.accentBlue.withAlpha(15);
+          ? DesignTokens.accentBlue.withAlpha(18)
+          : DesignTokens.accentBlue.withAlpha(10);
 
       canvas.drawCircle(
         Offset(circle.dx, circle.dy + yOffset),

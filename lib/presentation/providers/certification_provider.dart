@@ -1,52 +1,36 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:portfolioph/data/models/certification_model.dart';
 import 'package:portfolioph/data/repositories/certification_repository.dart';
 import 'package:portfolioph/data/services/certification_image_service.dart';
+import 'package:portfolioph/presentation/providers/async_user_provider_base.dart';
 
-class CertificationProvider extends ChangeNotifier {
+class CertificationProvider extends AsyncUserProviderBase {
   final CertificationRepository _repository;
   final CertificationImageService _imageService;
 
   CertificationProvider({
-    CertificationRepository? repository,
+    required CertificationRepository repository,
     CertificationImageService? imageService,
-  }) : _repository = repository ?? CertificationRepository(),
+  }) : _repository = repository,
        _imageService = imageService ?? CertificationImageService();
 
   List<CertificationModel> _certifications = [];
-  bool _isLoading = false;
   String _searchQuery = '';
-  String? _errorMessage;
-
-  int? _currentUserId;
 
   List<CertificationModel> get certifications =>
       List.unmodifiable(_certifications);
-  bool get isLoading => _isLoading;
   String get searchQuery => _searchQuery;
-  String? get errorMessage => _errorMessage;
 
   Future<void> loadForUser(int userId) async {
-    _isLoading = true;
-    _errorMessage = null;
-    _currentUserId = userId;
-    notifyListeners();
-
-    try {
+    setCurrentUserId(userId);
+    await runLoadingTask(() async {
       final all = await _repository.findByUserId(userId);
       _certifications = _applySearch(all, _searchQuery);
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    });
   }
 
   Future<void> updateSearchQuery(String query) async {
     _searchQuery = query.trim();
-    final userId = _currentUserId;
+    final userId = currentUserId;
     if (userId == null) return;
 
     try {
@@ -54,29 +38,29 @@ class CertificationProvider extends ChangeNotifier {
       _certifications = _applySearch(all, _searchQuery);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
     }
   }
 
   Future<bool> addCertification(CertificationModel certification) async {
-    _errorMessage = null;
+    clearError();
     try {
       final id = await _repository.insert(certification);
       _certifications = [certification.copyWith(id: id), ..._certifications];
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
   }
 
   Future<bool> updateCertification(CertificationModel certification) async {
-    _errorMessage = null;
+    clearError();
     if (certification.id == null) {
-      _errorMessage = 'Certification id is required for update.';
+      setError('Certification id is required for update.');
       notifyListeners();
       return false;
     }
@@ -89,17 +73,17 @@ class CertificationProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
   }
 
   Future<bool> deleteCertification(CertificationModel certification) async {
-    _errorMessage = null;
+    clearError();
     final id = certification.id;
     if (id == null) {
-      _errorMessage = 'Certification id is required for delete.';
+      setError('Certification id is required for delete.');
       notifyListeners();
       return false;
     }
@@ -117,7 +101,7 @@ class CertificationProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
@@ -155,8 +139,8 @@ class CertificationProvider extends ChangeNotifier {
         .toList(growable: false);
   }
 
-  void clearError() {
-    _errorMessage = null;
+  void clearProviderError() {
+    clearError();
     notifyListeners();
   }
 }

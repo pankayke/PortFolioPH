@@ -10,9 +10,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:portfolioph/core/constants/app_constants.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
+import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/features/notifications/providers/notification_provider.dart';
+import 'package:portfolioph/presentation/providers/auth_provider.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -36,11 +42,16 @@ class _NotificationSettingsScreenState
   bool _messageNotifications = true;
   bool _newMatchNotifications = true;
   String _emailFrequency = 'daily'; // daily, weekly, never
+  bool _isMarkingAllRead = false;
 
   @override
   void initState() {
     super.initState();
     _loadPreferences();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<NotificationProvider>().loadNotifications();
+    });
   }
 
   Future<void> _loadPreferences() async {
@@ -73,8 +84,65 @@ class _NotificationSettingsScreenState
     );
   }
 
+  Future<void> _markNotificationAsRead(String id) async {
+    try {
+      await context.read<NotificationProvider>().markAsRead(id);
+    } catch (_) {
+      if (!mounted) return;
+      _showSuccessMessage('Unable to mark notification as read.');
+    }
+  }
+
+  Future<void> _openNotification(AppNotificationItem item) async {
+    await _markNotificationAsRead(item.id);
+    if (!mounted) return;
+
+    final role = context.read<AuthProvider>().currentUser?.role;
+    if (role == AppConstants.roleRecruiter) {
+      if (item.jobId != null) {
+        context.push(
+          AppRoutes.recruiterJobDetail.replaceFirst(':id', '${item.jobId}'),
+        );
+        return;
+      }
+      context.go(AppRoutes.recruiterApplications);
+      return;
+    }
+
+    if (item.applicationId != null) {
+      context.go(AppRoutes.seekerApplications);
+      return;
+    }
+    if (item.jobId != null) {
+      context.go(AppRoutes.seekerJobsList);
+      return;
+    }
+    context.go(AppRoutes.dashboard);
+  }
+
+  Future<void> _markAllNotificationsAsRead() async {
+    if (_isMarkingAllRead) return;
+
+    setState(() => _isMarkingAllRead = true);
+    try {
+      await context.read<NotificationProvider>().markAllAsRead();
+      _showSuccessMessage('All notifications marked as read');
+    } catch (_) {
+      if (!mounted) return;
+      _showSuccessMessage('Unable to mark all notifications as read.');
+    } finally {
+      if (mounted) {
+        setState(() => _isMarkingAllRead = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final notificationProvider = context.watch<NotificationProvider>();
+    final notificationFeed = notificationProvider.notifications;
+    final notificationFeedError = notificationProvider.error;
+
     if (!_isInitialized) {
       return Scaffold(
         appBar: AppBar(title: const Text('Notification Settings')),
@@ -94,6 +162,82 @@ class _NotificationSettingsScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Recent Application Updates ───────────────────────────────
+              _buildSectionTitle('Recent Application Updates'),
+              const SizedBox(height: 12),
+              if (notificationProvider.isLoading && notificationFeed.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (notificationFeedError != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$notificationFeedError'
+                        '${notificationProvider.lastSyncedAt != null ? ' • Last synced ${_formatTimestamp(notificationProvider.lastSyncedAt!)}' : ''}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton.icon(
+                        onPressed: () =>
+                            notificationProvider.refreshNotifications(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              else if (notificationFeed.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('No recent application updates yet.'),
+                )
+              else
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton.icon(
+                          onPressed: _isMarkingAllRead
+                              ? null
+                              : _markAllNotificationsAsRead,
+                          icon: _isMarkingAllRead
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.done_all),
+                          label: const Text('Mark all read'),
+                        ),
+                      ],
+                    ),
+                    ...notificationFeed.map(_buildNotificationCard),
+                  ],
+                ),
+              const SizedBox(height: 24),
+
               // ── Push Notifications Section ───────────────────────────────
               _buildSectionTitle('Push Notifications'),
               const SizedBox(height: 12),
@@ -367,6 +511,83 @@ class _NotificationSettingsScreenState
     );
   }
 
+  Widget _buildNotificationCard(AppNotificationItem item) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () => _openNotification(item),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: item.isRead
+                ? Theme.of(context).colorScheme.surface
+                : Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                _notificationIcon(item),
+                size: 20,
+                color: _notificationColor(item),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.message,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _formatTimestamp(item.createdAt),
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (!item.isRead)
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: const BoxDecoration(
+                    color: DesignTokens.accentBlueBright,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatTimestamp(DateTime dateTime) {
+    final difference = DateTime.now().difference(dateTime);
+    if (difference.inMinutes < 1) return 'Just now';
+    if (difference.inHours < 1) return '${difference.inMinutes}m ago';
+    if (difference.inDays < 1) return '${difference.inHours}h ago';
+    return '${difference.inDays}d ago';
+  }
+
   String _buildActiveAlertCount() {
     int count = 0;
     if (_jobAlerts) count++;
@@ -374,6 +595,36 @@ class _NotificationSettingsScreenState
     if (_messageNotifications) count++;
     if (_newMatchNotifications) count++;
     return '$count active';
+  }
+
+  IconData _notificationIcon(AppNotificationItem item) {
+    switch (item.status) {
+      case 'accepted':
+        return Icons.check_circle_outline;
+      case 'shortlisted':
+      case 'reviewed':
+      case 'pending':
+        return Icons.schedule_outlined;
+      case 'rejected':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.notifications_none_outlined;
+    }
+  }
+
+  Color _notificationColor(AppNotificationItem item) {
+    switch (item.status) {
+      case 'accepted':
+        return const Color(0xFF16A34A);
+      case 'shortlisted':
+      case 'reviewed':
+      case 'pending':
+        return DesignTokens.accentBlueBright;
+      case 'rejected':
+        return const Color(0xFFDC2626);
+      default:
+        return Theme.of(context).colorScheme.primary;
+    }
   }
 
   Future<void> _showResetDialog() async {

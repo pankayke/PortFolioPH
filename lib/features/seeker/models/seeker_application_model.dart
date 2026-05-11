@@ -175,19 +175,22 @@ class SeekerApplication {
   }
 
   factory SeekerApplication.fromJson(Map<String, dynamic> json) {
+    final job = json['job'] as Map<String, dynamic>?;
+    final recruiter = job?['recruiter'] as Map<String, dynamic>?;
+
     final normalized = <String, dynamic>{
       ...json,
       'id': _asInt(_pick(json, 'id', 'id')),
-      'jobId': _asInt(_pick(json, 'jobId', 'job_id')),
-      'jobTitle': (_pick(json, 'jobTitle', 'job_title') ?? 'Untitled Job')
+      'jobId': _asInt(_pick(json, 'jobId', 'job_id') ?? job?['id']),
+      'jobTitle': (_pick(json, 'jobTitle', 'job_title') ?? job?['title'] ?? 'Untitled Job')
           .toString(),
-      'recruiterName': (_pick(json, 'recruiterName', 'recruiter_name') ?? '')
+      'recruiterName': (_pick(json, 'recruiterName', 'recruiter_name') ?? recruiter?['name'] ?? '')
           .toString(),
-      'recruiterLogo': (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '')
+      'recruiterLogo': (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? recruiter?['logo'] ?? '')
           .toString(),
-      'jobLocation': (_pick(json, 'jobLocation', 'job_location'))?.toString(),
-      'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min')),
-      'salaryMax': _asDouble(_pick(json, 'salaryMax', 'salary_max')),
+      'jobLocation': (_pick(json, 'jobLocation', 'job_location') ?? job?['location'])?.toString(),
+      'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min') ?? job?['salary_min']),
+      'salaryMax': _asDouble(_pick(json, 'salaryMax', 'salary_max') ?? job?['salary_max']),
       'status': (_pick(json, 'status', 'status') ?? 'applied').toString(),
       'notes': (_pick(json, 'notes', 'notes'))?.toString(),
       'interviewDate': _asNullableDateTime(

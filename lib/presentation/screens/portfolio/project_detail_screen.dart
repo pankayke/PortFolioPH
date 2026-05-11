@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -182,16 +183,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     itemBuilder: (_, index) {
                       return Hero(
                         tag: 'project_image_${widget.project.id ?? 0}_$index',
-                        child: Image.file(
-                          File(_images[index]),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                                color: Colors.grey.shade200,
-                                alignment: Alignment.center,
-                                child: const Icon(Icons.broken_image_outlined),
-                              ),
-                        ),
+                        child: _buildProjectImage(_images[index]),
                       );
                     },
                   ),
@@ -270,6 +262,42 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       ),
     );
   }
+}
+
+Widget _buildProjectImage(String imagePath) {
+  if (imagePath.startsWith('data:image/')) {
+    final commaIndex = imagePath.indexOf(',');
+    if (commaIndex > -1) {
+      try {
+        final bytes = base64Decode(imagePath.substring(commaIndex + 1));
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image_outlined),
+          ),
+        );
+      } catch (_) {
+        return Container(
+          color: Colors.grey.shade200,
+          alignment: Alignment.center,
+          child: const Icon(Icons.broken_image_outlined),
+        );
+      }
+    }
+  }
+
+  return Image.file(
+    File(imagePath),
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) => Container(
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      child: const Icon(Icons.broken_image_outlined),
+    ),
+  );
 }
 
 class _AnimatedIn extends StatelessWidget {

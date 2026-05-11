@@ -1,46 +1,30 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:portfolioph/data/models/experience_model.dart';
 import 'package:portfolioph/data/repositories/experience_repository.dart';
+import 'package:portfolioph/presentation/providers/async_user_provider_base.dart';
 
-class ExperienceProvider extends ChangeNotifier {
+class ExperienceProvider extends AsyncUserProviderBase {
   final ExperienceRepository _repository;
 
-  ExperienceProvider({ExperienceRepository? repository})
-    : _repository = repository ?? ExperienceRepository();
+  ExperienceProvider({required ExperienceRepository repository})
+    : _repository = repository;
 
   List<ExperienceModel> _experience = [];
-  bool _isLoading = false;
   String _searchQuery = '';
-  String? _errorMessage;
-
-  int? _currentUserId;
 
   List<ExperienceModel> get experience => List.unmodifiable(_experience);
-  bool get isLoading => _isLoading;
   String get searchQuery => _searchQuery;
-  String? get errorMessage => _errorMessage;
 
   Future<void> loadForUser(int userId) async {
-    _isLoading = true;
-    _errorMessage = null;
-    _currentUserId = userId;
-    notifyListeners();
-
-    try {
+    setCurrentUserId(userId);
+    await runLoadingTask(() async {
       final all = await _repository.findByUserId(userId);
       _experience = _applySearch(all, _searchQuery);
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    });
   }
 
   Future<void> updateSearchQuery(String query) async {
     _searchQuery = query.trim();
-    final userId = _currentUserId;
+    final userId = currentUserId;
     if (userId == null) return;
 
     try {
@@ -48,29 +32,29 @@ class ExperienceProvider extends ChangeNotifier {
       _experience = _applySearch(all, _searchQuery);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
     }
   }
 
   Future<bool> addExperience(ExperienceModel item) async {
-    _errorMessage = null;
+    clearError();
     try {
       final id = await _repository.insert(item);
       _experience = [item.copyWith(id: id), ..._experience];
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
   }
 
   Future<bool> updateExperience(ExperienceModel item) async {
-    _errorMessage = null;
+    clearError();
     if (item.id == null) {
-      _errorMessage = 'Experience id is required for update.';
+      setError('Experience id is required for update.');
       notifyListeners();
       return false;
     }
@@ -83,17 +67,17 @@ class ExperienceProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
   }
 
   Future<bool> deleteExperience(ExperienceModel item) async {
-    _errorMessage = null;
+    clearError();
     final id = item.id;
     if (id == null) {
-      _errorMessage = 'Experience id is required for delete.';
+      setError('Experience id is required for delete.');
       notifyListeners();
       return false;
     }
@@ -106,7 +90,7 @@ class ExperienceProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
@@ -128,8 +112,8 @@ class ExperienceProvider extends ChangeNotifier {
         .toList(growable: false);
   }
 
-  void clearError() {
-    _errorMessage = null;
+  void clearProviderError() {
+    clearError();
     notifyListeners();
   }
 }

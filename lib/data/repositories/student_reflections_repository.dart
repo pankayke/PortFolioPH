@@ -1,4 +1,3 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:portfolioph/core/services/api_service.dart';
 import 'package:portfolioph/data/models/student_reflections_model.dart';
 
@@ -9,8 +8,8 @@ import 'package:portfolioph/data/models/student_reflections_model.dart';
 class StudentReflectionsRepository {
   final ApiService _apiService;
 
-  StudentReflectionsRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(const FlutterSecureStorage());
+  StudentReflectionsRepository({required ApiService apiService})
+    : _apiService = apiService;
 
   /// Fetch all reflections for a specific student
   Future<List<StudentReflectionModel>> findByStudentId(int studentId) async {

@@ -47,6 +47,7 @@ class GlassCard extends StatelessWidget {
   final BorderRadius borderRadius;
   final VoidCallback? onTap;
   final double blurSigma;
+  final bool solid;
 
   const GlassCard({
     super.key,
@@ -56,6 +57,7 @@ class GlassCard extends StatelessWidget {
     this.borderRadius = const BorderRadius.all(Radius.circular(22)),
     this.onTap,
     this.blurSigma = 20,
+    this.solid = false,
   });
 
   @override
@@ -66,6 +68,46 @@ class GlassCard extends StatelessWidget {
         palette?.glassFill ?? colorScheme.surface.withValues(alpha: 0.15);
     final borderColor =
         palette?.glassBorder ?? colorScheme.onSurface.withValues(alpha: 0.12);
+
+    if (solid) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: borderRadius,
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              gradient: gradient,
+              color: gradient == null
+                  ? colorScheme.surfaceContainerHighest.withValues(
+                      alpha: colorScheme.brightness == Brightness.dark
+                          ? 0.92
+                          : 1,
+                    )
+                  : null,
+              borderRadius: borderRadius,
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(
+                    alpha: colorScheme.brightness == Brightness.dark
+                        ? 0.30
+                        : 0.08,
+                  ),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: child,
+          ),
+        ),
+      );
+    }
 
     return Material(
       color: Colors.transparent,
@@ -114,6 +156,7 @@ class RecruiterGlassCard extends GlassCard {
     super.borderRadius,
     super.onTap,
     super.blurSigma,
+    super.solid = true,
   });
 }
 
@@ -127,21 +170,29 @@ class GlassGlowChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final color = glowColor ?? colorScheme.primary;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
-        color: color.withValues(alpha: 0.16),
-        border: Border.all(color: color.withValues(alpha: 0.45)),
+        color: color.withValues(alpha: isDark ? 0.22 : 0.16),
+        border: Border.all(
+          color: color.withValues(alpha: isDark ? 0.60 : 0.45),
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.20),
+            color: color.withValues(alpha: isDark ? 0.26 : 0.20),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+      child: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: colorScheme.onSurface),
+      ),
     );
   }
 }

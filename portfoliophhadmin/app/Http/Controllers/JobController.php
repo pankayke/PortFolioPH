@@ -7,8 +7,9 @@ use App\Http\Requests\UpdateJobRequest;
 use App\Http\Resources\ApiResponse;
 use App\Models\Job;
 use App\Services\JobService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
@@ -19,8 +20,12 @@ class JobController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only(['search', 'location']);
-        $perPage = $request->input('per_page', 15);
+        Log::debug('Full Request URL: '.$request->fullUrl());
+        Log::debug('Incoming inputs: ', $request->all());
+
+        $filters = $request->only(['search', 'location', 'category', 'employment_type', 'experience_level']);
+
+        $perPage = $this->resolvePerPage($request);
         $jobs = $this->jobService->getApprovedJobs($filters, $perPage);
 
         return ApiResponse::paginated($jobs, 'Jobs retrieved successfully', 200);
@@ -32,7 +37,7 @@ class JobController extends Controller
     public function store(StoreJobRequest $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return ApiResponse::unauthorized('Unauthenticated');
         }
 
@@ -65,12 +70,16 @@ class JobController extends Controller
     public function mine(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return ApiResponse::unauthorized('Unauthenticated');
         }
 
+        if ($user->role !== 'recruiter') {
+            return ApiResponse::forbidden('Only recruiters can access this endpoint.');
+        }
+
         $filters = $request->only(['search', 'status']);
-        $perPage = $request->input('per_page', 15);
+        $perPage = $this->resolvePerPage($request);
         $jobs = $this->jobService->getRecruiterJobs($user, $filters, $perPage);
 
         return ApiResponse::paginated($jobs, 'Recruiter jobs retrieved successfully', 200);
@@ -105,5 +114,12 @@ class JobController extends Controller
             'Job deleted successfully',
             200
         );
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        $perPage = (int) $request->input('per_page', 15);
+
+        return max(1, min(100, $perPage));
     }
 }

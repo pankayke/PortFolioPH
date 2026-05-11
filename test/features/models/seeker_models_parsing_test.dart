@@ -63,6 +63,33 @@ void main() {
       expect(job.applicationStatus, 'none');
       expect(job.isSaved, isFalse);
     });
+
+    test('falls back to nested recruiter and job_type aliases', () {
+      final job = SeekerJob.fromJson({
+        'id': 202,
+        'title': 'Platform Engineer',
+        'description': 'Maintain platform reliability',
+        'category': 'Engineering',
+        'location': 'Makati',
+        'job_type': 'contract',
+        'required_skills': const ['Terraform'],
+        'deadline': '2026-08-01T00:00:00Z',
+        'applications_count': 14,
+        'created_at': '2026-04-01T00:00:00Z',
+        'updated_at': '2026-04-02T00:00:00Z',
+        'recruiter': {
+          'id': 11,
+          'name': 'Infra Corp',
+          'logo': 'https://cdn.example.com/infra.png',
+        },
+      });
+
+      expect(job.recruiterId, 11);
+      expect(job.recruiterName, 'Infra Corp');
+      expect(job.recruiterLogo, 'https://cdn.example.com/infra.png');
+      expect(job.employmentType, 'contract');
+      expect(job.totalApplications, 14);
+    });
   });
 
   group('SeekerApplication.fromJson', () {
@@ -92,6 +119,33 @@ void main() {
       expect(application.status, 'reviewing');
       expect(application.hasInterview, isTrue);
       expect(application.videoInterviewLink, 'https://meet.example.com/abc');
+    });
+
+    test('falls back to nested job and recruiter payload', () {
+      final application = SeekerApplication.fromJson({
+        'id': 901,
+        'status': 'applied',
+        'applied_at': '2026-04-10T00:00:00Z',
+        'job': {
+          'id': 303,
+          'title': 'SRE',
+          'location': 'Remote',
+          'salary_min': 70000,
+          'salary_max': 110000,
+          'recruiter': {
+            'name': 'Ops Team',
+            'logo': 'https://cdn.example.com/ops.png',
+          },
+        },
+      });
+
+      expect(application.jobId, 303);
+      expect(application.jobTitle, 'SRE');
+      expect(application.jobLocation, 'Remote');
+      expect(application.salaryMin, 70000);
+      expect(application.salaryMax, 110000);
+      expect(application.recruiterName, 'Ops Team');
+      expect(application.recruiterLogo, 'https://cdn.example.com/ops.png');
     });
   });
 }

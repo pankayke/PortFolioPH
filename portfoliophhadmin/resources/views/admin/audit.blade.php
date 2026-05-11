@@ -2,10 +2,6 @@
 
 @section('content')
 @include('admin.partials.command_center_styles')
-@php
-    $activeSessions = max(3, count($recentActions['User edits']) + count($recentActions['Job changes']) + count($recentActions['Application updates']));
-    $serverLoad = min(84, max(26, (int) round($activeSessions * 7.5)));
-@endphp
 
 <div class="cc-theme cc-ultra-shell">
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-[250px_minmax(0,1fr)]">
@@ -48,57 +44,68 @@
                 <p class="cc-muted mt-1 text-sm">Dense operational logging for user edits, job changes, and application state transitions.</p>
             </header>
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div class="cc-elevated-card overflow-hidden">
-                    <div class="border-b border-slate-200 bg-slate-50/90 px-5 py-4">
-                        <h3 class="text-base font-semibold text-slate-900">Recent User Edits</h3>
-                    </div>
-                    <div class="divide-y divide-slate-100">
-                        @forelse($recentActions['User edits'] as $user)
-                            <div class="cc-record px-5 py-3">
-                                <p class="text-sm font-semibold text-slate-900">{{ $user->name }}</p>
-                                <p class="text-xs text-slate-500">{{ $user->email }}</p>
-                                <p class="mt-1 text-xs text-slate-400">{{ $user->updated_at->diffForHumans() }}</p>
-                            </div>
-                        @empty
-                            <div class="px-5 py-5 text-center text-sm text-slate-500">No recent edits</div>
-                        @endforelse
-                    </div>
+            <div class="cc-elevated-card overflow-hidden">
+                <div class="border-b border-slate-200 bg-slate-50/90 px-5 py-4 flex justify-between items-center">
+                    <h3 class="text-base font-semibold text-slate-900">System Audit Log</h3>
+                    <span class="text-xs text-slate-500">{{ $auditLogs->total() }} records</span>
                 </div>
-
-                <div class="cc-elevated-card overflow-hidden">
-                    <div class="border-b border-slate-200 bg-slate-50/90 px-5 py-4">
-                        <h3 class="text-base font-semibold text-slate-900">Recent Job Changes</h3>
-                    </div>
-                    <div class="divide-y divide-slate-100">
-                        @forelse($recentActions['Job changes'] as $job)
-                            <div class="cc-record px-5 py-3">
-                                <p class="text-sm font-semibold text-slate-900">{{ $job->title }}</p>
-                                <p class="text-xs text-slate-500">by {{ $job->recruiter->name ?? 'Unknown' }}</p>
-                                <p class="mt-1 text-xs text-slate-400">{{ $job->updated_at->diffForHumans() }}</p>
-                            </div>
-                        @empty
-                            <div class="px-5 py-5 text-center text-sm text-slate-500">No recent changes</div>
-                        @endforelse
-                    </div>
+                <div class="divide-y divide-slate-100">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                            <tr>
+                                <th class="px-5 py-3 font-semibold">User</th>
+                                <th class="px-5 py-3 font-semibold">Action</th>
+                                <th class="px-5 py-3 font-semibold">Resource</th>
+                                <th class="px-5 py-3 font-semibold">IP Address</th>
+                                <th class="px-5 py-3 font-semibold text-right">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($auditLogs as $log)
+                                <tr class="hover:bg-slate-50/50 transition-colors">
+                                    <td class="px-5 py-3">
+                                        @if($log->user)
+                                            <span class="font-medium text-slate-900">{{ $log->user->name }}</span>
+                                            <div class="text-xs text-slate-500">{{ $log->user->email }}</div>
+                                        @else
+                                            <span class="text-slate-400">System / Deleted</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-3">
+                                        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium 
+                                            @if($log->action === 'created') bg-emerald-100 text-emerald-700
+                                            @elseif($log->action === 'updated') bg-amber-100 text-amber-700
+                                            @elseif($log->action === 'deleted') bg-red-100 text-red-700
+                                            @else bg-slate-100 text-slate-700 @endif">
+                                            {{ ucfirst($log->action) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3 text-xs">
+                                        <span class="font-medium">{{ class_basename($log->model_type) }}</span> #{{ $log->model_id }}
+                                    </td>
+                                    <td class="px-5 py-3 text-xs text-slate-500">
+                                        {{ $log->ip_address ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-5 py-3 text-right text-xs text-slate-500 whitespace-nowrap">
+                                        {{ $log->created_at->format('M d, Y H:i') }}
+                                        <div class="text-slate-400">{{ $log->created_at->diffForHumans() }}</div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-5 py-8 text-center text-sm text-slate-500">
+                                        No audit records found.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="cc-elevated-card overflow-hidden">
-                    <div class="border-b border-slate-200 bg-slate-50/90 px-5 py-4">
-                        <h3 class="text-base font-semibold text-slate-900">Recent Application Updates</h3>
+                @if($auditLogs->hasPages())
+                    <div class="border-t border-slate-200 px-5 py-4">
+                        {{ $auditLogs->links() }}
                     </div>
-                    <div class="divide-y divide-slate-100">
-                        @forelse($recentActions['Application updates'] as $app)
-                            <div class="cc-record px-5 py-3">
-                                <p class="text-sm font-semibold text-slate-900">{{ $app->job->title ?? 'N/A' }}</p>
-                                <p class="text-xs text-slate-500">by {{ $app->user->name ?? 'Unknown' }}</p>
-                                <p class="mt-1 text-xs text-slate-400">{{ $app->updated_at->diffForHumans() }}</p>
-                            </div>
-                        @empty
-                            <div class="px-5 py-5 text-center text-sm text-slate-500">No recent updates</div>
-                        @endforelse
-                    </div>
-                </div>
+                @endif
             </div>
         </section>
     </div>

@@ -30,8 +30,8 @@ class ProfileProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  ProfileProvider({UserRepository? userRepository})
-    : _userRepository = userRepository ?? UserRepository();
+  ProfileProvider({required UserRepository userRepository})
+    : _userRepository = userRepository;
 
   // ── Load Profile ────────────────────────────────────────────────────────────
   /// Loads the current user's profile from the API.
@@ -118,6 +118,10 @@ class ProfileProvider extends ChangeNotifier {
     String? websiteUrl,
     File? avatarFile,
     File? resumeFile,
+    Uint8List? avatarBytes,
+    Uint8List? resumeBytes,
+    String? avatarFileName,
+    String? resumeFileName,
   }) async {
     if (_currentProfile == null) {
       _errorMessage = 'No profile loaded. Call loadProfile() first.';
@@ -140,6 +144,10 @@ class ProfileProvider extends ChangeNotifier {
         websiteUrl: websiteUrl,
         avatarFile: avatarFile,
         resumeFile: resumeFile,
+        avatarBytes: avatarBytes,
+        resumeBytes: resumeBytes,
+        avatarFileName: avatarFileName,
+        resumeFileName: resumeFileName,
       );
 
       _currentProfile = updated;

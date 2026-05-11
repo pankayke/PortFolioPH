@@ -160,16 +160,17 @@ class SeekerJob {
   }
 
   factory SeekerJob.fromJson(Map<String, dynamic> json) {
+    final recruiter = json['recruiter'] as Map<String, dynamic>?;
     final requiredSkillsRaw =
         _pick(json, 'requiredSkills', 'required_skills') as List<dynamic>?;
 
     final normalized = <String, dynamic>{
       ...json,
       'id': _asInt(_pick(json, 'id', 'id')),
-      'recruiterId': _asInt(_pick(json, 'recruiterId', 'recruiter_id')),
-      'recruiterName': (_pick(json, 'recruiterName', 'recruiter_name') ?? '')
+      'recruiterId': _asInt(_pick(json, 'recruiterId', 'recruiter_id') ?? recruiter?['id']),
+      'recruiterName': (_pick(json, 'recruiterName', 'recruiter_name') ?? recruiter?['name'] ?? '')
           .toString(),
-      'recruiterLogo': (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? '')
+      'recruiterLogo': (_pick(json, 'recruiterLogo', 'recruiter_logo') ?? recruiter?['logo'] ?? '')
           .toString(),
       'title': (_pick(json, 'title', 'title') ?? '').toString(),
       'description': (_pick(json, 'description', 'description') ?? '')
@@ -179,7 +180,9 @@ class SeekerJob {
       'salaryMin': _asDouble(_pick(json, 'salaryMin', 'salary_min')),
       'salaryMax': _asDouble(_pick(json, 'salaryMax', 'salary_max')),
       'employmentType':
-          (_pick(json, 'employmentType', 'employment_type') ?? 'full_time')
+          (_pick(json, 'employmentType', 'employment_type') ?? 
+           _pick(json, 'jobType', 'job_type') ?? 
+           'full_time')
               .toString(),
       'experienceLevel':
           (_pick(json, 'experienceLevel', 'experience_level') ?? 'entry')
@@ -196,7 +199,8 @@ class SeekerJob {
         _pick(json, 'deadline', 'deadline'),
       ).toIso8601String(),
       'totalApplications': _asInt(
-        _pick(json, 'totalApplications', 'total_applications'),
+        _pick(json, 'totalApplications', 'total_applications') ?? 
+        _pick(json, 'applicationsCount', 'applications_count')
       ),
       'createdAt': _asDateTime(
         _pick(json, 'createdAt', 'created_at'),

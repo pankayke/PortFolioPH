@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Job;
 use App\Models\Application;
+use App\Models\Job;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +18,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test retrieve applications list (paginated)
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Returns paginated applications
@@ -28,10 +28,10 @@ class ApplicationControllerTest extends TestCase
     {
         $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
         $recruiter = User::factory()->create(['role' => 'recruiter']);
-        
+
         // Create multiple jobs and applications to avoid UNIQUE constraint violation
         $jobs = Job::factory()->count(3)->create(['recruiter_id' => $recruiter->id]);
-        
+
         $applications = [];
         foreach ($jobs as $job) {
             $applications[] = Application::factory()->create([
@@ -62,7 +62,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test list applications without authentication fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Requires token
@@ -77,7 +77,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test job seeker sees only own applications
-     * 
+     *
      * Verifies:
      * - Job seeker 1 only sees own applications
      * - Does not see job seeker 2's applications
@@ -87,7 +87,7 @@ class ApplicationControllerTest extends TestCase
         $jobSeeker1 = User::factory()->create(['role' => 'job_seeker']);
         $jobSeeker2 = User::factory()->create(['role' => 'job_seeker']);
         $recruiter = User::factory()->create(['role' => 'recruiter']);
-        
+
         // Create 3 jobs to avoid UNIQUE constraint violation
         $jobs = Job::factory()->count(3)->create(['recruiter_id' => $recruiter->id]);
 
@@ -96,13 +96,13 @@ class ApplicationControllerTest extends TestCase
             'user_id' => $jobSeeker1->id,
             'job_id' => $jobs[0]->id,
         ]);
-        
+
         // Job seeker 2 applies to jobs 2 and 3
         Application::factory()->create([
             'user_id' => $jobSeeker2->id,
             'job_id' => $jobs[1]->id,
         ]);
-        
+
         Application::factory()->create([
             'user_id' => $jobSeeker2->id,
             'job_id' => $jobs[2]->id,
@@ -117,13 +117,38 @@ class ApplicationControllerTest extends TestCase
             ->assertJsonPath('data.0.user_id', $jobSeeker1->id);
     }
 
+    public function test_list_applications_per_page_is_capped_at_100(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+
+        $jobs = Job::factory()->count(130)->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
+        foreach ($jobs as $job) {
+            Application::factory()->create([
+                'user_id' => $jobSeeker->id,
+                'job_id' => $job->id,
+            ]);
+        }
+
+        $token = $jobSeeker->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->getJson('/api/applications?per_page=500');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(100, 'data');
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Show Tests (GET /api/applications/{id})
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Test show application
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Full application details returned
@@ -163,7 +188,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test show application from another user fails (authorization)
-     * 
+     *
      * Verifies:
      * - Status 403
      * - Users can only view own applications
@@ -189,7 +214,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test show non-existent application returns 404
-     * 
+     *
      * Verifies:
      * - Status 404
      */
@@ -199,7 +224,7 @@ class ApplicationControllerTest extends TestCase
         $token = $jobSeeker->createToken('api-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-            ->getJson("/api/applications/99999");
+            ->getJson('/api/applications/99999');
 
         $response->assertStatus(404);
     }
@@ -210,7 +235,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test create application successfully
-     * 
+     *
      * Verifies:
      * - Status 201
      * - Application created in database
@@ -257,13 +282,13 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test create application with optional cover letter
-     * 
+     *
      * Verifies:
      * - Cover letter is optional
      */
     public function test_create_application_without_cover_letter_succeeds(): void
     {
-        $jobSeeker = User::factory()->create();
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
         $recruiter = User::factory()->create();
         $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
 
@@ -283,7 +308,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test create application without authentication fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Requires token
@@ -302,8 +327,33 @@ class ApplicationControllerTest extends TestCase
     }
 
     /**
+     * Test create application as non-job-seeker fails
+     *
+     * Verifies:
+     * - Status 403
+     * - Clear role restriction message
+     */
+    public function test_create_application_as_recruiter_fails(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $jobOwner = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create(['recruiter_id' => $jobOwner->id, 'status' => 'approved']);
+
+        $token = $recruiter->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/applications', [
+                'job_id' => $job->id,
+                'cover_letter' => 'Trying to apply as recruiter',
+            ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Only job seekers can apply for jobs.');
+    }
+
+    /**
      * Test create application for non-existent job fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Job validation
@@ -324,7 +374,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test create duplicate application fails
-     * 
+     *
      * Verifies:
      * - User cannot apply to same job twice
      */
@@ -332,8 +382,11 @@ class ApplicationControllerTest extends TestCase
     {
         $jobSeeker = User::factory()->create();
         $recruiter = User::factory()->create();
-        $job = Job::factory()->create(['recruiter_id' => $recruiter->id]);
-        
+        $job = Job::factory()->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'approved',
+        ]);
+
         // First application
         Application::factory()->create([
             'user_id' => $jobSeeker->id,
@@ -351,9 +404,28 @@ class ApplicationControllerTest extends TestCase
             ->assertJsonPath('errors.job_id', ['You have already applied to this job.']);
     }
 
+    public function test_create_application_for_unapproved_job_fails(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create([
+            'recruiter_id' => $recruiter->id,
+            'status' => 'draft',
+        ]);
+
+        $token = $jobSeeker->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/applications', [
+                'job_id' => $job->id,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.job_id.0', 'Job is not open for applications.');
+    }
+
     /**
      * Test create application with missing job_id fails
-     * 
+     *
      * Verifies:
      * - Status 422
      * - Job ID required
@@ -378,7 +450,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test update application status as recruiter successfully
-     * 
+     *
      * Verifies:
      * - Status 200
      * - Application status updated
@@ -412,11 +484,17 @@ class ApplicationControllerTest extends TestCase
             'id' => $application->id,
             'status' => 'accepted',
         ]);
+
+        $this->assertDatabaseHas('notifications', [
+            'type' => 'App\\Notifications\\ApplicationStatusUpdatedNotification',
+            'notifiable_type' => User::class,
+            'notifiable_id' => $jobSeeker->id,
+        ]);
     }
 
     /**
      * Test update application status with invalid status fails
-     * 
+     *
      * Verifies:
      * - Status must be valid enum value
      */
@@ -442,7 +520,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test update application status as job seeker fails (authorization)
-     * 
+     *
      * Verifies:
      * - Status 403
      * - Only recruiter can update status
@@ -469,7 +547,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test update application status for job from another recruiter fails
-     * 
+     *
      * Verifies:
      * - Status 403
      * - Only recruiter who posted job can update application
@@ -497,7 +575,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test update non-existent application returns 404
-     * 
+     *
      * Verifies:
      * - Status 404
      */
@@ -507,7 +585,7 @@ class ApplicationControllerTest extends TestCase
         $token = $recruiter->createToken('api-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-            ->putJson("/api/applications/99999/status", [
+            ->putJson('/api/applications/99999/status', [
                 'status' => 'accepted',
             ]);
 
@@ -516,7 +594,7 @@ class ApplicationControllerTest extends TestCase
 
     /**
      * Test update application without authentication fails
-     * 
+     *
      * Verifies:
      * - Status 401
      * - Requires token
@@ -528,6 +606,154 @@ class ApplicationControllerTest extends TestCase
         $application = Application::factory()->create(['job_id' => $job->id]);
 
         $response = $this->putJson("/api/applications/{$application->id}/status", [
+            'status' => 'accepted',
+        ]);
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_job_seeker_can_withdraw_pending_application(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
+        $application = Application::factory()->create([
+            'user_id' => $jobSeeker->id,
+            'job_id' => $job->id,
+            'status' => 'pending',
+        ]);
+
+        $token = $jobSeeker->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->deleteJson("/api/applications/{$application->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Application withdrawn successfully');
+
+        $this->assertDatabaseMissing('applications', [
+            'id' => $application->id,
+        ]);
+    }
+
+    public function test_withdraw_non_pending_application_fails(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
+        $application = Application::factory()->create([
+            'user_id' => $jobSeeker->id,
+            'job_id' => $job->id,
+            'status' => 'accepted',
+        ]);
+
+        $token = $jobSeeker->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->deleteJson("/api/applications/{$application->id}");
+
+        $response->assertStatus(400)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'You can only withdraw pending applications.');
+
+        $this->assertDatabaseHas('applications', [
+            'id' => $application->id,
+            'status' => 'accepted',
+        ]);
+    }
+
+    public function test_recruiter_can_bulk_update_only_owned_applications(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $otherRecruiter = User::factory()->create(['role' => 'recruiter']);
+        $jobSeekerA = User::factory()->create(['role' => 'job_seeker']);
+        $jobSeekerB = User::factory()->create(['role' => 'job_seeker']);
+
+        $ownedJob = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
+        $externalJob = Job::factory()->create(['recruiter_id' => $otherRecruiter->id, 'status' => 'approved']);
+
+        $ownedApplication = Application::factory()->create([
+            'user_id' => $jobSeekerA->id,
+            'job_id' => $ownedJob->id,
+            'status' => 'pending',
+        ]);
+
+        $externalApplication = Application::factory()->create([
+            'user_id' => $jobSeekerB->id,
+            'job_id' => $externalJob->id,
+            'status' => 'pending',
+        ]);
+
+        $token = $recruiter->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/applications/bulk-status', [
+                'application_ids' => [$ownedApplication->id, $externalApplication->id],
+                'status' => 'shortlisted',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.updated_count', 1);
+
+        $this->assertDatabaseHas('applications', [
+            'id' => $ownedApplication->id,
+            'status' => 'shortlisted',
+        ]);
+
+        $this->assertDatabaseHas('applications', [
+            'id' => $externalApplication->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_bulk_update_status_requires_recruiter_authorization(): void
+    {
+        $jobSeeker = User::factory()->create(['role' => 'job_seeker']);
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $job = Job::factory()->create(['recruiter_id' => $recruiter->id, 'status' => 'approved']);
+
+        $application = Application::factory()->create([
+            'user_id' => $jobSeeker->id,
+            'job_id' => $job->id,
+            'status' => 'pending',
+        ]);
+
+        $seekerToken = $jobSeeker->createToken('api-token')->plainTextToken;
+        $response = $this->withHeader('Authorization', "Bearer $seekerToken")
+            ->postJson('/api/applications/bulk-status', [
+                'application_ids' => [$application->id],
+                'status' => 'accepted',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.updated_count', 0);
+
+        $this->assertDatabaseHas('applications', [
+            'id' => $application->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_bulk_update_status_validates_payload(): void
+    {
+        $recruiter = User::factory()->create(['role' => 'recruiter']);
+        $token = $recruiter->createToken('api-token')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/applications/bulk-status', [
+                'application_ids' => 'not-an-array',
+                'status' => 'not-valid',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_bulk_update_status_without_auth_fails(): void
+    {
+        $response = $this->postJson('/api/applications/bulk-status', [
+            'application_ids' => [1],
             'status' => 'accepted',
         ]);
 

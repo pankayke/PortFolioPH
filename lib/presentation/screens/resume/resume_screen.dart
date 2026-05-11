@@ -35,6 +35,7 @@ class ResumeScreen extends StatefulWidget {
 class _ResumeScreenState extends State<ResumeScreen>
     with TickerProviderStateMixin, BokehAnimationMixin, UserAwareScreenMixin {
   late final TabController _tabController;
+  bool _didInitUserLoad = false;
 
   static const BorderRadius _dialogRadius = BorderRadius.all(
     Radius.circular(20),
@@ -57,6 +58,8 @@ class _ResumeScreenState extends State<ResumeScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_didInitUserLoad) return;
+    _didInitUserLoad = true;
     loadDataForUserWithId((userId) {
       context.read<CertificationProvider>().loadForUser(userId);
       context.read<EducationProvider>().loadForUser(userId);
@@ -704,7 +707,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.reflections.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No reflections yet.',
+                          message:
+                              'No reflections yet. Tap + to add your first entry.',
                         );
                       }
                       return ListView(
@@ -736,7 +740,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.skills.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No tracked skills yet.',
+                          message: 'No tracked skills yet. Tap + to add one.',
                         );
                       }
                       return ListView(
@@ -766,7 +770,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.education.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No education entries yet.',
+                          message:
+                              'No education entries yet. Tap + to add your school history.',
                         );
                       }
                       return ListView(
@@ -795,7 +800,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.experience.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No work experience entries yet.',
+                          message:
+                              'No work experience entries yet. Tap + to add your latest role.',
                         );
                       }
                       return ListView(
@@ -822,7 +828,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.essays.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No essays recorded yet.',
+                          message: 'No essays recorded yet. Tap + to add one.',
                         );
                       }
                       return ListView(
@@ -859,7 +865,8 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.achievements.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No achievements recorded yet.',
+                          message:
+                              'No achievements recorded yet. Tap + to add one.',
                         );
                       }
                       return ListView(
@@ -898,7 +905,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                       }
                       if (provider.certifications.isEmpty) {
                         return const _EmptyTabState(
-                          message: 'No certifications yet.',
+                          message: 'No certifications yet. Tap + to add one.',
                         );
                       }
                       return ListView(

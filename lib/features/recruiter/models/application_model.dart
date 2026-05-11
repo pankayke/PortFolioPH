@@ -7,6 +7,8 @@ class RecruiterApplication {
   final int id;
   final int jobId;
   final int userId;
+  final String jobTitle;
+  final String jobStatus;
   final String applicantName;
   final String applicantEmail;
   final String applicantPhone;
@@ -23,6 +25,8 @@ class RecruiterApplication {
     required this.id,
     required this.jobId,
     required this.userId,
+    required this.jobTitle,
+    required this.jobStatus,
     required this.applicantName,
     required this.applicantEmail,
     required this.applicantPhone,
@@ -82,6 +86,8 @@ class RecruiterApplication {
       id: _asInt(json['id']),
       jobId: _asInt(json['job_id']),
       userId: _asInt(json['user_id']),
+      jobTitle: json['job']?['title'] ?? json['job_title'] ?? 'N/A',
+      jobStatus: json['job']?['status'] ?? json['job_status'] ?? 'pending',
       applicantName: json['user']?['name'] ?? json['applicant_name'] ?? 'N/A',
       applicantEmail:
           json['user']?['email'] ?? json['applicant_email'] ?? 'N/A',
@@ -105,6 +111,8 @@ class RecruiterApplication {
     'id': id,
     'job_id': jobId,
     'user_id': userId,
+    'job_title': jobTitle,
+    'job_status': jobStatus,
     'applicant_name': applicantName,
     'applicant_email': applicantEmail,
     'applicant_phone': applicantPhone,
@@ -122,6 +130,8 @@ class RecruiterApplication {
     int? id,
     int? jobId,
     int? userId,
+    String? jobTitle,
+    String? jobStatus,
     String? applicantName,
     String? applicantEmail,
     String? applicantPhone,
@@ -138,6 +148,8 @@ class RecruiterApplication {
       id: id ?? this.id,
       jobId: jobId ?? this.jobId,
       userId: userId ?? this.userId,
+      jobTitle: jobTitle ?? this.jobTitle,
+      jobStatus: jobStatus ?? this.jobStatus,
       applicantName: applicantName ?? this.applicantName,
       applicantEmail: applicantEmail ?? this.applicantEmail,
       applicantPhone: applicantPhone ?? this.applicantPhone,

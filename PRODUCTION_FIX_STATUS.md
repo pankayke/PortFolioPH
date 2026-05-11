@@ -1,6 +1,8 @@
 # PRODUCTION FIX STATUS - FINAL SUMMARY
 **April 5, 2026 - QA Validation Session 2**
 
+> Historical fix-log. Current verified status is documented in [CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md).
+
 ---
 
 ## Current State

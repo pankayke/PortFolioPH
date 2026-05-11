@@ -2,12 +2,6 @@
 
 @section('content')
 @include('admin.partials.command_center_styles')
-@php
-    $total = max((int) $users->total(), 1);
-    $activeUsers = (int) $users->where('active', true)->count();
-    $activeSessions = max((int) round($activeUsers * 0.64), 1);
-    $serverLoad = min(88, max(22, (int) round(($activeUsers / $total) * 100)));
-@endphp
 
 <div class="cc-theme cc-ultra-shell">
     <div class="cc-ultra-grid">
@@ -88,6 +82,16 @@
                     <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Apply</button>
                     <a href="{{ route('admin.users.index') }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Reset</a>
                 </form>
+                <div class="mt-3 flex gap-2">
+                    <a href="{{ route('admin.users.export-excel') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                        Export Excel
+                    </a>
+                    <a href="{{ route('admin.users.export-csv') }}" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                        Export CSV
+                    </a>
+                </div>
             </div>
 
             <div class="cc-elevated-card overflow-hidden">

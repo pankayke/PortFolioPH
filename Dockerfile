@@ -53,20 +53,88 @@ RUN flutter build web \
 # ──────────────────────────────────────────────────────────────────────────────
 # Stage 2 — Serve with nginx (minimal alpine image)
 # ──────────────────────────────────────────────────────────────────────────────
-FROM nginx:1.27-alpine AS serve
+FROM nginx:1.28-alpine AS serve
 
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
+# Write the nginx config directly so the frontend build does not depend on a
+# separate file being present in the build context.
+RUN cat <<'EOF' > /etc/nginx/conf.d/default.conf
+server {
+    listen 8080;
+    server_name _;
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+    root /usr/share/nginx/html;
+    index index.html;
+
+    charset utf-8;
+
+    types {
+        application/wasm                   wasm;
+        application/javascript             js mjs;
+        text/html                          html htm;
+        text/css                           css;
+        image/png                          png;
+        image/jpeg                         jpg jpeg;
+        image/svg+xml                      svg svgz;
+        application/json                   json;
+        font/woff2                         woff2;
+        font/woff                          woff;
+    }
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        application/javascript
+        application/json
+        image/svg+xml
+        font/woff
+        font/woff2;
+
+    add_header X-Frame-Options       "SAMEORIGIN"  always;
+    add_header X-Content-Type-Options "nosniff"    always;
+    add_header Referrer-Policy       "strict-origin-when-cross-origin" always;
+
+    location = /sqflite_sw.js {
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+        try_files $uri =404;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    location /canvaskit/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    location ~* \.wasm$ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header Cross-Origin-Embedder-Policy "require-corp";
+        add_header Cross-Origin-Opener-Policy   "same-origin";
+        try_files $uri =404;
+    }
+
+    location ~* main\.dart\.js$ {
+        add_header Cache-Control "no-store";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
 
 # Copy built Flutter web assets from the build stage
 COPY --from=build /app/build/web /usr/share/nginx/html
 
 RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/run /etc/nginx/conf.d
-
-USER nginx
 
 EXPOSE 8080
 

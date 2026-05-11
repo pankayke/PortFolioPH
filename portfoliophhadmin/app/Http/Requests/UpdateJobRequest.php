@@ -22,11 +22,11 @@ class UpdateJobRequest extends FormRequest
             'location' => ['sometimes', 'string', 'max:255'],
             'salary_min' => ['nullable', 'numeric', 'min:0'],
             'salary_max' => ['nullable', 'numeric', 'gte:salary_min'],
-            'job_type' => ['sometimes', Rule::in('full_time', 'part_time', 'contract', 'freelance')],
+            'job_type' => ['sometimes', Rule::in(['full_time', 'part_time', 'contract', 'freelance'])],
             'required_skills' => ['nullable', 'array'],
             'required_skills.*' => ['string', 'max:100'],
             'deadline' => ['nullable', 'date', 'after:now'],
-            'status' => ['sometimes', Rule::in('draft', 'pending', 'approved', 'closed')],
+            'status' => ['sometimes', Rule::in(['draft', 'pending', 'approved', 'closed'])],
         ];
     }
 

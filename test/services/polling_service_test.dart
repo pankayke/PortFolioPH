@@ -151,5 +151,35 @@ void main() {
       pollingService.stopPolling('poll_1');
       expect(pollingService.activeTaskCount, 1);
     });
+
+    test('does not overlap executions when callback is slow', () async {
+      int maxConcurrent = 0;
+      int active = 0;
+      int callTotal = 0;
+
+      pollingService.startPolling(
+        id: 'slow_poll',
+        callback: () async {
+          active++;
+          if (active > maxConcurrent) {
+            maxConcurrent = active;
+          }
+          callTotal++;
+          await Future.delayed(const Duration(milliseconds: 120));
+          active--;
+        },
+        interval: const Duration(milliseconds: 30),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 260));
+      pollingService.stopPolling('slow_poll');
+
+      expect(
+        maxConcurrent,
+        equals(1),
+        reason: 'Polling callback should never run in parallel for same task',
+      );
+      expect(callTotal, greaterThanOrEqualTo(2));
+    });
   });
 }

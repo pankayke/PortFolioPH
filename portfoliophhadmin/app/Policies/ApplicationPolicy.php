@@ -13,7 +13,16 @@ class ApplicationPolicy
      */
     public function updateStatus(User $user, Application $application): bool
     {
-        return $user->id === $application->job->recruiter_id;
+        return $user->id === $application->job->recruiter_id && $user->role === 'recruiter';
+    }
+
+    /**
+     * Determine if the user can delete the application.
+     */
+    public function delete(User $user, Application $application): bool
+    {
+        // Job seekers can withdraw their own applications
+        return $user->id === $application->user_id && $user->role === 'job_seeker';
     }
 
     /**

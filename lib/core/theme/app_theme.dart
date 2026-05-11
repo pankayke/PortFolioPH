@@ -23,7 +23,7 @@ abstract final class AppTheme {
     );
 
     final colorScheme = baseScheme.copyWith(
-      primary: isDark ? DesignTokens.accentBlueBright : DesignTokens.accentBlue,
+      primary: DesignTokens.accentPurple,
       secondary: DesignTokens.accentPurple,
       error: AppConstants.errorColor,
       surface: isDark ? DesignTokens.darkBaseB : DesignTokens.lightBase,
@@ -80,28 +80,24 @@ abstract final class AppTheme {
         filled: true,
         fillColor: isDark
             ? DesignTokens.darkSurface.withValues(alpha: 0.40)
-            : Colors.white.withValues(alpha: 0.75),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+            : DesignTokens.lightBase,
+        hintStyle: const TextStyle(color: Color(0xFF8B949E)),
+        labelStyle: const TextStyle(color: Color(0xFF8B949E)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.16)
-                : Colors.white.withValues(alpha: 0.72),
+          borderSide: const BorderSide(
+            color: Color(0xFFE0E3EB),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.16)
-                : Colors.white.withValues(alpha: 0.72),
+          borderSide: const BorderSide(
+            color: Color(0xFFE0E3EB),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: DesignTokens.accentBlue, width: 1.8),
+          borderSide: const BorderSide(color: DesignTokens.accentPurple, width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -116,11 +112,25 @@ abstract final class AppTheme {
           vertical: 14,
         ),
       ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: colorScheme.secondary,
+          foregroundColor: colorScheme.onSecondary,
+          textStyle: textTheme.labelLarge,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spacingLg,
+            vertical: AppConstants.spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: DesignTokens.accentBlue,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.secondary,
+          foregroundColor: colorScheme.onSecondary,
           textStyle: textTheme.labelLarge,
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.spacingLg,
@@ -133,11 +143,21 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.primary,
-          side: BorderSide(color: colorScheme.outlineVariant),
+          foregroundColor: colorScheme.secondary,
+          side: BorderSide(color: colorScheme.secondary.withValues(alpha: 0.35)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spacingMd,
+            vertical: AppConstants.spacingSm,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: colorScheme.secondary,
+          textStyle: textTheme.labelLarge,
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.spacingMd,
             vertical: AppConstants.spacingSm,
@@ -170,8 +190,11 @@ abstract final class AppTheme {
   // ── Shared text theme builder ─────────────────────────────────────────────────
   static TextTheme _buildTextTheme(Brightness brightness) {
     final Color baseColor = brightness == Brightness.light
-        ? Colors.black87
+        ? const Color(0xFF1E1E2F)
         : Colors.white;
+    final Color secondaryColor = brightness == Brightness.light
+        ? const Color(0xFF8B949E)
+        : Colors.white.withValues(alpha: 0.75);
 
     return TextTheme(
       displayLarge: TextStyle(
@@ -206,7 +229,7 @@ abstract final class AppTheme {
       ),
       bodySmall: TextStyle(
         fontSize: AppConstants.fontSizeSm,
-        color: baseColor.withValues(alpha: 0.72),
+        color: secondaryColor,
       ),
       labelLarge: TextStyle(
         fontSize: AppConstants.fontSizeLg,
@@ -216,11 +239,11 @@ abstract final class AppTheme {
       labelMedium: TextStyle(
         fontSize: AppConstants.fontSizeMd,
         fontWeight: FontWeight.w500,
-        color: baseColor.withValues(alpha: 0.85),
+        color: secondaryColor,
       ),
       labelSmall: TextStyle(
         fontSize: AppConstants.fontSizeSm,
-        color: baseColor.withValues(alpha: 0.75),
+        color: secondaryColor,
       ),
     );
   }

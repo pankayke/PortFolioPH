@@ -31,9 +31,14 @@ class ApiService {
   // NO CACHING - Disable timeouts for long polling scenarios
   static const Duration kConnectTimeout = Duration(seconds: 30);
   static const Duration kReceiveTimeout = Duration(seconds: 60);
+  static const Duration _missingRouteCooldown = Duration(minutes: 2);
+  static final Map<String, DateTime> _missingGetRouteCooldownUntil =
+      <String, DateTime>{};
 
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage;
+  String? _cachedToken;
+  bool _isTokenLoaded = false;
 
   ApiService(this._secureStorage) {
     _initializeDio();
@@ -48,7 +53,6 @@ class ApiService {
         contentType: 'application/json',
         headers: const {
           'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
         validateStatus: (_) => true, // Don't throw on any status
       ),
@@ -78,7 +82,6 @@ class ApiService {
         contentType: 'application/json',
         headers: const {
           'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
         validateStatus: (_) => true,
       ),
@@ -89,8 +92,14 @@ class ApiService {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Add token to headers if available
-    final token = await _secureStorage.read(key: tokenKey);
+    // Add token to headers if available. Cache token in memory to avoid
+    // secure-storage reads on every request.
+    var token = _cachedToken;
+    if (!_isTokenLoaded) {
+      token = await _secureStorage.read(key: tokenKey);
+      _cachedToken = token;
+      _isTokenLoaded = true;
+    }
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
@@ -120,6 +129,8 @@ class ApiService {
     // Handle 401 - token expired or invalid
     if (error.response?.statusCode == 401) {
       await _secureStorage.delete(key: tokenKey);
+      _cachedToken = null;
+      _isTokenLoaded = true;
       AppLogger.warning('Token cleared - unauthorized');
       // Caller should handle logout
     }
@@ -142,6 +153,11 @@ class ApiService {
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
+    if (_isOnMissingRouteCooldown(path)) {
+      AppLogger.debug('Skipping known-missing route during cooldown: $path');
+      throw ApiException('HTTP 404 (cached): Resource not available');
+    }
+
     return _request(() => _dio.get(path, queryParameters: queryParameters));
   }
 
@@ -201,14 +217,23 @@ class ApiService {
 
   Future<void> saveToken(String token) async {
     await _secureStorage.write(key: tokenKey, value: token);
+    _cachedToken = token;
+    _isTokenLoaded = true;
   }
 
   Future<String?> getToken() async {
-    return _secureStorage.read(key: tokenKey);
+    if (_isTokenLoaded) {
+      return _cachedToken;
+    }
+    _cachedToken = await _secureStorage.read(key: tokenKey);
+    _isTokenLoaded = true;
+    return _cachedToken;
   }
 
   Future<void> clearToken() async {
     await _secureStorage.delete(key: tokenKey);
+    _cachedToken = null;
+    _isTokenLoaded = true;
   }
 
   Future<bool> hasToken() async {
@@ -223,8 +248,15 @@ class ApiService {
       throw ApiException('No response from server');
     }
 
+    final requestPath = response.requestOptions.path;
+    final requestMethod = response.requestOptions.method.toUpperCase();
+
     // Success responses
     if (response.statusCode! >= 200 && response.statusCode! < 300) {
+      if (requestMethod == 'GET') {
+        _missingGetRouteCooldownUntil.remove(requestPath);
+      }
+
       if (response.data is Map) {
         final data = response.data as Map<String, dynamic>;
 
@@ -258,9 +290,44 @@ class ApiService {
       throw ServerException('Server error: ${response.statusCode}');
     }
 
+    if (response.statusCode == 404 &&
+        requestMethod == 'GET' &&
+        _isPathEligibleForMissingRouteCooldown(requestPath)) {
+      _missingGetRouteCooldownUntil[requestPath] = DateTime.now().add(
+        _missingRouteCooldown,
+      );
+    }
+
     throw ApiException(
       'HTTP ${response.statusCode}: ${_extractErrorMessage(response)}',
     );
+  }
+
+  static bool _isOnMissingRouteCooldown(String path) {
+    final until = _missingGetRouteCooldownUntil[path];
+    if (until == null) {
+      return false;
+    }
+    if (DateTime.now().isAfter(until)) {
+      _missingGetRouteCooldownUntil.remove(path);
+      return false;
+    }
+    return true;
+  }
+
+  static bool _isPathEligibleForMissingRouteCooldown(String path) {
+    final unsupportedPatterns = <RegExp>[
+      RegExp(r'^/users/\d+/(portfolios|certifications|skill-tracker|reflections|experience|education)$'),
+      RegExp(r'^/students/\d+/(reflections|skills|essays|achievements)$'),
+      RegExp(r'^/portfolios/\d+/projects$'),
+    ];
+
+    for (final pattern in unsupportedPatterns) {
+      if (pattern.hasMatch(path)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   String _extractErrorMessage(Response response) {

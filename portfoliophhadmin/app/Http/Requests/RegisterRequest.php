@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255', 'min:2'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/'],
-            'role' => ['required', Rule::in('job_seeker', 'recruiter', 'admin')],
+            'role' => ['required', Rule::in(['job_seeker', 'recruiter'])],
         ];
     }
 

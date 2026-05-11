@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\Job;
 use App\Policies\ApplicationPolicy;
 use App\Policies\JobPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,11 +35,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Job policy: Controls who can update/delete jobs
         // Only the recruiter who created the job can modify it
-        \Illuminate\Support\Facades\Gate::policy(Job::class, JobPolicy::class);
+        Gate::policy(Job::class, JobPolicy::class);
 
         // Application policy: Controls who can update application status
         // Only the recruiter who posted the job can update application status
         // Applicant and recruiter can view applications
-        \Illuminate\Support\Facades\Gate::policy(Application::class, ApplicationPolicy::class);
+        Gate::policy(Application::class, ApplicationPolicy::class);
     }
 }

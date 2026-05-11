@@ -1,18 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:portfolioph/core/router/app_router.dart';
+import 'package:portfolioph/core/theme/motion_tokens.dart';
+import 'package:portfolioph/core/styling/design_tokens.dart';
 import 'package:portfolioph/features/recruiter/models/application_model.dart';
 import 'package:portfolioph/features/recruiter/models/job_model.dart';
+import 'package:portfolioph/features/recruiter/providers/recruiter_dashboard_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_application_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/providers/recruiter_job_manager_provider.dart';
 import 'package:portfolioph/features/recruiter/repositories/recruiter_repository_impl.dart';
 import 'package:portfolioph/features/recruiter/screens/ats/applicant_tracking_screen.dart';
+import 'package:portfolioph/features/recruiter/screens/dashboard/recruiter_dashboard_overview_tab.dart';
+import 'package:portfolioph/features/recruiter/utils/recruiter_identity_utils.dart';
 import 'package:portfolioph/features/recruiter/widgets/recruiter_glass_widgets.dart';
 import 'package:portfolioph/presentation/providers/auth_provider.dart';
+import 'package:portfolioph/presentation/providers/theme_provider.dart';
+import 'package:portfolioph/presentation/widgets/glass/glass_container.dart';
 import 'package:portfolioph/presentation/widgets/premium_app_background.dart';
-import 'package:portfolioph/presentation/widgets/premium_titan_mobile_header.dart';
 
 class RecruiterDashboardScreen extends StatefulWidget {
   final int initialTab;
@@ -54,7 +64,6 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   ];
 
   late int _selectedIndex;
-  bool _compactHeader = false;
 
   @override
   void initState() {
@@ -62,6 +71,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     _selectedIndex = widget.initialTab.clamp(0, _tabs.length - 1);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      context.read<RecruiterDashboardProvider>().loadDashboard(refresh: true);
       context.read<RecruiterJobManagerProvider>().loadJobs(refresh: true);
       context.read<RecruiterApplicationManagerProvider>().loadApplications(
         refresh: true,
@@ -72,89 +82,306 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isPostTab = _selectedIndex == 3;
-    final user = context.watch<AuthProvider>().currentUser;
-    final userName = user?.fullName ?? user?.username ?? 'Recruiter';
-    return PremiumAppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: PremiumTitanMobileHeader(
-          title: _tabs[_selectedIndex].label,
-          greeting: 'Recruiter Dashboard',
-          userName: userName,
-          compact: _compactHeader,
-          onSearchTap: () => _goToTab(1),
-          onSearchSubmitted: (_) => _goToTab(1),
-          onNotificationTap: () => context.push(AppRoutes.notificationSettings),
-          onProfileTap: () => _goToTab(4),
-          onLogoutTap: () => _logout(context),
-        ),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (notification.metrics.axis != Axis.vertical) return false;
-            final shouldCompact = notification.metrics.pixels > 18;
-            if (shouldCompact != _compactHeader) {
-              setState(() => _compactHeader = shouldCompact);
-            }
-            return false;
-          },
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            child: IndexedStack(
-              key: ValueKey(_selectedIndex),
-              index: _selectedIndex,
-              children: [
-                _RecruiterOverviewTab(onJumpToAts: () => _goToTab(2)),
-                const _RecruiterJobsTab(),
-                const ApplicantTrackingScreen(compactMode: true),
-                _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
-                const _RecruiterCompanyProfileTab(),
-              ],
-            ),
+    final isAtsTab = _selectedIndex == 2;
+    final isCompanyTab = _selectedIndex == 4;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final safeBottomInset = MediaQuery.of(context).padding.bottom;
+    final bodyBottomInset = isPostTab
+      ? 16.0
+      : isCompanyTab
+        ? (safeBottomInset + 16.0)
+        : isAtsTab
+          ? (safeBottomInset + 40.0)
+          : (safeBottomInset + 56.0);
+
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.digit1, alt: true):
+            _RecruiterSwitchTabIntent(0),
+        SingleActivator(LogicalKeyboardKey.digit2, alt: true):
+            _RecruiterSwitchTabIntent(1),
+        SingleActivator(LogicalKeyboardKey.digit3, alt: true):
+            _RecruiterSwitchTabIntent(2),
+        SingleActivator(LogicalKeyboardKey.digit4, alt: true):
+            _RecruiterSwitchTabIntent(3),
+        SingleActivator(LogicalKeyboardKey.digit5, alt: true):
+            _RecruiterSwitchTabIntent(4),
+        SingleActivator(LogicalKeyboardKey.slash, alt: true):
+            _RecruiterShortcutHelpIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _RecruiterSwitchTabIntent: CallbackAction<_RecruiterSwitchTabIntent>(
+            onInvoke: (intent) {
+              _goToTab(intent.index);
+              return null;
+            },
           ),
-        ),
-        floatingActionButton: isPostTab
-            ? null
-            : Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0A66C2), Color(0xFF0284C7)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0A66C2).withValues(alpha: 0.38),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
+          _RecruiterShortcutHelpIntent:
+              CallbackAction<_RecruiterShortcutHelpIntent>(
+                onInvoke: (intent) {
+                  _showRecruiterShortcutHelp(context);
+                  return null;
+                },
+              ),
+        },
+          child: FocusTraversalGroup(
+            policy: OrderedTraversalPolicy(),
+            child: PremiumAppBackground(
+            lite: true,
+            child: Scaffold(
+              backgroundColor: colorScheme.surface,
+              appBar: AppBar(
+                title: Opacity(
+                  opacity: 0.85,
+                  child: Text(
+                    _selectedIndex == 0
+                        ? 'Jobs & Opportunities'
+                        : _tabs[_selectedIndex].label,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
+                  ),
                 ),
-                child: FloatingActionButton.extended(
-                  onPressed: () => _goToTab(3),
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Post Job'),
+                backgroundColor: colorScheme.surface,
+                elevation: 0,
+                actions: [
+                  Selector<RecruiterDashboardProvider, int>(
+                    selector: (_, dashboardProvider) =>
+                        dashboardProvider.notificationCount,
+                    builder: (context, count, _) {
+                      return IconButton(
+                        onPressed: () =>
+                            context.push(AppRoutes.notificationSettings),
+                        icon: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Icon(Icons.notifications_outlined),
+                            if (count > 0)
+                              Positioned(
+                                right: -4,
+                                top: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: DesignTokens.accentPhilippineRed,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    count > 9 ? '9+' : '$count',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        tooltip: count > 0
+                            ? '$count new applications'
+                            : 'Notifications',
+                      );
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Consumer2<AuthProvider, ThemeProvider>(
+                      builder: (context, authProvider, themeProvider, _) {
+                        final user = authProvider.currentUser;
+                        final initial =
+                            (user?.fullName ?? 'R').trim().isNotEmpty
+                            ? (user?.fullName ?? 'R').trim()[0].toUpperCase()
+                            : 'R';
+                        final isDark =
+                            themeProvider.themeMode == ThemeMode.dark;
+
+                        return PopupMenuButton<String>(
+                          tooltip: 'Profile',
+                          onSelected: (value) {
+                            switch (value) {
+                              case 'theme':
+                                final nextIsDark =
+                                    themeProvider.themeMode != ThemeMode.dark;
+                                themeProvider.toggleDarkMode();
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        nextIsDark
+                                            ? 'Dark mode enabled'
+                                            : 'Light mode enabled',
+                                      ),
+                                      duration: const Duration(
+                                        milliseconds: 1400,
+                                      ),
+                                    ),
+                                  );
+                                break;
+                              case 'company':
+                                _goToTab(4);
+                                break;
+                              case 'logout':
+                                _logout(context);
+                                break;
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem<String>(
+                              value: 'theme',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isDark
+                                        ? Icons.light_mode_outlined
+                                        : Icons.dark_mode_outlined,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    isDark
+                                        ? 'Switch to Light Mode'
+                                        : 'Switch to Dark Mode',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            PopupMenuItem<String>(
+                              value: 'company',
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.business_outlined, size: 18),
+                                  SizedBox(width: 10),
+                                  Text('Company Profile'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'logout',
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.logout, size: 18),
+                                  SizedBox(width: 10),
+                                  Text('Logout'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    DesignTokens.accentBlueBright,
+                                    DesignTokens.accentPurple,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(90),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  initial,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              body: AnimatedSwitcher(
+                duration: MotionTokens.medium,
+                switchInCurve: MotionTokens.emphasizedDecelerate,
+                switchOutCurve: MotionTokens.emphasizedAccelerate,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: bodyBottomInset),
+                  child: IndexedStack(
+                    key: ValueKey(_selectedIndex),
+                    index: _selectedIndex,
+                    children: [
+                      RecruiterDashboardOverviewTab(
+                        onJumpToAts: () => _goToTab(2),
+                      ),
+                      const _RecruiterJobsTab(),
+                      const ApplicantTrackingScreen(compactMode: true),
+                      _RecruiterJobCreateTab(onPosted: () => _goToTab(1)),
+                      const _RecruiterCompanyProfileTab(),
+                    ],
+                  ),
                 ),
               ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: _GlassCard(
-            padding: EdgeInsets.zero,
-            child: NavigationBar(
-              selectedIndex: _selectedIndex,
-              backgroundColor: Colors.transparent,
-              onDestinationSelected: _goToTab,
-              destinations: _tabs
-                  .map(
-                    (tab) => NavigationDestination(
-                      icon: Icon(tab.icon),
-                      selectedIcon: Icon(tab.activeIcon),
-                      label: tab.label,
+              floatingActionButton: isPostTab
+                  ? null
+                  : Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        gradient: const LinearGradient(
+                          colors: [
+                            DesignTokens.accentBlue,
+                            DesignTokens.accentPurple,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: DesignTokens.accentBlue.withAlpha(96),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: FloatingActionButton.extended(
+                        onPressed: () => _goToTab(3),
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Post Job'),
+                      ),
                     ),
-                  )
-                  .toList(growable: false),
+              bottomNavigationBar: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: _GlassCard(
+                  padding: EdgeInsets.zero,
+                  child: NavigationBar(
+                    selectedIndex: _selectedIndex,
+                    backgroundColor: colorScheme.surfaceContainer,
+                    onDestinationSelected: _goToTab,
+                    destinations: _tabs
+                        .map(
+                          (tab) => NavigationDestination(
+                            icon: Icon(tab.icon),
+                            selectedIcon: Icon(tab.activeIcon),
+                            label: tab.label,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -171,211 +398,32 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     if (!context.mounted) return;
     context.go(AppRoutes.login);
   }
-}
 
-class _RecruiterOverviewTab extends StatelessWidget {
-  final VoidCallback onJumpToAts;
-
-  const _RecruiterOverviewTab({required this.onJumpToAts});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer3<
-      AuthProvider,
-      RecruiterJobManagerProvider,
-      RecruiterApplicationManagerProvider
-    >(
-      builder: (context, authProvider, jobsProvider, appsProvider, _) {
-        final user = authProvider.currentUser;
-        final recentApplicants = appsProvider.applications.take(4).toList();
-
-        return RefreshIndicator(
-          onRefresh: () async {
-            await jobsProvider.loadJobs(refresh: true);
-            await appsProvider.loadApplications(refresh: true);
-          },
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-            children: [
-              _GlassCard(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0F172A),
-                    const Color(0xFF1D4ED8).withValues(alpha: 0.90),
-                    const Color(0xFF38BDF8).withValues(alpha: 0.76),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome back, ${user?.fullName ?? 'Recruiter'}',
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.05,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                user?.location ?? 'Your hiring workspace',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.82,
-                                      ),
-                                    ),
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  RecruiterGlowChip(label: 'Premium Hiring'),
-                                  RecruiterGlowChip(label: 'Fast Review Mode'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            color: Colors.white.withValues(alpha: 0.18),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.22),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.apartment_rounded,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Active Jobs',
-                      value: jobsProvider.openJobCount.toString(),
-                      icon: Icons.work,
-                      accent: const Color(0xFF38BDF8),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Applicants',
-                      value: appsProvider.applications.length.toString(),
-                      icon: Icons.groups,
-                      accent: const Color(0xFF60A5FA),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Interviews',
-                      value: appsProvider.acceptedCount.toString(),
-                      icon: Icons.videocam,
-                      accent: const Color(0xFF34D399),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _StatTile(
-                      label: 'Shortlisted',
-                      value: appsProvider.shortlistedCount.toString(),
-                      icon: Icons.verified,
-                      accent: const Color(0xFFF59E0B),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _GlassCard(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0A66C2).withValues(alpha: 0.12),
-                    Colors.white.withValues(alpha: 0.14),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Recent Applicants',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Candidate activity in the last review cycle',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: onJumpToAts,
-                      child: const Text('View ATS'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 148,
-                child: recentApplicants.isEmpty
-                    ? const _GlassCard(
-                        child: Center(child: Text('No applicants yet.')),
-                      )
-                    : ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: recentApplicants.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 10),
-                        itemBuilder: (context, index) {
-                          final app = recentApplicants[index];
-                          return SizedBox(
-                            width: 240,
-                            child: _ApplicantPreviewCard(app: app),
-                          );
-                        },
-                      ),
-              ),
-            ],
+  Future<void> _showRecruiterShortcutHelp(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Keyboard Shortcuts'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Alt+1: Home'),
+            Text('Alt+2: My Jobs'),
+            Text('Alt+3: ATS'),
+            Text('Alt+4: Post'),
+            Text('Alt+5: Company'),
+            SizedBox(height: 8),
+            Text('Alt+/: Show this help'),
+          ],
+        ),
+        actions: [
+          FilledButton(
+            onPressed: Navigator.of(dialogContext).pop,
+            child: const Text('Close'),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
@@ -388,7 +436,67 @@ class _RecruiterJobsTab extends StatefulWidget {
 }
 
 class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
+  static const String _statusPrefKey = 'recruiter_jobs_status_filter';
+  static const String _searchPrefKey = 'recruiter_jobs_search_filter';
+
   String? _status;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreFilterPreset();
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _restoreFilterPreset() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedStatus = prefs.getString(_statusPrefKey);
+    final savedSearch = prefs.getString(_searchPrefKey) ?? '';
+    if (!mounted) return;
+
+    setState(() {
+      _status = (savedStatus == null || savedStatus.isEmpty)
+          ? null
+          : savedStatus;
+      _searchController.text = savedSearch;
+    });
+
+    final provider = context.read<RecruiterJobManagerProvider>();
+    await provider.loadJobs(
+      refresh: true,
+      status: _status,
+      search: savedSearch.trim().isEmpty ? null : savedSearch.trim(),
+    );
+  }
+
+  Future<void> _persistFilterPreset() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_statusPrefKey, _status ?? '');
+    await prefs.setString(_searchPrefKey, _searchController.text.trim());
+  }
+
+  void _scheduleSearchDebounce(RecruiterJobManagerProvider provider) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 420), () {
+      if (!mounted) return;
+      _persistFilterPreset();
+      provider.loadJobs(
+        refresh: true,
+        status: _status,
+        search: _searchController.text.trim().isEmpty
+            ? null
+            : _searchController.text.trim(),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -396,91 +504,209 @@ class _RecruiterJobsTabState extends State<_RecruiterJobsTab> {
       builder: (context, provider, _) {
         return RefreshIndicator(
           onRefresh: () => provider.loadJobs(refresh: true, status: _status),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _StatusFilterChip(
-                      label: 'All',
-                      selected: _status == null,
-                      onTap: () {
-                        setState(() => _status = null);
-                        provider.loadJobs(refresh: true);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _StatusFilterChip(
-                      label: 'Active',
-                      selected: _status == 'approved',
-                      onTap: () {
-                        setState(() => _status = 'approved');
-                        provider.loadJobs(refresh: true, status: 'approved');
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _StatusFilterChip(
-                      label: 'Draft',
-                      selected: _status == 'draft',
-                      onTap: () {
-                        setState(() => _status = 'draft');
-                        provider.loadJobs(refresh: true, status: 'draft');
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _StatusFilterChip(
-                      label: 'Closed',
-                      selected: _status == 'closed',
-                      onTap: () {
-                        setState(() => _status = 'closed');
-                        provider.loadJobs(refresh: true, status: 'closed');
-                      },
-                    ),
-                  ],
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification.metrics.axis != Axis.vertical) return false;
+              final threshold = notification.metrics.maxScrollExtent * 0.80;
+              if (notification.metrics.pixels >= threshold &&
+                  provider.hasMore &&
+                  !provider.isLoading &&
+                  provider.jobs.isNotEmpty) {
+                provider.loadMoreJobs();
+              }
+              return false;
+            },
+            child: ListView(
+              key: const PageStorageKey<String>('recruiter_jobs_list'),
+              cacheExtent: 300,
+              padding: const EdgeInsets.all(16),
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _StatusFilterChip(
+                        label: 'All',
+                        selected: _status == null,
+                        onTap: () {
+                          setState(() => _status = null);
+                          _persistFilterPreset();
+                          provider.loadJobs(
+                            refresh: true,
+                            search: _searchController.text.trim().isEmpty
+                                ? null
+                                : _searchController.text.trim(),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusFilterChip(
+                        label: 'Active',
+                        selected: _status == 'approved',
+                        onTap: () {
+                          setState(() => _status = 'approved');
+                          _persistFilterPreset();
+                          provider.loadJobs(
+                            refresh: true,
+                            status: 'approved',
+                            search: _searchController.text.trim().isEmpty
+                                ? null
+                                : _searchController.text.trim(),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusFilterChip(
+                        label: 'Draft',
+                        selected: _status == 'draft',
+                        onTap: () {
+                          setState(() => _status = 'draft');
+                          _persistFilterPreset();
+                          provider.loadJobs(
+                            refresh: true,
+                            status: 'draft',
+                            search: _searchController.text.trim().isEmpty
+                                ? null
+                                : _searchController.text.trim(),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusFilterChip(
+                        label: 'Closed',
+                        selected: _status == 'closed',
+                        onTap: () {
+                          setState(() => _status = 'closed');
+                          _persistFilterPreset();
+                          provider.loadJobs(
+                            refresh: true,
+                            status: 'closed',
+                            search: _searchController.text.trim().isEmpty
+                                ? null
+                                : _searchController.text.trim(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              _GlassCard(
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0A66C2).withValues(alpha: 0.08),
-                    Colors.white.withValues(alpha: 0.10),
-                  ],
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _searchController,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (value) {
+                    _persistFilterPreset();
+                    provider.loadJobs(
+                      refresh: true,
+                      status: _status,
+                      search: value.trim().isEmpty ? null : value.trim(),
+                    );
+                  },
+                  onChanged: (_) => _scheduleSearchDebounce(provider),
+                  decoration: InputDecoration(
+                    hintText: 'Search jobs by title or keyword',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        if (_searchController.text.trim().isEmpty) return;
+                        _searchController.clear();
+                        _persistFilterPreset();
+                        provider.loadJobs(refresh: true, status: _status);
+                      },
+                      icon: const Icon(Icons.clear),
+                      tooltip: 'Clear search',
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
+                const SizedBox(height: 12),
+                if (provider.error != null && provider.jobs.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _GlassCard(
                       child: Text(
-                        '${provider.jobs.length} postings',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        'Showing cached jobs. Sync issue: ${provider.error}'
+                        '${provider.lastSyncedAt != null ? ' • Last synced ${_formatSync(provider.lastSyncedAt!)}' : ''}',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
-                    Text(
-                      'Swipe or tap a card for actions',
+                  ),
+                _GlassCard(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                  gradient: LinearGradient(
+                    colors: [
+                      DesignTokens.accentPurple.withValues(alpha: 0.08),
+                      Theme.of(
+                        context,
+                      ).colorScheme.surface.withValues(alpha: 0.10),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${provider.jobs.length} postings',
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      Text(
+                        'Swipe or tap a card for actions',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (provider.isLoading && provider.jobs.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 40),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (provider.jobs.isEmpty)
+                  const _GlassCard(
+                    child: Text(
+                      'No jobs posted yet. Create your first listing in the Create tab.',
+                    ),
+                  ),
+                ...provider.jobs.map(
+                  (job) => KeyedSubtree(
+                    key: ValueKey('recruiter-job-${job.id}'),
+                    child: _JobCard(job: job),
+                  ),
+                ),
+                if (provider.jobs.isNotEmpty && provider.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                if (provider.jobs.isNotEmpty &&
+                    !provider.isLoading &&
+                    !provider.hasMore)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'All jobs loaded.',
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (provider.isLoading && provider.jobs.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 40),
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (provider.jobs.isEmpty)
-                const _GlassCard(child: Text('No jobs posted yet.')),
-              ...provider.jobs.map((job) => _JobCard(job: job)),
-            ],
+                  ),
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  String _formatSync(DateTime value) {
+    final diff = DateTime.now().difference(value);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 }
 
@@ -550,8 +776,10 @@ class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF1D4ED8).withValues(alpha: 0.08),
-                    Colors.white.withValues(alpha: 0.10),
+                    DesignTokens.accentPurple.withValues(alpha: 0.08),
+                    Theme.of(
+                      context,
+                    ).colorScheme.surface.withValues(alpha: 0.10),
                   ],
                 ),
                 child: Row(
@@ -578,7 +806,11 @@ class _RecruiterAtsTabState extends State<_RecruiterAtsTab> {
                   child: Center(child: CircularProgressIndicator()),
                 )
               else if (provider.applications.isEmpty)
-                const _GlassCard(child: Text('No candidates yet.')),
+                const _GlassCard(
+                  child: Text(
+                    'No candidates yet. Move new applicants through ATS once they apply.',
+                  ),
+                ),
               ...provider.applications.map((app) => _ApplicantCard(app: app)),
             ],
           ),
@@ -645,11 +877,6 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
         ),
         const SizedBox(height: 12),
         _GlassCard(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           child: Form(
             key: _formKey,
             child: AnimatedSwitcher(
@@ -760,18 +987,19 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
   }
 
   InputDecoration _inputDecoration(String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.50),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+      fillColor: colorScheme.surfaceContainerHighest,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.28)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: Colors.blue.withValues(alpha: 0.80)),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: colorScheme.primary),
       ),
     );
   }
@@ -800,6 +1028,8 @@ class _RecruiterJobCreateTabState extends State<_RecruiterJobCreateTab> {
       );
 
       if (!mounted) return;
+      await context.read<RecruiterJobManagerProvider>().refreshJobs();
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Job posted successfully.')));
@@ -820,79 +1050,181 @@ class _RecruiterCompanyProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().currentUser;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _GlassCard(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white.withValues(alpha: 0.28),
-                    child: const Icon(Icons.business),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.fullName ?? 'Company Name',
-                          style: Theme.of(context).textTheme.titleLarge,
+    return Consumer3<
+      AuthProvider,
+      RecruiterJobManagerProvider,
+      RecruiterApplicationManagerProvider
+    >(
+      builder: (context, authProvider, jobsProvider, appsProvider, _) {
+        final user = authProvider.currentUser;
+        final companyName = RecruiterIdentityUtils.companyDisplayName(user);
+        final recruiterName = RecruiterIdentityUtils.recruiterDisplayName(user);
+        final companyLocation = RecruiterIdentityUtils.companyLocation(user);
+        final colorScheme = Theme.of(context).colorScheme;
+        final isDark = colorScheme.brightness == Brightness.dark;
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _GlassCard(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [
+                        colorScheme.surfaceContainerHigh.withValues(
+                          alpha: 0.86,
                         ),
-                        const SizedBox(height: 4),
-                        Text(user?.location ?? 'Philippines'),
-                      ],
+                        colorScheme.primaryContainer.withValues(alpha: 0.42),
+                      ]
+                    : const [Color(0xFFF7F8FC), Color(0xFFFFFFFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: colorScheme.surface.withValues(
+                          alpha: isDark ? 0.35 : 0.28,
+                        ),
+                        child: Icon(
+                          Icons.business,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              companyName,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(companyLocation),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Managed by $recruiterName',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? colorScheme.onSurfaceVariant
+                          : colorScheme.onSurface.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      RecruiterGlowChip(label: 'Verified Employer'),
+                      RecruiterGlowChip(label: 'Premium Profile'),
+                      RecruiterGlowChip(
+                        label: '${jobsProvider.jobs.length} live jobs',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Company Description',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    (user?.bio?.trim().isNotEmpty ?? false)
+                        ? user!.bio!
+                        : 'Complete your company profile to attract the right candidates.',
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: () => context.push(AppRoutes.editProfile),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit Company Profile'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _GlassCard(
+              gradient: LinearGradient(
+                colors: [
+                  isDark
+                      ? colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.88,
+                        )
+                      : const Color(0xFFF1F5F9).withValues(alpha: 0.96),
+                  isDark
+                      ? colorScheme.primaryContainer.withValues(alpha: 0.34)
+                      : const Color(0xFFBFDBFE).withValues(alpha: 0.72),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Brand Snapshot',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      const Icon(Icons.auto_awesome_rounded),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatTile(
+                          label: 'Open Roles',
+                          value: jobsProvider.openJobCount.toString(),
+                          icon: Icons.work_outline,
+                          accent: DesignTokens.accentPurple,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _StatTile(
+                          label: 'Applicants',
+                          value: appsProvider.applications.length.toString(),
+                          icon: Icons.groups_outlined,
+                          accent: DesignTokens.accentTeal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Add fresh roles and keep your profile polished so candidates feel momentum when they land here.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? colorScheme.onSurfaceVariant
+                          : colorScheme.onSurface.withValues(alpha: 0.88),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  RecruiterGlowChip(label: 'Verified Employer'),
-                  RecruiterGlowChip(label: 'Premium Profile'),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _GlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Company Description',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                (user?.bio?.trim().isNotEmpty ?? false)
-                    ? user!.bio!
-                    : 'Complete your company profile to attract the right candidates.',
-              ),
-              const SizedBox(height: 12),
-              FilledButton.tonalIcon(
-                onPressed: () => context.push(AppRoutes.editProfile),
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Edit Company Profile'),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -925,8 +1257,8 @@ class _JobCard extends StatelessWidget {
                 RecruiterGlowChip(
                   label: job.status.toUpperCase(),
                   glowColor: job.isClosed
-                      ? Colors.redAccent
-                      : const Color(0xFF38BDF8),
+                      ? DesignTokens.accentPhilippineRed
+                      : DesignTokens.accentPurple,
                 ),
               ],
             ),
@@ -950,21 +1282,38 @@ class _JobCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                TextButton.icon(
-                  onPressed: () =>
-                      context.push('/recruiter/jobs/${job.id}/edit'),
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Edit'),
+                Tooltip(
+                  message: 'Edit job posting',
+                  child: TextButton.icon(
+                    onPressed: () => context.push(
+                      AppRoutes.recruiterJobEdit.replaceFirst(
+                        ':id',
+                        job.id.toString(),
+                      ),
+                    ),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit'),
+                  ),
                 ),
-                TextButton.icon(
-                  onPressed: () => provider.closeJob(job.id),
-                  icon: const Icon(Icons.pause_circle_outline),
-                  label: const Text('Close'),
+                Tooltip(
+                  message: job.isClosed
+                      ? 'Job already closed'
+                      : 'Close job posting',
+                  child: TextButton.icon(
+                    onPressed: job.isClosed
+                        ? null
+                        : () => _confirmCloseJob(context, provider),
+                    icon: const Icon(Icons.pause_circle_outline),
+                    label: const Text('Close'),
+                  ),
                 ),
-                TextButton.icon(
-                  onPressed: () => provider.deleteJob(job.id),
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Delete'),
+                Tooltip(
+                  message: 'Delete job posting',
+                  child: TextButton.icon(
+                    onPressed: () => _confirmDeleteJob(context, provider),
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Delete'),
+                  ),
                 ),
               ],
             ),
@@ -972,6 +1321,96 @@ class _JobCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmCloseJob(
+    BuildContext context,
+    RecruiterJobManagerProvider provider,
+  ) async {
+    final shouldClose = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Close this job?'),
+        content: const Text(
+          'Candidates will no longer be able to apply once this job is closed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Close Job'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldClose != true || !context.mounted) return;
+    try {
+      await provider.closeJob(job.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Job closed successfully.')),
+        );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(provider.error ?? 'Failed to close job.')),
+        );
+    }
+  }
+
+  Future<void> _confirmDeleteJob(
+    BuildContext context,
+    RecruiterJobManagerProvider provider,
+  ) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete this job?'),
+        content: const Text(
+          'This action cannot be undone and removes the listing from your dashboard.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+              foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+            ),
+            child: const Text('Delete Job'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true || !context.mounted) return;
+    try {
+      await provider.deleteJob(job.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Job deleted successfully.')),
+        );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(provider.error ?? 'Failed to delete job.')),
+        );
+    }
   }
 }
 
@@ -982,6 +1421,8 @@ class _ApplicantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: _GlassCard(
@@ -993,13 +1434,15 @@ class _ApplicantCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: Colors.white.withValues(alpha: 0.18),
+                  backgroundColor: colorScheme.surface.withValues(
+                    alpha: isDark ? 0.30 : 0.18,
+                  ),
                   child: Text(
                     app.applicantName.isNotEmpty
                         ? app.applicantName[0].toUpperCase()
                         : '?',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1033,12 +1476,12 @@ class _ApplicantCard extends StatelessWidget {
                 if (app.applicantLocation.isNotEmpty)
                   RecruiterGlowChip(
                     label: app.applicantLocation,
-                    glowColor: const Color(0xFF60A5FA),
+                    glowColor: DesignTokens.accentPurple,
                   ),
               ],
             ),
             const SizedBox(height: 8),
-            FilledButton.tonal(
+                      FilledButton(
               onPressed: () => _showQuickActions(context),
               child: const Text('Quick Actions'),
             ),
@@ -1050,52 +1493,208 @@ class _ApplicantCard extends StatelessWidget {
 
   Future<void> _showQuickActions(BuildContext context) async {
     final provider = context.read<RecruiterApplicationManagerProvider>();
+    bool isSubmitting = false;
     await showModalBottomSheet<void>(
       context: context,
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  app.applicantName,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _quickAction(context, 'Shortlist', () {
-                      provider.updateApplicationStatus(app.id, 'shortlisted');
-                    }),
-                    _quickAction(context, 'Reject', () {
-                      provider.updateApplicationStatus(app.id, 'rejected');
-                    }),
-                    _quickAction(context, 'Hire', () {
-                      provider.updateApplicationStatus(app.id, 'accepted');
-                    }),
+                    Text(
+                      app.applicantName,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    if (isSubmitting)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 10),
+                        child: LinearProgressIndicator(minHeight: 2),
+                      ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _quickAction(
+                          context,
+                          'Shortlist',
+                          isSubmitting: isSubmitting,
+                          onTap: () async {
+                            final note = await _promptDecisionNote(
+                              context,
+                              title: 'Shortlist candidate',
+                              hintText:
+                                  'Optional note for recruiter team/candidate',
+                            );
+                            if (!context.mounted || note == null) return false;
+                            setModalState(() => isSubmitting = true);
+                            final ok = await _applyStatusUpdate(
+                              context,
+                              provider,
+                              status: 'shortlisted',
+                              notes: note,
+                              successMessage: 'Candidate shortlisted.',
+                            );
+                            if (context.mounted) {
+                              setModalState(() => isSubmitting = false);
+                            }
+                            return ok;
+                          },
+                        ),
+                        _quickAction(
+                          context,
+                          'Reject',
+                          isSubmitting: isSubmitting,
+                          onTap: () async {
+                            final note = await _promptDecisionNote(
+                              context,
+                              title: 'Reject candidate',
+                              hintText: 'Optional reason for rejection',
+                            );
+                            if (!context.mounted || note == null) return false;
+                            setModalState(() => isSubmitting = true);
+                            final ok = await _applyStatusUpdate(
+                              context,
+                              provider,
+                              status: 'rejected',
+                              notes: note,
+                              successMessage: 'Candidate rejected.',
+                            );
+                            if (context.mounted) {
+                              setModalState(() => isSubmitting = false);
+                            }
+                            return ok;
+                          },
+                        ),
+                        _quickAction(
+                          context,
+                          'Hire',
+                          isSubmitting: isSubmitting,
+                          onTap: () async {
+                            final note = await _promptDecisionNote(
+                              context,
+                              title: 'Mark candidate as hired',
+                              hintText: 'Optional onboarding note',
+                            );
+                            if (!context.mounted || note == null) return false;
+                            setModalState(() => isSubmitting = true);
+                            final ok = await _applyStatusUpdate(
+                              context,
+                              provider,
+                              status: 'accepted',
+                              notes: note,
+                              successMessage: 'Candidate marked as hired.',
+                            );
+                            if (context.mounted) {
+                              setModalState(() => isSubmitting = false);
+                            }
+                            return ok;
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _quickAction(BuildContext context, String label, VoidCallback onTap) {
+  Future<bool> _applyStatusUpdate(
+    BuildContext context,
+    RecruiterApplicationManagerProvider provider, {
+    required String status,
+    String? notes,
+    required String successMessage,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await provider.updateApplicationStatus(app.id, status, notes: notes);
+      if (!context.mounted) return false;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(successMessage)));
+      return true;
+    } catch (_) {
+      if (!context.mounted) return false;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              provider.error ?? 'Unable to update application status.',
+            ),
+          ),
+        );
+      return false;
+    }
+  }
+
+  Widget _quickAction(
+    BuildContext context,
+    String label, {
+    required bool isSubmitting,
+    required Future<bool> Function() onTap,
+  }) {
     return ElevatedButton(
-      onPressed: () {
-        onTap();
-        Navigator.of(context).pop();
-      },
+      style: ElevatedButton.styleFrom(minimumSize: const Size(100, 44)),
+      onPressed: isSubmitting
+          ? null
+          : () async {
+              final shouldClose = await onTap();
+              if (!shouldClose || !context.mounted) return;
+              Navigator.of(context).pop();
+            },
       child: Text(label),
     );
+  }
+
+  Future<String?> _promptDecisionNote(
+    BuildContext context, {
+    required String title,
+    required String hintText,
+  }) async {
+    final controller = TextEditingController();
+    final value = await showDialog<String?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          minLines: 2,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(null),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(''),
+            child: const Text('Skip'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text.trim()),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return value;
   }
 }
 
@@ -1112,11 +1711,15 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return GlassContainer(
       padding: padding,
-      gradient: gradient,
-      borderRadius: BorderRadius.circular(20),
-      blurSigma: 20,
+      borderRadius: 18,
+      blurStrength: 22,
+      opacity: 0.30,
+      borderOpacity: 0.18,
+      shadowIntensity: 0.22,
+      backgroundGradient: gradient,
+      enableGlow: true,
       child: child,
     );
   }
@@ -1180,7 +1783,7 @@ class _StatTile extends StatelessWidget {
             ),
             child: Icon(icon, color: accent, size: 20),
           ),
-          const Spacer(),
+          const SizedBox(height: 12),
           Text(
             value,
             style: Theme.of(
@@ -1195,120 +1798,6 @@ class _StatTile extends StatelessWidget {
   }
 }
 
-class _ApplicantPreviewCard extends StatelessWidget {
-  final RecruiterApplication app;
-
-  const _ApplicantPreviewCard({required this.app});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final initials = app.applicantName.isNotEmpty
-        ? app.applicantName
-              .trim()
-              .split(' ')
-              .take(2)
-              .map((part) => part.isNotEmpty ? part[0].toUpperCase() : '')
-              .join()
-        : '?';
-
-    return _GlassCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.16),
-                child: Text(
-                  initials,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      app.applicantName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      app.applicantLocation.isNotEmpty
-                          ? app.applicantLocation
-                          : 'Candidate',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              RecruiterGlowChip(
-                label: app.statusDisplay,
-                glowColor: app.isAccepted
-                    ? colorScheme.tertiary
-                    : app.isRejected
-                    ? colorScheme.error
-                    : colorScheme.primary,
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            app.coverLetter?.trim().isNotEmpty == true
-                ? app.coverLetter!.trim().split(' ').take(8).join(' ')
-                : 'No cover letter preview available.',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: LinearProgressIndicator(
-                  value: _matchScore(app),
-                  minHeight: 6,
-                  backgroundColor: colorScheme.surface.withValues(alpha: 0.12),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    colorScheme.primary,
-                  ),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                '${(_matchScore(app) * 100).round()}%',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  double _matchScore(RecruiterApplication app) {
-    if (app.isAccepted) return 0.96;
-    if (app.isShortlisted) return 0.82;
-    if (app.isReviewing) return 0.65;
-    if (app.isRejected) return 0.22;
-    return 0.48;
-  }
-}
-
 class _RecruiterTabItem {
   final IconData icon;
   final IconData activeIcon;
@@ -1319,4 +1808,13 @@ class _RecruiterTabItem {
     required this.activeIcon,
     required this.label,
   });
+}
+
+class _RecruiterSwitchTabIntent extends Intent {
+  final int index;
+  const _RecruiterSwitchTabIntent(this.index);
+}
+
+class _RecruiterShortcutHelpIntent extends Intent {
+  const _RecruiterShortcutHelpIntent();
 }

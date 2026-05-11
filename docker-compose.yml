@@ -1,118 +1,201 @@
+name: portfolioph
+
 services:
-  # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: job_platform_db
+    container_name: portfolioph_mysql
     restart: unless-stopped
+    command:
+      - --max_connections=300
+      - --thread_cache_size=64
+      - --table_open_cache=2000
+      - --innodb_buffer_pool_size=512M
+      - --innodb_log_file_size=256M
+      - --innodb_flush_log_at_trx_commit=1
+      - --innodb_flush_method=O_DIRECT
+      - --innodb_io_capacity=1000
+      - --innodb_read_io_threads=4
+      - --innodb_write_io_threads=4
+      - --sort_buffer_size=2M
+      - --join_buffer_size=2M
+      - --tmp_table_size=64M
+      - --max_heap_table_size=64M
+      - --slow_query_log=1
+      - --long_query_time=1
     environment:
-      MYSQL_DATABASE: job_platform
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: password
-      MYSQL_USER: jobuser
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-job_platform}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_root_password}
+      MYSQL_USER: ${MYSQL_USER:-jobuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_db_password}
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 5s
-    networks:
-      - job-network
+      retries: 10
+      start_period: 20s
 
-  # Laravel API
   api:
     build:
-      context: ./backend
+      context: ./portfoliophhadmin
       dockerfile: ../docker/Dockerfile
-    image: job_platform_api:latest
-    container_name: job_platform_api
+    container_name: portfolioph_api
     restart: unless-stopped
     environment:
-      APP_NAME: "Job Platform"
-      APP_ENV: development
-      APP_KEY: base64:/pLDTArcIFVj+PpLq2ZVRs0HcLrVN+p8xDXAH4x0IYo=
-      APP_DEBUG: "true"
-      APP_URL: http://localhost:8000
-      APP_TIMEZONE: UTC
+      APP_NAME: PortfolioPH
+      APP_KEY: base64:jPhaONrQt/qVn1E8wBBEBYNZjsZ9lmGUfKlW8ozLDko=
+      APP_URL: ${APP_URL:-http://127.0.0.1:8000}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Manila}
       DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_DATABASE: job_platform
-      DB_USERNAME: jobuser
-      DB_PASSWORD: password
-      CACHE_DRIVER: file
-      QUEUE_CONNECTION: sync
-      SESSION_DRIVER: cookie
+      DB_DATABASE: ${DB_DATABASE:-job_platform}
+      DB_USERNAME: ${DB_USERNAME:-jobuser}
+      DB_PASSWORD: ${DB_PASSWORD:-change_db_password}
+      SESSION_DRIVER: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_DB: 0
+      REDIS_CACHE_DB: 1
       MAIL_MAILER: smtp
       MAIL_HOST: mailpit
       MAIL_PORT: 1025
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_ENCRYPTION: "null"
-      MAIL_FROM_ADDRESS: "noreply@jobplatform.test"
-      MAIL_FROM_NAME: "Job Platform"
-      SANCTUM_STATEFUL_DOMAINS: localhost:8000,127.0.0.1:8000
-      SESSION_DOMAIN: localhost
-    ports:
-      - "9000:9000"
+      MAIL_ENCRYPTION: null
+      MAIL_FROM_ADDRESS: noreply@jobplatform.test
+      MAIL_FROM_NAME: PortfolioPH
+      SANCTUM_STATEFUL_DOMAINS: localhost:3000,localhost:8000,127.0.0.1:3000,127.0.0.1:8000
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-}
     volumes:
-      - ./backend:/app
+      - ./portfoliophhadmin:/app
+      - api_vendor:/app/vendor
+      - ./docker/php/conf.d/opcache.ini:/usr/local/etc/php/conf.d/zz-opcache.ini:ro
+      - ./docker/php-fpm/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+    command: >
+      sh -lc "[ -f /app/vendor/autoload.php ] || composer install --no-interaction --prefer-dist &&
+      php artisan migrate --force --no-interaction &&
+      php-fpm"
     depends_on:
       mysql:
         condition: service_healthy
-    networks:
-      - job-network
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
-  # Nginx Reverse Proxy
   nginx:
-    image: nginx:alpine
-    container_name: job_platform_nginx
+    image: nginx:1.27-alpine
+    container_name: portfolioph_api_nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "8000:8000"
+      - "8000:80"
     volumes:
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./backend:/app
+      - ./docker/nginx-api.conf:/etc/nginx/nginx.conf:ro
+      - ./portfoliophhadmin:/app
     depends_on:
-      - api
-    networks:
-      - job-network
+      api:
+        condition: service_healthy
 
-  # Mailpit (Email Testing)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portfolioph_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    depends_on:
+      - nginx
+
   mailpit:
     image: axllent/mailpit:latest
-    container_name: job_platform_mailpit
+    container_name: portfolioph_mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"
       - "8025:8025"
-    networks:
-      - job-network
 
-  # PhpMyAdmin (Database Management)
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: job_platform_phpmyadmin
+    container_name: portfolioph_phpmyadmin
     restart: unless-stopped
     environment:
       PMA_HOST: mysql
-      PMA_USER: jobuser
-      PMA_PASSWORD: password
-      PMA_ROOT_PASSWORD: root
+      PMA_USER: ${MYSQL_USER:-jobuser}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-change_db_password}
+      PMA_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_root_password}
     ports:
       - "8080:80"
     depends_on:
-      - mysql
-    networks:
-      - job-network
+      mysql:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: portfolioph_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  queue-worker:
+    build:
+      context: ./portfoliophhadmin
+      dockerfile: ../docker/Dockerfile
+    container_name: portfolioph_queue_worker
+    restart: unless-stopped
+    environment:
+      APP_NAME: PortfolioPH
+      APP_KEY: base64:jPhaONrQt/qVn1E8wBBEBYNZjsZ9lmGUfKlW8ozLDko=
+      APP_URL: ${APP_URL:-http://127.0.0.1:8000}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Manila}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-job_platform}
+      DB_USERNAME: ${DB_USERNAME:-jobuser}
+      DB_PASSWORD: ${DB_PASSWORD:-change_db_password}
+      SESSION_DRIVER: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_DB: 0
+      REDIS_CACHE_DB: 1
+    volumes:
+      - ./portfoliophhadmin:/app
+      - api_vendor:/app/vendor
+      - ./docker/php/conf.d/opcache.ini:/usr/local/etc/php/conf.d/zz-opcache.ini:ro
+      - ./docker/php-fpm/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+    command: >
+      sh -lc "[ -f /app/vendor/autoload.php ] || composer install --no-interaction --prefer-dist &&
+      php artisan queue:work redis --sleep=1 --tries=3 --max-time=3600"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   mysql_data:
-
-networks:
-  job-network:
-    driver: bridge
+  api_vendor:
+  redis_data:

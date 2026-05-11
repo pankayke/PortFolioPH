@@ -5,6 +5,8 @@
 **Current Stage**: MVP with role-based dashboards (Recruiter + Seeker)  
 **Status**: 🔴 Production-ready but requires optimization (see CRITICAL ISSUES)
 
+> Historical context snapshot. Current verified status is documented in [CURRENT_VERIFICATION_SUMMARY.md](CURRENT_VERIFICATION_SUMMARY.md).
+
 ---
 
 ## 📊 Project Overview
@@ -383,7 +385,7 @@ class AuthProvider extends ChangeNotifier {
 
 ```dart
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  static const String baseUrl = 'http://localhost:8000/api';
   late final Dio _dio;
 
   void _initializeDio() {
@@ -485,22 +487,22 @@ class UserModel {
 // • applications: Map<id, {id, job_id, user_id, status, ...}>
 
 // Routes (15 endpoints):
-// POST   /api/v1/auth/register
-// POST   /api/v1/auth/login
-// POST   /api/v1/auth/logout (protected)
-// GET    /api/v1/users/{id}
-// GET    /api/v1/users/search
-// GET    /api/v1/users/has-role/admin
-// PUT    /api/v1/users/{id}
-// POST   /api/v1/jobs
-// GET    /api/v1/jobs
-// GET    /api/v1/jobs/{id}
-// PUT    /api/v1/jobs/{id}
-// DELETE /api/v1/jobs/{id}
-// POST   /api/v1/applications
-// GET    /api/v1/applications
-// PUT    /api/v1/applications/{id}/status
-// GET    /api/v1/health
+// POST   /api/auth/register
+// POST   /api/auth/login
+// POST   /api/auth/logout (protected)
+// GET    /api/users/{id}
+// GET    /api/users/search
+// GET    /api/users/has-role/admin
+// PUT    /api/users/{id}
+// POST   /api/jobs
+// GET    /api/jobs
+// GET    /api/jobs/{id}
+// PUT    /api/jobs/{id}
+// DELETE /api/jobs/{id}
+// POST   /api/applications
+// GET    /api/applications
+// PUT    /api/applications/{id}/status
+// GET    /api/health
 
 // CORS: ✅ Enabled for all origins (*)
 // Auth: ✅ Bearer token validation
@@ -659,7 +661,7 @@ User Registration:
              ▼
   ┌──────────────────────────┐
   │ Backend API              │
-  │ POST /api/v1/auth/register
+  │ POST /api/auth/register
   │ • Validates input        │
   │ • Hashes password        │
   │ • Creates user           │
@@ -682,74 +684,74 @@ User Registration:
 
 ### Authentication
 ```
-POST /api/v1/auth/register
+POST /api/auth/register
   Request: { name, email, password, role }
   Response: 201 { user: {id, name, email, role}, token }
 
-POST /api/v1/auth/login
+POST /api/auth/login
   Request: { email, password }
   Response: 200 { user: {id, name, email, role}, token }
 
-POST /api/v1/auth/logout (auth required)
+POST /api/auth/logout (auth required)
   Response: 200 { message }
 ```
 
 ### Users
 ```
-GET /api/v1/users/{id} (auth)
+GET /api/users/{id} (auth)
   Response: 200 { id, name, email, role, created_at }
 
-GET /api/v1/users/search?q=john (auth)
+GET /api/users/search?q=john (auth)
   Response: 200 [{ id, name, email, role }, ...]
 
-GET /api/v1/users/has-role/admin (auth)
+GET /api/users/has-role/admin (auth)
   Response: 200 { is_admin }
 
-PUT /api/v1/users/{id} (auth)
+PUT /api/users/{id} (auth)
   Request: { name?, email? }
   Response: 200 { id, name, email, role }
 ```
 
 ### Jobs
 ```
-POST /api/v1/jobs (auth, recruiter)
+POST /api/jobs (auth, recruiter)
   Request: { title, description, location, salary_min, salary_max, job_type }
   Response: 201 { job }
 
-GET /api/v1/jobs?page=1&per_page=20&search=flutter (auth)
+GET /api/jobs?page=1&per_page=20&search=flutter (auth)
   Response: 200 { data: [{job}, ...], current_page, total }
 
-GET /api/v1/jobs/{id} (auth)
+GET /api/jobs/{id} (auth)
   Response: 200 { job with recruiter details }
 
-PUT /api/v1/jobs/{id} (auth, recruiter)
+PUT /api/jobs/{id} (auth, recruiter)
   Request: { title?, description?, ... }
   Response: 200 { job }
 
-DELETE /api/v1/jobs/{id} (auth, recruiter)
+DELETE /api/jobs/{id} (auth, recruiter)
   Response: 204 (no content)
 ```
 
 ### Applications
 ```
-POST /api/v1/applications (auth, seeker)
+POST /api/applications (auth, seeker)
   Request: { job_id, cover_letter? }
   Response: 201 { application }
 
-GET /api/v1/applications (auth)
+GET /api/applications (auth)
   Response: 200 { data: [{application}, ...] }
 
-GET /api/v1/applications/{id} (auth)
+GET /api/applications/{id} (auth)
   Response: 200 { application with user + job }
 
-PUT /api/v1/applications/{id}/status (auth, recruiter)
+PUT /api/applications/{id}/status (auth, recruiter)
   Request: { status: pending|reviewed|shortlisted|rejected|accepted }
   Response: 200 { application }
 ```
 
 ### Health
 ```
-GET /api/v1/health
+GET /api/health
   Response: 200 { status: "ok", message: "Job Platform API running" }
 ```
 
@@ -818,7 +820,7 @@ GET /api/v1/health
 | **Role Selection** | ✅ Complete | Job Seeker vs Recruiter choice |
 | **Seeker Dashboard** | ✅ Complete | Bottom-nav with 5+ tabs |
 | **Recruiter Dashboard** | ✅ Complete | Job management, applications review |
-| **Job Listing** | ✅ Complete | GET /api/v1/jobs with filtering |
+| **Job Listing** | ✅ Complete | GET /api/jobs with filtering |
 | **Job Creation** | ✅ Complete | Recruiter-only (auth protected) |
 | **Job Application** | ✅ Complete | Seeker can apply to jobs |
 | **Admin Dashboard** | ✅ Complete | Filament-like UI (400+ lines) |

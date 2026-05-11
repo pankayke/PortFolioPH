@@ -17,9 +17,10 @@ class Job extends Model
         'salary_min',
         'salary_max',
         'job_type',
-        'status',
-        'required_skills',
         'deadline',
+        'required_skills',
+        'status',
+        'rejection_reason',
     ];
 
     protected $casts = [

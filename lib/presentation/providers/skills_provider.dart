@@ -1,45 +1,30 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:portfolioph/data/models/skills_model.dart';
 import 'package:portfolioph/data/repositories/skills_repository.dart';
+import 'package:portfolioph/presentation/providers/async_user_provider_base.dart';
 
-class SkillsProvider extends ChangeNotifier {
+class SkillsProvider extends AsyncUserProviderBase {
   final SkillsRepository _repository;
 
-  SkillsProvider({SkillsRepository? repository})
-    : _repository = repository ?? SkillsRepository();
+  SkillsProvider({required SkillsRepository repository})
+    : _repository = repository;
 
   List<SkillsModel> _skills = [];
-  bool _isLoading = false;
   String _searchQuery = '';
-  String? _errorMessage;
-  int? _currentUserId;
 
   List<SkillsModel> get skills => List.unmodifiable(_skills);
-  bool get isLoading => _isLoading;
   String get searchQuery => _searchQuery;
-  String? get errorMessage => _errorMessage;
 
   Future<void> loadForUser(int userId) async {
-    _isLoading = true;
-    _errorMessage = null;
-    _currentUserId = userId;
-    notifyListeners();
-
-    try {
+    setCurrentUserId(userId);
+    await runLoadingTask(() async {
       final all = await _repository.findByUserId(userId);
       _skills = _applySearch(all, _searchQuery);
-    } catch (e) {
-      _errorMessage = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    });
   }
 
   Future<void> updateSearchQuery(String query) async {
     _searchQuery = query.trim();
-    final userId = _currentUserId;
+    final userId = currentUserId;
     if (userId == null) return;
 
     try {
@@ -47,29 +32,29 @@ class SkillsProvider extends ChangeNotifier {
       _skills = _applySearch(all, _searchQuery);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
     }
   }
 
   Future<bool> addSkill(SkillsModel skill) async {
-    _errorMessage = null;
+    clearError();
     try {
       final id = await _repository.insert(skill);
       _skills = [skill.copyWith(id: id), ..._skills];
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
   }
 
   Future<bool> updateSkill(SkillsModel skill) async {
-    _errorMessage = null;
+    clearError();
     if (skill.id == null) {
-      _errorMessage = 'Skill id is required for update.';
+      setError('Skill id is required for update.');
       notifyListeners();
       return false;
     }
@@ -82,17 +67,17 @@ class SkillsProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
   }
 
   Future<bool> deleteSkill(SkillsModel skill) async {
-    _errorMessage = null;
+    clearError();
     final id = skill.id;
     if (id == null) {
-      _errorMessage = 'Skill id is required for delete.';
+      setError('Skill id is required for delete.');
       notifyListeners();
       return false;
     }
@@ -105,7 +90,7 @@ class SkillsProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      setError(e);
       notifyListeners();
       return false;
     }
@@ -123,8 +108,8 @@ class SkillsProvider extends ChangeNotifier {
         .toList(growable: false);
   }
 
-  void clearError() {
-    _errorMessage = null;
+  void clearProviderError() {
+    clearError();
     notifyListeners();
   }
 }

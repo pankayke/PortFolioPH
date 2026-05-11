@@ -6,19 +6,19 @@ abstract final class DesignTokens {
   static const Color darkBaseB = Color(0xFF0A0F1A);
   static const Color darkBaseC = Color(0xFF111827);
   static const Color darkSurface = Color(0xFF1E293B);
-  static const Color lightBase = Color(0xFFF8FAFC);
-  static const Color lightSurface = Color(0xFFEAF0FF);
-  static const Color lightSurfaceSoft = Color(0xFFF1F5F9);
+  static const Color lightBase = Color(0xFFF7F8FC);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightSurfaceSoft = Color(0xFFF7F8FC);
   static const Color lightSurfaceTint = Color(0xFFE0F2FE);
   static const Color outlineDark = Color(0xFF334155);
-  static const Color outlineLight = Color(0xFFD2DBF3);
+  static const Color outlineLight = Color(0xFFE0E3EB);
 
-  static const Color accentBlue = Color(0xFF0A66C2);
-  static const Color accentBlueBright = Color(0xFF3B82F6);
-  static const Color accentPurple = Color(0xFF8B5CF6);
+  static const Color accentBlue = Color(0xFF8E75FF);
+  static const Color accentBlueBright = Color(0xFF8E75FF);
+  static const Color accentPurple = Color(0xFF8E75FF);
   static const Color accentPhilippineRed = Color(0xFFEF4444);
   static const Color accentPhilippineRedDeep = Color(0xFFDC2626);
-  static const Color accentTeal = Color(0xFF14B8A6);
+  static const Color accentTeal = Color(0xFF32D796);
 
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,

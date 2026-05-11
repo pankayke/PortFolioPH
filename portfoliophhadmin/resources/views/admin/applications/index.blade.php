@@ -59,6 +59,17 @@
                 </div>
             </header>
 
+            <div class="flex gap-2">
+                <a href="{{ route('admin.applications.export-excel') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                    Export Excel
+                </a>
+                <a href="{{ route('admin.applications.export-csv') }}" class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                    Export CSV
+                </a>
+            </div>
+
             <div class="cc-elevated-card overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="cc-density-table w-full">
@@ -96,7 +107,7 @@
                                     <td class="px-4 py-2.5 text-sm text-slate-600">{{ $app->created_at->format('M d, Y H:i') }}</td>
                                     <td class="px-4 py-2.5">
                                         <div class="cc-quick-actions inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
-                                            <a href="{{ route('admin.applications.index') }}" class="rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Inspect</a>
+                                            <a href="{{ route('admin.applications.show', $app) }}" class="rounded-full px-3 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Inspect</a>
                                             @if($app->job)
                                                 <a href="{{ route('admin.jobs.show', $app->job) }}" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">Job</a>
                                             @endif
