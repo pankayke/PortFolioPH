@@ -60,17 +60,18 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build App Bundle (AAB)
+      - name: Build APK (Release)
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
-          flutter build appbundle -t lib/main_production.dart --release --dart-define=API_BASE_URL=${API_BASE_URL}
+          API_URL="${API_BASE_URL:-https://api.portfolioph.dev/api}"
+          flutter build apk -t lib/main_production.dart --release --dart-define=API_URL=${API_URL}
 
-      - name: Upload AAB artifact
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.aab
-          path: build/app/outputs/bundle/release/app-release.aab
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload AAB to Play Store (optional)
         if: ${{ github.event.inputs.upload_to_playstore == 'true' }}
@@ -78,5 +79,5 @@ jobs:
         with:
           serviceAccountJson: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: ${{ github.event.inputs.package_name }}
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          releaseFiles: build/app/outputs/flutter-apk/app-release.apk
           track: internal
