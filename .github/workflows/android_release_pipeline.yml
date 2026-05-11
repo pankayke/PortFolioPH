@@ -36,15 +36,11 @@ jobs:
       - name: Ensure repo checked out
         uses: actions/checkout@v4
 
-      - name: Install Flutter 3.10.7
-        run: |
-          set -eux
-          FLUTTER_DIR="$HOME/flutter"
-          if [ -d "$FLUTTER_DIR" ]; then rm -rf "$FLUTTER_DIR"; fi
-          git clone --depth 1 --branch 3.10.7 https://github.com/flutter/flutter.git "$FLUTTER_DIR"
-          echo "$FLUTTER_DIR/bin" >> $GITHUB_PATH
-          export PATH="$FLUTTER_DIR/bin:$PATH"
-          flutter --version
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.7'
+          cache: true
 
       - name: Decode Android keystore
         run: |
